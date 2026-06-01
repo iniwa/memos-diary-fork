@@ -186,6 +186,7 @@
     "display-time": "表示時間",
     "filters": {
       "has-code": "コードあり",
+      "has-image": "画像あり",
       "has-link": "リンクあり",
       "has-task-list": "タスクリストあり",
       "label": "フィルター"

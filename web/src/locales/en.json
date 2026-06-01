@@ -242,6 +242,7 @@
     "display-time": "Display Time",
     "filters": {
       "has-code": "hasCode",
+      "has-image": "Has image",
       "has-link": "hasLink",
       "has-task-list": "hasTaskList",
       "label": "Filters"

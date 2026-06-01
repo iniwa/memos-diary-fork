@@ -32,11 +32,12 @@ const (
 type FieldKind string
 
 const (
-	FieldKindScalar       FieldKind = "scalar"
-	FieldKindBoolColumn   FieldKind = "bool_column"
-	FieldKindJSONBool     FieldKind = "json_bool"
-	FieldKindJSONList     FieldKind = "json_list"
-	FieldKindVirtualAlias FieldKind = "virtual_alias"
+	FieldKindScalar         FieldKind = "scalar"
+	FieldKindBoolColumn     FieldKind = "bool_column"
+	FieldKindJSONBool       FieldKind = "json_bool"
+	FieldKindJSONList       FieldKind = "json_list"
+	FieldKindVirtualAlias   FieldKind = "virtual_alias"
+	FieldKindExistsSubquery FieldKind = "exists_subquery"
 )
 
 // Column identifies the backing table column.
@@ -239,6 +240,20 @@ func NewSchema() Schema {
 				CompareNeq: true,
 			},
 		},
+		"has_image_attachment": {
+			Name: "has_image_attachment",
+			Kind: FieldKindExistsSubquery,
+			Type: FieldTypeBool,
+			Expressions: map[DialectName]string{
+				DialectSQLite:   "EXISTS (SELECT 1 FROM `attachment` WHERE `attachment`.`memo_id` = `memo`.`id` AND `attachment`.`type` IN ('image/jpeg','image/jpg','image/png','image/webp','image/gif','image/avif','image/svg+xml'))",
+				DialectMySQL:    "EXISTS (SELECT 1 FROM `attachment` WHERE `attachment`.`memo_id` = `memo`.`id` AND `attachment`.`type` IN ('image/jpeg','image/jpg','image/png','image/webp','image/gif','image/avif','image/svg+xml'))",
+				DialectPostgres: "EXISTS (SELECT 1 FROM attachment WHERE attachment.memo_id = memo.id AND attachment.type IN ('image/jpeg','image/jpg','image/png','image/webp','image/gif','image/avif','image/svg+xml'))",
+			},
+			AllowedComparisonOps: map[ComparisonOperator]bool{
+				CompareEq:  true,
+				CompareNeq: true,
+			},
+		},
 	}
 
 	envOptions := []cel.EnvOption{
@@ -255,6 +270,7 @@ func NewSchema() Schema {
 		cel.Variable("has_link", cel.BoolType),
 		cel.Variable("has_code", cel.BoolType),
 		cel.Variable("has_incomplete_tasks", cel.BoolType),
+		cel.Variable("has_image_attachment", cel.BoolType),
 		nowFunction,
 	}
 

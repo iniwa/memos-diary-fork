@@ -37,3 +37,30 @@ func TestCompileRejectsNonBooleanTopLevelConstant(t *testing.T) {
 	_, err = engine.Compile(context.Background(), `1`)
 	require.EqualError(t, err, "filter must evaluate to a boolean value")
 }
+
+func TestCompileRendersHasImageAttachmentPredicate(t *testing.T) {
+	t.Parallel()
+
+	engine, err := NewEngine(NewSchema())
+	require.NoError(t, err)
+
+	stmt, err := engine.CompileToStatement(context.Background(), `has_image_attachment`, RenderOptions{Dialect: DialectSQLite})
+	require.NoError(t, err)
+	require.Empty(t, stmt.Args)
+	require.Contains(t, stmt.SQL, "EXISTS (SELECT 1 FROM `attachment`")
+	require.Contains(t, stmt.SQL, "`attachment`.`memo_id` = `memo`.`id`")
+	require.Contains(t, stmt.SQL, "'image/jpeg'")
+}
+
+func TestCompileRendersHasImageAttachmentComparison(t *testing.T) {
+	t.Parallel()
+
+	engine, err := NewEngine(NewSchema())
+	require.NoError(t, err)
+
+	stmt, err := engine.CompileToStatement(context.Background(), `has_image_attachment == false`, RenderOptions{Dialect: DialectPostgres})
+	require.NoError(t, err)
+	require.Empty(t, stmt.Args)
+	require.Contains(t, stmt.SQL, "NOT (EXISTS (SELECT 1 FROM attachment")
+	require.Contains(t, stmt.SQL, "attachment.memo_id = memo.id")
+}

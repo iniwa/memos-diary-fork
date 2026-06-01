@@ -141,6 +141,12 @@ func (r *renderer) renderFieldPredicate(cond *FieldPredicateCondition) (renderRe
 			return renderResult{}, err
 		}
 		return renderResult{sql: sql}, nil
+	case FieldKindExistsSubquery:
+		sql, ok := field.Expressions[r.dialect]
+		if !ok {
+			return renderResult{}, errors.Errorf("no SQL expression for field %q with dialect %s", field.Name, r.dialect)
+		}
+		return renderResult{sql: sql}, nil
 	default:
 		return renderResult{}, errors.Errorf("field %q cannot be used as a predicate", cond.Field)
 	}
@@ -158,6 +164,8 @@ func (r *renderer) renderComparison(cond *ComparisonCondition) (renderResult, er
 			return r.renderBoolColumnComparison(field, cond.Operator, cond.Right)
 		case FieldKindJSONBool:
 			return r.renderJSONBoolComparison(field, cond.Operator, cond.Right)
+		case FieldKindExistsSubquery:
+			return r.renderExistsSubqueryComparison(field, cond.Operator, cond.Right)
 		case FieldKindScalar:
 			return r.renderScalarComparison(field, cond.Operator, cond.Right)
 		default:
@@ -307,6 +315,33 @@ func (r *renderer) renderJSONBoolComparison(field Field, op ComparisonOperator, 
 		}, nil
 	default:
 		return renderResult{}, errors.Errorf("unsupported dialect %s", r.dialect)
+	}
+}
+
+func (r *renderer) renderExistsSubqueryComparison(field Field, op ComparisonOperator, right ValueExpr) (renderResult, error) {
+	value, err := expectBool(right)
+	if err != nil {
+		return renderResult{}, err
+	}
+
+	sql, ok := field.Expressions[r.dialect]
+	if !ok {
+		return renderResult{}, errors.Errorf("no SQL expression for field %q with dialect %s", field.Name, r.dialect)
+	}
+
+	switch op {
+	case CompareEq:
+		if value {
+			return renderResult{sql: sql}, nil
+		}
+		return renderResult{sql: fmt.Sprintf("NOT (%s)", sql)}, nil
+	case CompareNeq:
+		if value {
+			return renderResult{sql: fmt.Sprintf("NOT (%s)", sql)}, nil
+		}
+		return renderResult{sql: sql}, nil
+	default:
+		return renderResult{}, errors.Errorf("operator %s not supported for exists subquery field", op)
 	}
 }
 

@@ -6,6 +6,7 @@ import {
   CodeIcon,
   EyeIcon,
   HashIcon,
+  ImageIcon,
   LinkIcon,
   LucideIcon,
   SearchIcon,
@@ -51,6 +52,10 @@ const FILTER_CONFIGS: Record<FilterFactor, FilterConfig> = {
   "property.hasCode": {
     icon: CodeIcon,
     getLabel: (_, t) => t("memo.filters.has-code"),
+  },
+  "attachment.hasImage": {
+    icon: ImageIcon,
+    getLabel: (_, t) => t("memo.filters.has-image"),
   },
 };
 
