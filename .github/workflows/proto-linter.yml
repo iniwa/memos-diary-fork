@@ -2,9 +2,9 @@ name: Proto Linter
 
 on:
   push:
-    branches: [main]
+    branches: [main, diary-mode]
   pull_request:
-    branches: [main]
+    branches: [main, diary-mode]
     paths:
       - "proto/**"
 

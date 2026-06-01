@@ -2,9 +2,9 @@ name: Backend Tests
 
 on:
   push:
-    branches: [main]
+    branches: [main, diary-mode]
   pull_request:
-    branches: [main]
+    branches: [main, diary-mode]
     paths:
       - "go.mod"
       - "go.sum"
