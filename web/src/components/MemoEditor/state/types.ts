@@ -9,6 +9,8 @@ export type AudioRecorderStatus = "idle" | "requesting_permission" | "recording"
 
 export interface EditorState {
   content: string;
+  /** Tag values managed by the dedicated tag section (without the leading `#`). */
+  tags: string[];
   metadata: {
     visibility: Visibility;
     attachments: Attachment[];
@@ -59,10 +61,12 @@ export type EditorAction =
   | { type: "SET_AUDIO_RECORDER_STATUS"; payload: AudioRecorderStatus }
   | { type: "SET_AUDIO_RECORDER_ELAPSED"; payload: number }
   | { type: "SET_AUDIO_RECORDER_ERROR"; payload?: string }
+  | { type: "SET_TAGS"; payload: string[] }
   | { type: "RESET" };
 
 export const initialState: EditorState = {
   content: "",
+  tags: [],
   metadata: {
     visibility: Visibility.PRIVATE,
     attachments: [],

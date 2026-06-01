@@ -102,6 +102,11 @@ export const editorActions = {
     payload: value,
   }),
 
+  setTags: (tags: string[]): EditorAction => ({
+    type: "SET_TAGS",
+    payload: tags,
+  }),
+
   reset: (): EditorAction => ({
     type: "RESET",
   }),

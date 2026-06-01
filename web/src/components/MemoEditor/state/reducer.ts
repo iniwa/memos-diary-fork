@@ -171,6 +171,12 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
         },
       };
 
+    case "SET_TAGS":
+      return {
+        ...state,
+        tags: action.payload,
+      };
+
     case "RESET":
       return {
         ...initialState,

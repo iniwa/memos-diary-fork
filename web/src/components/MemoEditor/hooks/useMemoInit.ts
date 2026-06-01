@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { extractTrailingTagLine } from "@/lib/tagLine";
 import type { Memo, Visibility } from "@/types/proto/api/v1/memo_service_pb";
 import type { EditorRefActions } from "../Editor";
 import { cacheService, memoService } from "../services";
@@ -36,10 +37,13 @@ export const useMemoInit = ({
       const initialState = memoService.fromMemo(memo);
       cacheService.clear(key);
       dispatch(actions.initMemo(initialState));
+      dispatch(actions.setTags(initialState.tags));
     } else {
       const cachedContent = cacheService.load(key);
       if (cachedContent) {
-        dispatch(actions.updateContent(cachedContent));
+        const { body, tags } = extractTrailingTagLine(cachedContent);
+        dispatch(actions.updateContent(body));
+        if (tags.length) dispatch(actions.setTags(tags));
       }
       if (defaultVisibility !== undefined) {
         dispatch(actions.setMetadata({ visibility: defaultVisibility }));

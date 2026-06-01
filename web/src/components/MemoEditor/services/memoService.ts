@@ -2,6 +2,7 @@ import { create } from "@bufbuild/protobuf";
 import { FieldMaskSchema, timestampDate, timestampFromDate } from "@bufbuild/protobuf/wkt";
 import { isEqual } from "lodash-es";
 import { memoServiceClient } from "@/connect";
+import { extractTrailingTagLine, serializeTagContent } from "@/lib/tagLine";
 import type { Attachment } from "@/types/proto/api/v1/attachment_service_pb";
 import { AttachmentSchema } from "@/types/proto/api/v1/attachment_service_pb";
 import type { Memo } from "@/types/proto/api/v1/memo_service_pb";
@@ -81,6 +82,8 @@ export const memoService = {
       parentMemoName?: string;
     },
   ): Promise<{ memoName: string; hasChanges: boolean }> {
+    const finalContent = serializeTagContent(state.content, state.tags);
+
     // 1. Upload local files first
     const newAttachments = await uploadService.uploadFiles(state.localFiles);
     const allAttachments = [...state.metadata.attachments, ...newAttachments];
@@ -88,7 +91,7 @@ export const memoService = {
     // 2. Update existing memo
     if (options.memoName) {
       const prevMemo = await memoServiceClient.getMemo({ name: options.memoName });
-      const { mask, patch } = buildUpdateMask(prevMemo, state, allAttachments);
+      const { mask, patch } = buildUpdateMask(prevMemo, { ...state, content: finalContent }, allAttachments);
 
       if (mask.size === 0) {
         return { memoName: prevMemo.name, hasChanges: false };
@@ -103,7 +106,7 @@ export const memoService = {
 
     // 3. Create new memo or comment
     const memoData = create(MemoSchema, {
-      content: state.content,
+      content: finalContent,
       visibility: state.metadata.visibility,
       attachments: toAttachmentReferences(allAttachments),
       relations: state.metadata.relations,
@@ -124,8 +127,10 @@ export const memoService = {
 
   /** Build editor state from an already-loaded Memo entity (no network request). */
   fromMemo(memo: Memo): EditorState {
+    const { body, tags } = extractTrailingTagLine(memo.content);
     return {
-      content: memo.content,
+      content: body,
+      tags,
       metadata: {
         visibility: memo.visibility,
         attachments: memo.attachments,

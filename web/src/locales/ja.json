@@ -121,10 +121,12 @@
     "any-thoughts": "今思ったことは...",
     "exit-focus-mode": "フォーカスを終了",
     "focus-mode": "フォーカスモード",
+    "add-tag": "タグを追加",
     "no-changes-detected": "変更はありません",
     "save": "保存",
     "saving": "保存中...",
     "slash-commands": "コマンドを入力するには `/` を入力",
+    "tags": "タグ",
     "voice-recorder": {
       "discard": "破棄",
       "error": "マイクが使用できません",

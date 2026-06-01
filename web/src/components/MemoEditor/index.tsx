@@ -7,6 +7,7 @@ import useCurrentUser from "@/hooks/useCurrentUser";
 import { memoKeys } from "@/hooks/useMemoQueries";
 import { userKeys } from "@/hooks/useUserQueries";
 import { handleError } from "@/lib/error";
+import { serializeTagContent } from "@/lib/tagLine";
 import { cn } from "@/lib/utils";
 import { InstanceSetting_Key } from "@/types/proto/api/v1/instance_service_pb";
 import { useTranslate } from "@/utils/i18n";
@@ -18,6 +19,7 @@ import {
   EditorToolbar,
   FocusModeExitButton,
   FocusModeOverlay,
+  TagSection,
   TimestampPopover,
 } from "./components";
 import { FOCUS_MODE_STYLES } from "./constants";
@@ -77,8 +79,11 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
   });
   const isDraftCacheEnabled = !memo;
 
+  // Serialize body + tag chips into the full stored content string for draft caching.
+  const draftContent = useMemo(() => serializeTagContent(state.content, state.tags), [state.content, state.tags]);
+
   // Auto-save content to localStorage
-  const { discardDraft } = useAutoSave(state.content, currentUser?.name ?? "", cacheKey, isInitialized && isDraftCacheEnabled);
+  const { discardDraft } = useAutoSave(draftContent, currentUser?.name ?? "", cacheKey, isInitialized && isDraftCacheEnabled);
 
   // Focus mode management with body scroll lock
   useFocusMode(state.ui.isFocusMode);
@@ -328,6 +333,9 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
 
         {/* Editor content grows to fill available space in focus mode */}
         <EditorContent ref={editorRef} placeholder={placeholder} />
+
+        {/* Dedicated tag section below the editor body */}
+        <TagSection />
 
         {isAudioRecorderOpen &&
           (state.audioRecorder.status === "recording" || state.audioRecorder.status === "requesting_permission" || isTranscribingAudio) && (
