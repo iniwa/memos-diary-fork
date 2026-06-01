@@ -2,7 +2,7 @@ import { create } from "@bufbuild/protobuf";
 import { FieldMaskSchema, timestampDate, timestampFromDate } from "@bufbuild/protobuf/wkt";
 import { isEqual } from "lodash-es";
 import { memoServiceClient } from "@/connect";
-import { extractTrailingTagLine, serializeTagContent } from "@/lib/tagLine";
+import { extractBoundaryTagLines, serializeTagContent } from "@/lib/tagLine";
 import type { Attachment } from "@/types/proto/api/v1/attachment_service_pb";
 import { AttachmentSchema } from "@/types/proto/api/v1/attachment_service_pb";
 import type { Memo } from "@/types/proto/api/v1/memo_service_pb";
@@ -127,7 +127,7 @@ export const memoService = {
 
   /** Build editor state from an already-loaded Memo entity (no network request). */
   fromMemo(memo: Memo): EditorState {
-    const { body, tags } = extractTrailingTagLine(memo.content);
+    const { body, tags } = extractBoundaryTagLines(memo.content);
     return {
       content: body,
       tags,

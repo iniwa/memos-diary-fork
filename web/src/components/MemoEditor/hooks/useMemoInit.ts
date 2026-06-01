@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { extractTrailingTagLine } from "@/lib/tagLine";
+import { extractBoundaryTagLines } from "@/lib/tagLine";
 import type { Memo, Visibility } from "@/types/proto/api/v1/memo_service_pb";
 import type { EditorRefActions } from "../Editor";
 import { cacheService, memoService } from "../services";
@@ -41,7 +41,7 @@ export const useMemoInit = ({
     } else {
       const cachedContent = cacheService.load(key);
       if (cachedContent) {
-        const { body, tags } = extractTrailingTagLine(cachedContent);
+        const { body, tags } = extractBoundaryTagLines(cachedContent);
         dispatch(actions.updateContent(body));
         if (tags.length) dispatch(actions.setTags(tags));
       }

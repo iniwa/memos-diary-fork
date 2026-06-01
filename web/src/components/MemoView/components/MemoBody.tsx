@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { AttachmentListView, LocationDisplayView, RelationListView } from "@/components/MemoMetadata";
-import { extractTrailingTagLine } from "@/lib/tagLine";
+import { extractBoundaryTagLines } from "@/lib/tagLine";
 import { cn } from "@/lib/utils";
 import { MemoRelation_Type } from "@/types/proto/api/v1/memo_service_pb";
 import { useTranslate } from "@/utils/i18n";
@@ -43,7 +43,7 @@ const MemoBody: React.FC<MemoBodyProps> = ({ compact }) => {
 
   const referencedMemos = memo.relations.filter((relation) => relation.type === MemoRelation_Type.REFERENCE);
   const contentRevision = useMemo(() => getContentRevision(memo.content), [memo.content]);
-  const { body, tags } = useMemo(() => extractTrailingTagLine(memo.content), [memo.content]);
+  const { body, tags } = useMemo(() => extractBoundaryTagLines(memo.content), [memo.content]);
 
   const { inlineVisualItems, remainingAttachments } = useMemo(() => splitVisualAttachments(memo.attachments), [memo.attachments]);
 
