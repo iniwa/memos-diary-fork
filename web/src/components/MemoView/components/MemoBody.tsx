@@ -1,10 +1,12 @@
 import { useMemo } from "react";
 import { AttachmentListView, LocationDisplayView, RelationListView } from "@/components/MemoMetadata";
+import { extractTrailingTagLine } from "@/lib/tagLine";
 import { cn } from "@/lib/utils";
 import { MemoRelation_Type } from "@/types/proto/api/v1/memo_service_pb";
 import { useTranslate } from "@/utils/i18n";
 import { splitVisualAttachments } from "@/utils/media-item";
 import MemoContent from "../../MemoContent";
+import { Tag } from "../../MemoContent/Tag";
 import { MemoReactionListView } from "../../MemoReactionListView";
 import { useMemoHandlers } from "../hooks";
 import { useMemoViewContext } from "../MemoViewContext";
@@ -41,6 +43,7 @@ const MemoBody: React.FC<MemoBodyProps> = ({ compact }) => {
 
   const referencedMemos = memo.relations.filter((relation) => relation.type === MemoRelation_Type.REFERENCE);
   const contentRevision = useMemo(() => getContentRevision(memo.content), [memo.content]);
+  const { body, tags } = useMemo(() => extractTrailingTagLine(memo.content), [memo.content]);
 
   const { inlineVisualItems, remainingAttachments } = useMemo(() => splitVisualAttachments(memo.attachments), [memo.attachments]);
 
@@ -54,11 +57,20 @@ const MemoBody: React.FC<MemoBodyProps> = ({ compact }) => {
       >
         <MemoContent
           key={`${memo.name}-${contentRevision}`}
-          content={memo.content}
+          content={body}
           onClick={handleMemoContentClick}
           onDoubleClick={handleMemoContentDoubleClick}
           compact={memo.pinned ? false : compact} // Always show full content when pinned
         />
+        {tags.length > 0 && (
+          <div className="flex flex-row flex-wrap gap-1">
+            {tags.map((tag, index) => (
+              <Tag key={`${tag}-${index}`} data-tag={tag}>
+                #{tag}
+              </Tag>
+            ))}
+          </div>
+        )}
         {inlineVisualItems.length > 0 && <InlineImageGrid items={inlineVisualItems} />}
         <AttachmentListView attachments={remainingAttachments} onImagePreview={openPreview} />
         <RelationListView relations={referencedMemos} currentMemoName={memo.name} parentPage={parentPage} />
