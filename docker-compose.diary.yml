@@ -4,7 +4,7 @@
 
 services:
   memos-diary:
-    image: ${DIARY_IMAGE:-memos-diary:latest}
+    image: ${DIARY_IMAGE:-ghcr.io/iniwa/memos-diary-fork:latest}
     container_name: memos-diary
     restart: unless-stopped
     environment:
