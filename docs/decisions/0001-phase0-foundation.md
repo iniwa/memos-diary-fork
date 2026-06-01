@@ -22,8 +22,8 @@ Setting up the initial repository structure for the Memos Diary Mode fork.
 Primary repository is on a self-hosted Gitea instance. Gitea mirrors pushes to GitHub, which triggers GitHub Actions to build and push the Docker image to GHCR.
 
 - SSH alias: `gitea` (configured in `~/.ssh/config`, points to 192.168.1.205:2222)
-- Remote URL: `git@gitea:iniwa/memos-diary.git` (TODO: confirm repo name on Gitea before first push)
-- Deploy flow: push to Gitea → GitHub mirror → GitHub Actions → `ghcr.io/iniwa/memos-diary:latest` → Portainer Stack
+- Remote URL: `git@gitea:iniwa/memos-diary-fork.git`
+- Deploy flow: push to Gitea → GitHub mirror → GitHub Actions → `ghcr.io/iniwa/memos-diary-fork:latest` → Portainer Stack
 - Image URL stays `ghcr.io/iniwa/...` (GHCR, not Gitea Container Registry)
 
 ### Upstream shallow fetch
