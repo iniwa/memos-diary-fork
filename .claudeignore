@@ -1,0 +1,22 @@
+# Dependencies
+web/node_modules/
+
+# Build outputs
+web/dist/
+server/router/frontend/dist/
+*.exe
+
+# Go build cache
+bin/
+
+# Docker data volumes
+memos-diary-data/
+memos-data/
+
+# Sensitive / local
+.env
+.env.*
+!.env.example
+
+# Go module cache (not in repo but guard anyway)
+vendor/

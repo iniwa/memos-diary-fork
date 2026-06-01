@@ -1,0 +1,27 @@
+# Memos Diary Mode — separate instance
+# Runs alongside the existing Memos instance (port 5230) on a different port.
+# See docs/memos-diary-mode-design.md section 10 for data copy / migration guidance.
+
+services:
+  memos-diary:
+    image: ${DIARY_IMAGE:-memos-diary:latest}
+    container_name: memos-diary
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Tokyo
+      MEMOS_MODE: prod
+      MEMOS_PORT: "5231"
+      # Image optimization (Phase 4 — leave disabled until implemented)
+      # MEMOS_IMAGE_OPTIMIZER_ENABLED: "false"
+      # MEMOS_IMAGE_OPTIMIZER_CONCURRENCY: "1"
+      # MEMOS_IMAGE_PREVIEW_MAX_EDGE: "2560"
+      # MEMOS_IMAGE_PREVIEW_JPEG_QUALITY: "90"
+      # MEMOS_IMAGE_THUMBNAIL_MAX_EDGE: "720"
+      # MEMOS_IMAGE_THUMBNAIL_JPEG_QUALITY: "78"
+      # MEMOS_IMAGE_KEEP_ORIGINAL: "true"
+    volumes:
+      - ./memos-diary-data:/var/opt/memos
+    ports:
+      - "5231:5231"
+    # memory limit — Raspberry Pi 4, 8GB shared
+    mem_limit: 512m

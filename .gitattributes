@@ -1,0 +1,21 @@
+# Force LF line endings for Linux/Docker deployment (Raspberry Pi target)
+* text=auto eol=lf
+
+# Binary files — no line ending conversion
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.avif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.eot binary
+*.db binary
+*.sqlite binary
+*.zip binary
+*.tar binary
+*.gz binary
