@@ -100,6 +100,33 @@ export function buildAttachmentVisualItems(attachments: Attachment[]): Attachmen
   return dedupeVisualItems(items);
 }
 
+export function splitVisualAttachments(attachments: Attachment[]): {
+  inlineVisualItems: AttachmentVisualItem[];
+  remainingAttachments: Attachment[];
+} {
+  // Include images, videos, and motion attachments together so Live Photo
+  // still+video pairs reach buildAttachmentVisualItems as a unit.
+  const visualCandidates = attachments.filter(
+    (a) => getAttachmentType(a) === "image/*" || getAttachmentType(a) === "video/*" || isMotionAttachment(a),
+  );
+  const visualItems = buildAttachmentVisualItems(visualCandidates);
+
+  // Show images and motion items (Live Photo / Android motion photo) inline.
+  // Video-only items remain in the generic attachment list.
+  const inlineVisualItems = visualItems.filter((item) => item.kind === "image" || item.kind === "motion");
+
+  const consumedNames = new Set<string>();
+  for (const item of inlineVisualItems) {
+    for (const name of item.attachmentNames) {
+      consumedNames.add(name);
+    }
+  }
+
+  const remainingAttachments = attachments.filter((a) => !consumedNames.has(a.name));
+
+  return { inlineVisualItems, remainingAttachments };
+}
+
 export function countLogicalAttachmentItems(attachments: Attachment[]): number {
   const visualAttachments = attachments.filter(
     (attachment) =>

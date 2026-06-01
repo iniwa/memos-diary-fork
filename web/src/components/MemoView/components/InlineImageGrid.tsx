@@ -6,12 +6,12 @@ import {
   MEDIA_HOVER_SURFACE_CLASS,
   NATURAL_MEDIA_CLASS,
   OVERFLOW_TILE_OVERLAY_CLASS,
+  SINGLE_MOTION_VIDEO_CLASS,
   VISUAL_TILE_BUTTON_CLASS,
 } from "@/components/MemoMetadata/Attachment/attachmentVisualClasses";
+import MotionPhotoPreview from "@/components/MotionPhotoPreview";
 import { cn } from "@/lib/utils";
-import type { Attachment } from "@/types/proto/api/v1/attachment_service_pb";
 import type { AttachmentVisualItem, PreviewMediaItem } from "@/utils/media-item";
-import { buildAttachmentVisualItems } from "@/utils/media-item";
 import { useMemoViewContext } from "../MemoViewContext";
 
 // ------------------------------------------------------------------
@@ -68,6 +68,15 @@ function resolveImageGridLayout(items: AttachmentVisualItem[]): GridLayout | nul
 }
 
 // ------------------------------------------------------------------
+// Motion helper
+// ------------------------------------------------------------------
+
+const getMotionPreviewProps = (item: AttachmentVisualItem) => ({
+  motionUrl: item.previewItem.kind === "motion" ? item.previewItem.motionUrl : item.sourceUrl,
+  presentationTimestampUs: item.previewItem.kind === "motion" ? item.previewItem.presentationTimestampUs : undefined,
+});
+
+// ------------------------------------------------------------------
 // Tile primitives
 // ------------------------------------------------------------------
 
@@ -88,36 +97,72 @@ const Tile: FC<TileProps> = ({ className, onClick, overlayLabel, children }) => 
   </button>
 );
 
-const SingleTile: FC<{ item: AttachmentVisualItem; onClick?: () => void }> = ({ item, onClick }) => (
-  <Tile className="inline-block max-w-full" onClick={onClick}>
-    <img src={item.posterUrl} alt={item.filename} className={NATURAL_MEDIA_CLASS} loading="lazy" decoding="async" />
-  </Tile>
-);
+const SingleTile: FC<{ item: AttachmentVisualItem; onClick?: () => void }> = ({ item, onClick }) => {
+  if (item.kind === "motion") {
+    const { motionUrl, presentationTimestampUs } = getMotionPreviewProps(item);
+    return (
+      <Tile className="inline-block max-w-full" onClick={onClick}>
+        <MotionPhotoPreview
+          posterUrl={item.posterUrl}
+          motionUrl={motionUrl}
+          alt={item.filename}
+          presentationTimestampUs={presentationTimestampUs}
+          containerClassName="max-w-full"
+          posterClassName={cn(NATURAL_MEDIA_CLASS, "object-contain")}
+          videoClassName={SINGLE_MOTION_VIDEO_CLASS}
+          badgeClassName="left-2 top-2 px-2 py-0.5 text-[10px]"
+        />
+      </Tile>
+    );
+  }
+  return (
+    <Tile className="inline-block max-w-full" onClick={onClick}>
+      <img src={item.posterUrl} alt={item.filename} className={NATURAL_MEDIA_CLASS} loading="lazy" decoding="async" />
+    </Tile>
+  );
+};
 
 const CollageTile: FC<{ item: AttachmentVisualItem; onClick?: () => void; className?: string; overlayLabel?: string }> = ({
   item,
   onClick,
   className,
   overlayLabel,
-}) => (
-  <Tile className={cn("block h-full w-full", className)} onClick={onClick} overlayLabel={overlayLabel}>
-    <img src={item.posterUrl} alt={item.filename} className={COVER_MEDIA_CLASS} loading="lazy" decoding="async" />
-  </Tile>
-);
+}) => {
+  if (item.kind === "motion") {
+    const { motionUrl, presentationTimestampUs } = getMotionPreviewProps(item);
+    return (
+      <Tile className={cn("block h-full w-full", className)} onClick={onClick} overlayLabel={overlayLabel}>
+        <MotionPhotoPreview
+          posterUrl={item.posterUrl}
+          motionUrl={motionUrl}
+          alt={item.filename}
+          presentationTimestampUs={presentationTimestampUs}
+          containerClassName="h-full w-full"
+          mediaClassName={COVER_MEDIA_CLASS}
+          badgeClassName="left-2 top-2 px-2 py-0.5 text-[10px]"
+        />
+      </Tile>
+    );
+  }
+  return (
+    <Tile className={cn("block h-full w-full", className)} onClick={onClick} overlayLabel={overlayLabel}>
+      <img src={item.posterUrl} alt={item.filename} className={COVER_MEDIA_CLASS} loading="lazy" decoding="async" />
+    </Tile>
+  );
+};
 
 // ------------------------------------------------------------------
 // Public component
 // ------------------------------------------------------------------
 
 interface InlineImageGridProps {
-  /** Image-only attachments (pre-filtered by caller). */
-  attachments: Attachment[];
+  /** Pre-built visual items (image and motion kinds). Caller is responsible for filtering. */
+  items: AttachmentVisualItem[];
 }
 
-const InlineImageGrid: FC<InlineImageGridProps> = ({ attachments }) => {
+const InlineImageGrid: FC<InlineImageGridProps> = ({ items }) => {
   const { openPreview } = useMemoViewContext();
 
-  const items = useMemo(() => buildAttachmentVisualItems(attachments), [attachments]);
   const previewItems = useMemo<PreviewMediaItem[]>(() => items.map((i) => i.previewItem), [items]);
   const layout = useMemo(() => resolveImageGridLayout(items), [items]);
 

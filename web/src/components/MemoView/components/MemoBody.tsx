@@ -1,9 +1,9 @@
 import { useMemo } from "react";
 import { AttachmentListView, LocationDisplayView, RelationListView } from "@/components/MemoMetadata";
-import { isImageAttachment } from "@/components/MemoMetadata/Attachment/attachmentHelpers";
 import { cn } from "@/lib/utils";
 import { MemoRelation_Type } from "@/types/proto/api/v1/memo_service_pb";
 import { useTranslate } from "@/utils/i18n";
+import { splitVisualAttachments } from "@/utils/media-item";
 import MemoContent from "../../MemoContent";
 import { MemoReactionListView } from "../../MemoReactionListView";
 import { useMemoHandlers } from "../hooks";
@@ -42,8 +42,7 @@ const MemoBody: React.FC<MemoBodyProps> = ({ compact }) => {
   const referencedMemos = memo.relations.filter((relation) => relation.type === MemoRelation_Type.REFERENCE);
   const contentRevision = useMemo(() => getContentRevision(memo.content), [memo.content]);
 
-  const imageAttachments = useMemo(() => memo.attachments.filter(isImageAttachment), [memo.attachments]);
-  const nonImageAttachments = useMemo(() => memo.attachments.filter((a) => !isImageAttachment(a)), [memo.attachments]);
+  const { inlineVisualItems, remainingAttachments } = useMemo(() => splitVisualAttachments(memo.attachments), [memo.attachments]);
 
   return (
     <>
@@ -60,8 +59,8 @@ const MemoBody: React.FC<MemoBodyProps> = ({ compact }) => {
           onDoubleClick={handleMemoContentDoubleClick}
           compact={memo.pinned ? false : compact} // Always show full content when pinned
         />
-        {imageAttachments.length > 0 && <InlineImageGrid attachments={imageAttachments} />}
-        <AttachmentListView attachments={nonImageAttachments} onImagePreview={openPreview} />
+        {inlineVisualItems.length > 0 && <InlineImageGrid items={inlineVisualItems} />}
+        <AttachmentListView attachments={remainingAttachments} onImagePreview={openPreview} />
         <RelationListView relations={referencedMemos} currentMemoName={memo.name} parentPage={parentPage} />
         {memo.location && <LocationDisplayView location={memo.location} />}
         <MemoReactionListView memo={memo} reactions={memo.reactions} />
