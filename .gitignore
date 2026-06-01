@@ -7,12 +7,17 @@ web/dist
 # Build artifacts
 build/
 bin/
-memos
+/memos
 
 .DS_Store
 
 # Jetbrains
 .idea
+
+# Claude Code / AI tool configs — local only, not for version control
+AGENTS.md
+CLAUDE.md
+.serena/
 
 # Docker Compose Environment File
 .env

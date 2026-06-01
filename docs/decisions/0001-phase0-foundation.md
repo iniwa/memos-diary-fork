@@ -53,3 +53,20 @@ git merge v0.29.x
 Diary Mode runs on port `5231` alongside the existing Memos instance on `5230`.
 Data directory: `./memos-diary-data` (separate from `./memos-data`).
 Image optimization env vars are present but commented out (Phase 4 scope).
+
+### .gitignore: `memos` pattern fix
+
+The upstream `.gitignore` contained a bare `memos` pattern that matched both the
+root-level build binary **and** the `cmd/memos/` directory. Existing files in
+`cmd/memos/` were already tracked, so `git check-ignore` returned clean, but any
+new file added there would have been silently ignored without `git add -f`.
+
+**Fix (2026-06-01):** Changed `memos` → `/memos` (root-anchored) so only the
+build binary at the repository root is ignored. `cmd/memos/` is now treated
+normally by git.
+
+### .gitattributes: shell script line endings
+
+Added `*.sh text eol=lf` to `.gitattributes` to ensure shell scripts always
+check out with LF endings, independent of the `* text=auto eol=lf` glob.
+All `scripts/*.sh` files are tracked with mode `100755` — no chmod needed.
