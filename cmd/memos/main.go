@@ -165,6 +165,7 @@ func init() {
 
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(thumbnailBackfillCmd)
+	rootCmd.AddCommand(removePhotoTagCmd)
 }
 
 func printGreetings(profile *profile.Profile) {
