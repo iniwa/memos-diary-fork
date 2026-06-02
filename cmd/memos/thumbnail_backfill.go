@@ -16,7 +16,7 @@ import (
 	"github.com/usememos/memos/internal/profile"
 	"github.com/usememos/memos/internal/version"
 	storepb "github.com/usememos/memos/proto/gen/store"
-	v1 "github.com/usememos/memos/server/router/api/v1"
+	"github.com/usememos/memos/server/router/api/v1"
 	"github.com/usememos/memos/store"
 	"github.com/usememos/memos/store/db"
 )
@@ -78,13 +78,13 @@ func runThumbnailBackfill(cmd *cobra.Command, _ []string) error {
 	instanceProfile.Commit = version.Commit
 
 	if err := instanceProfile.Validate(); err != nil {
-		return fmt.Errorf("invalid profile: %w", err)
+		return errors.Wrap(err, "invalid profile")
 	}
 
 	ctx := context.Background()
 	dbDriver, err := db.NewDBDriver(instanceProfile)
 	if err != nil {
-		return fmt.Errorf("failed to create db driver: %w", err)
+		return errors.Wrap(err, "failed to create db driver")
 	}
 	storeInstance := store.New(dbDriver, instanceProfile)
 	// Intentionally not calling storeInstance.Migrate — backfill is read/write-cache only.
@@ -141,7 +141,7 @@ func backfillAttachments(ctx context.Context, st *store.Store, prof *profile.Pro
 		}
 		attachments, err := st.ListAttachments(ctx, find)
 		if err != nil {
-			return stats, failedUIDs, fmt.Errorf("failed to list attachments: %w", err)
+			return stats, failedUIDs, errors.Wrap(err, "failed to list attachments")
 		}
 		if len(attachments) == 0 {
 			break
