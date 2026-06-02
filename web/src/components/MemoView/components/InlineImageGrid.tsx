@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   COVER_MEDIA_CLASS,
   MEDIA_HOVER_GRADIENT_CLASS,
@@ -11,6 +11,7 @@ import {
 } from "@/components/MemoMetadata/Attachment/attachmentVisualClasses";
 import MotionPhotoPreview from "@/components/MotionPhotoPreview";
 import { cn } from "@/lib/utils";
+import { useTranslate } from "@/utils/i18n";
 import type { AttachmentVisualItem, PreviewMediaItem } from "@/utils/media-item";
 import { useMemoViewContext } from "../MemoViewContext";
 
@@ -20,16 +21,18 @@ import { useMemoViewContext } from "../MemoViewContext";
 
 const MAX_VISIBLE = 4;
 const GRID_HEIGHT = "h-[11rem] sm:h-[14rem] md:h-[16rem]";
+const EXPANDED_ROW_HEIGHT = "auto-rows-[8rem] sm:auto-rows-[9rem] md:auto-rows-[10rem]";
 
 interface GridCell {
   item: AttachmentVisualItem;
   className?: string;
   overlayLabel?: string;
+  isOverflowTrigger?: boolean;
 }
 
 type GridLayout = { mode: "single"; item: AttachmentVisualItem } | { mode: "collage"; containerClassName: string; cells: GridCell[] };
 
-function resolveImageGridLayout(items: AttachmentVisualItem[]): GridLayout | null {
+function resolveImageGridLayout(items: AttachmentVisualItem[], expanded: boolean): GridLayout | null {
   const count = items.length;
   if (count === 0) return null;
 
@@ -37,8 +40,16 @@ function resolveImageGridLayout(items: AttachmentVisualItem[]): GridLayout | nul
     return { mode: "single", item: items[0] };
   }
 
+  if (expanded && count > MAX_VISIBLE) {
+    return {
+      mode: "collage",
+      containerClassName: cn("grid w-full grid-cols-2 gap-1.5", EXPANDED_ROW_HEIGHT),
+      cells: items.map((item) => ({ item })),
+    };
+  }
+
   const visible = items.slice(0, MAX_VISIBLE);
-  const overflow = items.length - MAX_VISIBLE;
+  const overflow = count - MAX_VISIBLE;
 
   if (count === 2) {
     return {
@@ -63,6 +74,7 @@ function resolveImageGridLayout(items: AttachmentVisualItem[]): GridLayout | nul
     cells: visible.map((item, i) => ({
       item,
       overlayLabel: i === MAX_VISIBLE - 1 && overflow > 0 ? `+${overflow}` : undefined,
+      isOverflowTrigger: i === MAX_VISIBLE - 1 && overflow > 0,
     })),
   };
 }
@@ -84,11 +96,12 @@ interface TileProps {
   className?: string;
   onClick?: () => void;
   overlayLabel?: string;
+  ariaLabel?: string;
   children: React.ReactNode;
 }
 
-const Tile: FC<TileProps> = ({ className, onClick, overlayLabel, children }) => (
-  <button type="button" className={cn(VISUAL_TILE_BUTTON_CLASS, className)} onClick={onClick}>
+const Tile: FC<TileProps> = ({ className, onClick, overlayLabel, ariaLabel, children }) => (
+  <button type="button" className={cn(VISUAL_TILE_BUTTON_CLASS, className)} onClick={onClick} aria-label={ariaLabel}>
     <div className={MEDIA_HOVER_SURFACE_CLASS}>
       {children}
       <div className={MEDIA_HOVER_GRADIENT_CLASS} aria-hidden />
@@ -122,16 +135,17 @@ const SingleTile: FC<{ item: AttachmentVisualItem; onClick?: () => void }> = ({ 
   );
 };
 
-const CollageTile: FC<{ item: AttachmentVisualItem; onClick?: () => void; className?: string; overlayLabel?: string }> = ({
-  item,
-  onClick,
-  className,
-  overlayLabel,
-}) => {
+const CollageTile: FC<{
+  item: AttachmentVisualItem;
+  onClick?: () => void;
+  className?: string;
+  overlayLabel?: string;
+  ariaLabel?: string;
+}> = ({ item, onClick, className, overlayLabel, ariaLabel }) => {
   if (item.kind === "motion") {
     const { motionUrl, presentationTimestampUs } = getMotionPreviewProps(item);
     return (
-      <Tile className={cn("block h-full w-full", className)} onClick={onClick} overlayLabel={overlayLabel}>
+      <Tile className={cn("block h-full w-full", className)} onClick={onClick} overlayLabel={overlayLabel} ariaLabel={ariaLabel}>
         <MotionPhotoPreview
           posterUrl={item.posterUrl}
           motionUrl={motionUrl}
@@ -145,7 +159,7 @@ const CollageTile: FC<{ item: AttachmentVisualItem; onClick?: () => void; classN
     );
   }
   return (
-    <Tile className={cn("block h-full w-full", className)} onClick={onClick} overlayLabel={overlayLabel}>
+    <Tile className={cn("block h-full w-full", className)} onClick={onClick} overlayLabel={overlayLabel} ariaLabel={ariaLabel}>
       <img src={item.posterUrl} alt={item.filename} className={COVER_MEDIA_CLASS} loading="lazy" decoding="async" />
     </Tile>
   );
@@ -162,15 +176,26 @@ interface InlineImageGridProps {
 
 const InlineImageGrid: FC<InlineImageGridProps> = ({ items }) => {
   const { openPreview } = useMemoViewContext();
+  const t = useTranslate();
+  const [expanded, setExpanded] = useState(false);
+  const isExpanded = expanded && items.length > MAX_VISIBLE;
 
   const previewItems = useMemo<PreviewMediaItem[]>(() => items.map((i) => i.previewItem), [items]);
-  const layout = useMemo(() => resolveImageGridLayout(items), [items]);
+  const layout = useMemo(() => resolveImageGridLayout(items, isExpanded), [items, isExpanded]);
 
   if (!layout) return null;
 
   const handleClick = (itemId: string) => {
     const index = previewItems.findIndex((p) => p.id === itemId);
     openPreview(previewItems, index >= 0 ? index : 0);
+  };
+
+  const handleTileClick = (itemId: string, isOverflowTrigger?: boolean) => {
+    if (isOverflowTrigger) {
+      setExpanded(true);
+      return;
+    }
+    handleClick(itemId);
   };
 
   if (layout.mode === "single") {
@@ -182,10 +207,28 @@ const InlineImageGrid: FC<InlineImageGridProps> = ({ items }) => {
   }
 
   return (
-    <div className={layout.containerClassName}>
-      {layout.cells.map(({ item, className, overlayLabel }) => (
-        <CollageTile key={item.id} item={item} className={className} overlayLabel={overlayLabel} onClick={() => handleClick(item.id)} />
-      ))}
+    <div className="w-full">
+      <div className={layout.containerClassName}>
+        {layout.cells.map(({ item, className, overlayLabel, isOverflowTrigger }) => (
+          <CollageTile
+            key={item.id}
+            item={item}
+            className={className}
+            overlayLabel={overlayLabel}
+            ariaLabel={isOverflowTrigger ? t("common.expand") : undefined}
+            onClick={() => handleTileClick(item.id, isOverflowTrigger)}
+          />
+        ))}
+      </div>
+      {isExpanded && (
+        <button
+          type="button"
+          className="mt-1.5 w-full text-center text-xs text-muted-foreground transition-colors hover:text-foreground"
+          onClick={() => setExpanded(false)}
+        >
+          {t("common.collapse")}
+        </button>
+      )}
     </div>
   );
 };
