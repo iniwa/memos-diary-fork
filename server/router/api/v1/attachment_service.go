@@ -186,6 +186,8 @@ func (s *APIV1Service) CreateAttachment(ctx context.Context, request *v1pb.Creat
 		}
 	}
 
+	s.maybeOptimizeImageAttachment(ctx, create)
+
 	if err := SaveAttachmentBlob(ctx, s.Profile, s.Store, create); err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to save attachment blob: %v", err)
 	}
