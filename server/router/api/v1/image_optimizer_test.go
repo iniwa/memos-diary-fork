@@ -36,8 +36,8 @@ func TestImageOptimizerConfigFromEnv(t *testing.T) {
 	t.Setenv(imageOptimizerKeepOriginalEnv, "false")
 	t.Setenv(imageOptimizerPreviewMaxEdgeEnv, "1280")
 	t.Setenv(imageOptimizerPreviewQualityEnv, "88")
-	t.Setenv(imageOptimizerThumbnailMaxEdgeEnv, "360")
-	t.Setenv(imageOptimizerThumbnailQualityEnv, "72")
+	t.Setenv(ThumbnailMaxEdgeEnv, "360")
+	t.Setenv(ThumbnailJPEGQualityEnv, "72")
 
 	config := imageOptimizerConfigFromEnv()
 	require.True(t, config.Enabled)

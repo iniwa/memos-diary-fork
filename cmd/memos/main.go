@@ -164,6 +164,7 @@ func init() {
 	viper.AutomaticEnv()
 
 	rootCmd.AddCommand(versionCmd)
+	rootCmd.AddCommand(thumbnailBackfillCmd)
 }
 
 func printGreetings(profile *profile.Profile) {

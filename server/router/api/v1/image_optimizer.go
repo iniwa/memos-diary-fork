@@ -19,18 +19,21 @@ import (
 )
 
 const (
-	imageOptimizerEnabledEnv          = "MEMOS_IMAGE_OPTIMIZER_ENABLED"
-	imageOptimizerConcurrencyEnv      = "MEMOS_IMAGE_OPTIMIZER_CONCURRENCY"
-	imageOptimizerPreviewMaxEdgeEnv   = "MEMOS_IMAGE_PREVIEW_MAX_EDGE"
-	imageOptimizerPreviewQualityEnv   = "MEMOS_IMAGE_PREVIEW_JPEG_QUALITY"
-	imageOptimizerThumbnailMaxEdgeEnv = "MEMOS_IMAGE_THUMBNAIL_MAX_EDGE"
-	imageOptimizerThumbnailQualityEnv = "MEMOS_IMAGE_THUMBNAIL_JPEG_QUALITY"
-	imageOptimizerKeepOriginalEnv     = "MEMOS_IMAGE_KEEP_ORIGINAL"
+	imageOptimizerEnabledEnv        = "MEMOS_IMAGE_OPTIMIZER_ENABLED"
+	imageOptimizerConcurrencyEnv    = "MEMOS_IMAGE_OPTIMIZER_CONCURRENCY"
+	imageOptimizerPreviewMaxEdgeEnv = "MEMOS_IMAGE_PREVIEW_MAX_EDGE"
+	imageOptimizerPreviewQualityEnv = "MEMOS_IMAGE_PREVIEW_JPEG_QUALITY"
+	imageOptimizerKeepOriginalEnv   = "MEMOS_IMAGE_KEEP_ORIGINAL"
 
-	defaultPreviewMaxEdge       = 2560
-	defaultPreviewJPEGQuality   = 90
-	defaultThumbnailMaxEdge     = 720
-	defaultThumbnailJPEGQuality = 78
+	// ThumbnailMaxEdgeEnv and ThumbnailJPEGQualityEnv are exported for the thumbnail-backfill command.
+	ThumbnailMaxEdgeEnv     = "MEMOS_IMAGE_THUMBNAIL_MAX_EDGE"
+	ThumbnailJPEGQualityEnv = "MEMOS_IMAGE_THUMBNAIL_JPEG_QUALITY"
+
+	defaultPreviewMaxEdge     = 2560
+	defaultPreviewJPEGQuality = 90
+	// DefaultThumbnailMaxEdge and DefaultThumbnailJPEGQuality are exported for the thumbnail-backfill command.
+	DefaultThumbnailMaxEdge     = 720
+	DefaultThumbnailJPEGQuality = 78
 )
 
 type imageOptimizerConfig struct {
@@ -48,8 +51,8 @@ func imageOptimizerConfigFromEnv() imageOptimizerConfig {
 		KeepOriginal:     parseBoolEnv(imageOptimizerKeepOriginalEnv, true),
 		PreviewMaxEdge:   parseIntEnv(imageOptimizerPreviewMaxEdgeEnv, defaultPreviewMaxEdge, 1, maxImagePixels),
 		PreviewQuality:   parseIntEnv(imageOptimizerPreviewQualityEnv, defaultPreviewJPEGQuality, 1, 100),
-		ThumbnailMaxEdge: parseIntEnv(imageOptimizerThumbnailMaxEdgeEnv, defaultThumbnailMaxEdge, 1, maxImagePixels),
-		ThumbnailQuality: parseIntEnv(imageOptimizerThumbnailQualityEnv, defaultThumbnailJPEGQuality, 1, 100),
+		ThumbnailMaxEdge: parseIntEnv(ThumbnailMaxEdgeEnv, DefaultThumbnailMaxEdge, 1, maxImagePixels),
+		ThumbnailQuality: parseIntEnv(ThumbnailJPEGQualityEnv, DefaultThumbnailJPEGQuality, 1, 100),
 	}
 }
 
@@ -83,10 +86,10 @@ func imageOptimizerConcurrencyFromEnv() int64 {
 
 func (s *APIV1Service) maybeOptimizeImageAttachment(ctx context.Context, attachment *store.Attachment) {
 	config := imageOptimizerConfigFromEnv()
-	if !config.Enabled || attachment == nil || len(attachment.Blob) == 0 || !isOptimizableStaticImage(attachment.Type) {
+	if !config.Enabled || attachment == nil || len(attachment.Blob) == 0 || !IsOptimizableStaticImage(attachment.Type) {
 		return
 	}
-	if isAndroidMotionContainer(attachment.Payload.GetMotionMedia()) {
+	if IsAndroidMotionContainer(attachment.Payload.GetMotionMedia()) {
 		return
 	}
 
@@ -112,7 +115,7 @@ func (s *APIV1Service) maybeOptimizeImageAttachment(ctx context.Context, attachm
 		attachment.Type = optimizedImageMimeType(attachment.Type)
 	}
 
-	if err := writeUploadThumbnailCache(ctx, s.Profile, attachment.UID, optimized, config.ThumbnailMaxEdge, config.ThumbnailQuality); err != nil {
+	if err := WriteUploadThumbnailCache(ctx, s.Profile, attachment.UID, optimized, config.ThumbnailMaxEdge, config.ThumbnailQuality); err != nil {
 		slog.Warn("failed to generate image thumbnail cache",
 			slog.String("filename", attachment.Filename),
 			slog.String("type", attachment.Type),
@@ -120,7 +123,8 @@ func (s *APIV1Service) maybeOptimizeImageAttachment(ctx context.Context, attachm
 	}
 }
 
-func isOptimizableStaticImage(mimeType string) bool {
+// IsOptimizableStaticImage reports whether mimeType can be processed by the image optimizer.
+func IsOptimizableStaticImage(mimeType string) bool {
 	switch mimeType {
 	case "image/jpeg", "image/jpg", "image/png", "image/webp":
 		return true
@@ -180,7 +184,9 @@ func encodeOptimizedImage(img image.Image, mimeType string, quality int) ([]byte
 	return output.Bytes(), nil
 }
 
-func writeUploadThumbnailCache(ctx context.Context, profile *profile.Profile, uid string, blob []byte, maxEdge, quality int) error {
+// WriteUploadThumbnailCache generates a .v2.jpeg thumbnail for the given image blob and writes it to
+// the thumbnail cache directory. It is safe to call while the server is running.
+func WriteUploadThumbnailCache(ctx context.Context, profile *profile.Profile, uid string, blob []byte, maxEdge, quality int) error {
 	if profile == nil || strings.TrimSpace(uid) == "" || len(blob) == 0 {
 		return nil
 	}
