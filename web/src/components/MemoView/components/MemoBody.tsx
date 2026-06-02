@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { AttachmentListView, LocationDisplayView, RelationListView } from "@/components/MemoMetadata";
+import { getVisibleDiaryTags } from "@/lib/diaryTags";
 import { extractBoundaryTagLines } from "@/lib/tagLine";
 import { cn } from "@/lib/utils";
 import { MemoRelation_Type } from "@/types/proto/api/v1/memo_service_pb";
@@ -44,6 +45,7 @@ const MemoBody: React.FC<MemoBodyProps> = ({ compact }) => {
   const referencedMemos = memo.relations.filter((relation) => relation.type === MemoRelation_Type.REFERENCE);
   const contentRevision = useMemo(() => getContentRevision(memo.content), [memo.content]);
   const { body, tags } = useMemo(() => extractBoundaryTagLines(memo.content), [memo.content]);
+  const visibleTags = useMemo(() => getVisibleDiaryTags(tags), [tags]);
 
   const { inlineVisualItems, remainingAttachments } = useMemo(() => splitVisualAttachments(memo.attachments), [memo.attachments]);
 
@@ -62,9 +64,9 @@ const MemoBody: React.FC<MemoBodyProps> = ({ compact }) => {
           onDoubleClick={handleMemoContentDoubleClick}
           compact={memo.pinned ? false : compact} // Always show full content when pinned
         />
-        {tags.length > 0 && (
+        {visibleTags.length > 0 && (
           <div className="flex flex-row flex-wrap gap-1">
-            {tags.map((tag, index) => (
+            {visibleTags.map((tag, index) => (
               <Tag key={`${tag}-${index}`} data-tag={tag}>
                 #{tag}
               </Tag>

@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { matchPath } from "react-router-dom";
 import OverflowTip from "@/components/kit/OverflowTip";
 import { useTagCounts } from "@/hooks/useUserQueries";
+import { isHiddenLegacyTag } from "@/lib/diaryTags";
 import { Routes } from "@/router";
 import type { TagSuggestionsProps } from "../types";
 import { SuggestionsPopup } from "./SuggestionsPopup";
@@ -14,6 +15,7 @@ export default function TagSuggestions({ editorRef, editorActions }: TagSuggesti
 
   const sortedTags = useMemo(() => {
     return Object.entries(tagCount)
+      .filter(([tag]) => !isHiddenLegacyTag(tag))
       .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
       .map(([tag]) => tag);
   }, [tagCount]);

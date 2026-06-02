@@ -2,6 +2,7 @@ import type { FC, KeyboardEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { matchPath } from "react-router-dom";
 import { useTagCounts } from "@/hooks/useUserQueries";
+import { getVisibleDiaryTags, isHiddenLegacyTag, normalizeDiaryTag } from "@/lib/diaryTags";
 import { cn } from "@/lib/utils";
 import { Routes } from "@/router";
 import { useTranslate } from "@/utils/i18n";
@@ -18,11 +19,12 @@ export const TagSection: FC = () => {
 
   const isExplorePage = Boolean(matchPath(Routes.EXPLORE, window.location.pathname));
   const { data: tagCounts = {} } = useTagCounts(!isExplorePage);
+  const visibleTags = useMemo(() => getVisibleDiaryTags(state.tags), [state.tags]);
 
   const suggestions = useMemo(() => {
     const query = inputValue.replace(/^#+/, "").toLowerCase();
     return Object.keys(tagCounts)
-      .filter((tag) => !state.tags.includes(tag) && (!query || tag.toLowerCase().includes(query)))
+      .filter((tag) => !isHiddenLegacyTag(tag) && !state.tags.includes(tag) && (!query || tag.toLowerCase().includes(query)))
       .sort((a, b) => (tagCounts[b] ?? 0) - (tagCounts[a] ?? 0) || a.localeCompare(b))
       .slice(0, 8);
   }, [inputValue, tagCounts, state.tags]);
@@ -43,8 +45,12 @@ export const TagSection: FC = () => {
   }, [showSuggestions]);
 
   const addTag = (raw: string) => {
-    const tag = raw.trim().replace(/^#+/, "");
-    if (!tag || state.tags.includes(tag)) return;
+    const tag = normalizeDiaryTag(raw);
+    if (!tag || isHiddenLegacyTag(tag) || state.tags.includes(tag)) {
+      setInputValue("");
+      setShowSuggestions(false);
+      return;
+    }
     dispatch(actions.setTags([...state.tags, tag]));
     setInputValue("");
     setShowSuggestions(false);
@@ -72,8 +78,8 @@ export const TagSection: FC = () => {
     } else if (e.key === "Escape") {
       setShowSuggestions(false);
       setSelectedIdx(-1);
-    } else if (e.key === "Backspace" && !inputValue && state.tags.length > 0) {
-      removeTag(state.tags[state.tags.length - 1]);
+    } else if (e.key === "Backspace" && !inputValue && visibleTags.length > 0) {
+      removeTag(visibleTags[visibleTags.length - 1]);
     }
   };
 
@@ -82,7 +88,7 @@ export const TagSection: FC = () => {
       <div className="flex flex-wrap items-center gap-1 min-h-[28px] px-1 py-0.5">
         <span className="text-xs text-muted-foreground select-none shrink-0">{t("editor.tags")}</span>
 
-        {state.tags.map((tag) => (
+        {visibleTags.map((tag) => (
           <span
             key={tag}
             className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground text-xs"
@@ -109,7 +115,7 @@ export const TagSection: FC = () => {
           }}
           onFocus={() => setShowSuggestions(true)}
           onKeyDown={handleKeyDown}
-          placeholder={state.tags.length === 0 ? t("editor.add-tag") : ""}
+          placeholder={visibleTags.length === 0 ? t("editor.add-tag") : ""}
           className="flex-1 min-w-[100px] bg-transparent text-xs outline-none placeholder:text-muted-foreground"
         />
       </div>
