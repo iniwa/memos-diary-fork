@@ -64,7 +64,7 @@ cmd/memos/thumbnail_backfill.go
 Also inspect, only if needed:
 
 ```txt
-cmd/memos/root.go
+cmd/memos/main.go
 server/router/api/v1/image_optimizer.go
 .github/workflows/backend-tests.yml
 ```

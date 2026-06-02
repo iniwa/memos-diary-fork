@@ -214,7 +214,7 @@ However, prefer the CLI command if the project already has similar command patte
 
 ## Files To Inspect
 
-* `cmd/memos/root.go`
+* `cmd/memos/main.go`
 * `cmd/memos/thumbnail_backfill.go`
 * `store/`
 * `store/memo*.go`
@@ -239,7 +239,7 @@ Search terms:
 
 Likely targets:
 
-* `cmd/memos/root.go`
+* `cmd/memos/main.go`
 * new file such as `cmd/memos/remove_photo_tag.go`
 * Go tests for the cleanup helper, if test pattern exists
 * possibly a new shared helper file under `cmd/memos/` for content cleanup logic

@@ -25,7 +25,13 @@ Diary Mode previously used or inherited memos containing tags such as:
 
 The new design replaces manual `#photo` tagging with automatic image-resource detection.
 
-However, many existing memos still contain `#photo`. Removing it from stored memo content is a separate migration task and is intentionally out of scope.
+However, existing memos may still contain `#photo`. Removing it from stored memo content is handled by the separate migration handoff:
+
+```txt
+docs/handoffs/2026-06-02-remove-photo-tag-migration.md
+```
+
+Run that migration task before this UI-hiding task when possible. This handoff should then act as a guardrail for any remaining or newly attempted `photo` tags.
 
 Current relevant implementation:
 
@@ -125,7 +131,7 @@ The same memo should remain stored as:
 #restaurant/cleis #photo
 ```
 
-until a future explicit migration task is created.
+until the explicit migration task is run.
 
 ### Editor behavior
 
@@ -153,6 +159,12 @@ hiddenLegacyTags:
 ```
 
 For now, `photo` should be the only hidden legacy tag.
+
+Implementation-order note:
+
+* Prefer running `2026-06-02-remove-photo-tag-migration.md` first.
+* If this UI task is implemented before migration, do not simply remove `photo` from `state.tags`; the current editor serializes `state.tags` back into stored content on save.
+* If migration has already removed legacy `#photo` from stored boundary tag lines, this task can focus on hiding any remaining display occurrences and preventing re-addition in suggestions/manual input.
 
 ### New tag input behavior
 
