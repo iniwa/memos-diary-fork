@@ -43,7 +43,7 @@ function resolveImageGridLayout(items: AttachmentVisualItem[]): GridLayout | nul
   if (count === 2) {
     return {
       mode: "collage",
-      containerClassName: cn("grid grid-cols-2 gap-1.5", GRID_HEIGHT),
+      containerClassName: cn("grid w-full grid-cols-2 gap-1.5", GRID_HEIGHT),
       cells: visible.map((item) => ({ item })),
     };
   }
@@ -51,7 +51,7 @@ function resolveImageGridLayout(items: AttachmentVisualItem[]): GridLayout | nul
   if (count === 3) {
     return {
       mode: "collage",
-      containerClassName: cn("grid grid-cols-2 grid-rows-2 gap-1.5", GRID_HEIGHT),
+      containerClassName: cn("grid w-full grid-cols-2 grid-rows-2 gap-1.5", GRID_HEIGHT),
       cells: [{ item: visible[0], className: "row-span-2" }, { item: visible[1] }, { item: visible[2] }],
     };
   }
@@ -59,7 +59,7 @@ function resolveImageGridLayout(items: AttachmentVisualItem[]): GridLayout | nul
   // 4 or 5+: 2×2 grid, +N overlay on last visible cell
   return {
     mode: "collage",
-    containerClassName: cn("grid grid-cols-2 grid-rows-2 gap-1.5", GRID_HEIGHT),
+    containerClassName: cn("grid w-full grid-cols-2 grid-rows-2 gap-1.5", GRID_HEIGHT),
     cells: visible.map((item, i) => ({
       item,
       overlayLabel: i === MAX_VISIBLE - 1 && overflow > 0 ? `+${overflow}` : undefined,
