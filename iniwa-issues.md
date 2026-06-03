@@ -1,13 +1,8 @@
-# 画像のグリッド表示
-- [ ] 4枚のグリッド時、右側に隙間がある状態になっている。メモのコンテナいっぱいに広がってほしい。
-  - 画像の比率による？
-  - メモに対する画像の置き方を固定し、画像側をズームしたりして調整？要相談
-  - 5枚目移行の「＋1」だが、クリックしたときに一覧でみたい
-  →仕様の相談
+# Remaining Issues
 
-# 投稿改善
-- [ ] 投稿時点で日記日時を設定できるようにしてほしい
+## Calendar
 
-# カレンダー
-- [ ] 月毎でソートをかけたい
-  - カレンダーの「2026年5月」をクリックで月でソートできるとか？
+- [ ] Add month-level memo filtering
+  - Example: clicking `2026-05` / `May 2026` in the calendar filters the timeline to only memos from that month.
+  - Already implemented: day-level `displayTime:YYYY-MM-DD` filtering and selected-date prefill for new memos.
+
