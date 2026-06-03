@@ -9,6 +9,7 @@ Diary Mode is a fork of [usememos/memos](https://github.com/usememos/memos) v0.2
 - `attachment.hasImage:true` image filter
 - JPEG / PNG / WebP upload optimization and thumbnail cache
 - Calendar date prefill: clicking an in-month date presets new memo `createTime` / `updateTime`
+- Month-level calendar filtering via `displayMonth:YYYY-MM`
 - Boundary `#photo` hidden from UI; `remove-photo-tag` CLI cleaned it from stored content
 
 Diary Mode runs separately from the production Memos instance on port `5230`. Diary Mode uses port `5231` and its own data directory.
@@ -96,6 +97,7 @@ Run after every redeploy:
 - [ ] Image grid renders on memos with attachments
 - [ ] Image filter `hasImage:true` returns only image-bearing memos
 - [ ] Calendar date click sets `displayTime` filter and shows timestamp popover in create editor
+- [ ] Calendar month header click sets `displayMonth` filter and does not show a timestamp popover
 - [ ] No test memo remains from verification
 
 ## 5. Backup and Restore

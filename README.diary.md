@@ -16,8 +16,8 @@ This archive contains the current design documents for the Memos Diary Mode fork
 - `docs/diary-mode-operations.md`  
   Day-to-day operations guide: manual Portainer redeploy, runtime env, post-deploy smoke checks, backup / restore notes, and maintenance CLI commands.
 
-- `docs/handoffs/2026-06-01-diary-mode-phase0-phase1.md`  
-  Initial handoff for Phase 0 / Phase 1.
+- `docs/handoffs/`  
+  Active handoffs. Currently empty except for `README.md`; completed handoffs are archived under `docs/handoffs/archive/`.
 
 - `_base/`  
   Uploaded base reference files used to prepare AGENTS / CLAUDE / handoff.
@@ -34,3 +34,4 @@ This archive contains the current design documents for the Memos Diary Mode fork
   - image-post filter based on image resources
   - image optimization using `preview` and `thumbnail`
   - calendar date prefill for new memos
+  - month-level calendar filtering with `displayMonth:YYYY-MM`
