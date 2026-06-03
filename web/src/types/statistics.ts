@@ -9,6 +9,7 @@ export interface MonthNavigatorProps {
   onMonthChange: (month: string) => void;
   activityStats: Record<string, number>;
   timeBasis: MemoTimeBasis;
+  onMonthClick?: (month: string) => void;
 }
 
 export interface StatisticsData {
