@@ -34,7 +34,7 @@ Portainer webhook is not used because it is a paid feature. Manual redeploy is t
 | GHCR image | `ghcr.io/iniwa/memos-diary-fork:latest` |
 | Container data dir | `/var/opt/memos` |
 | Repository compose default | `./memos-diary-data:/var/opt/memos` |
-| Portainer host path | supplied by Portainer stack; confirm in Portainer before host-side backup/restore |
+| Portainer host path | `/opt/memos-diary/data` (verified 2026-06-03 via `docker inspect`) |
 
 ### Image optimizer
 
@@ -128,11 +128,18 @@ This backup was created before `remove-photo-tag --execute` ran. It contains:
 
 Stop the container before copying to avoid SQLite corruption.
 
-If the Portainer host bind mount path is confirmed, copy that directory directly. If the host path is not confirmed, use `docker cp` from the container path:
+The Portainer host bind mount is `/opt/memos-diary/data`. Copy it directly:
 
 ```bash
 docker stop memos-diary
-sudo mkdir -p /opt/memos-diary
+sudo cp -a /opt/memos-diary/data "/opt/memos-diary/data-backup-$(date +%Y%m%d-%H%M%S)"
+docker start memos-diary
+```
+
+If the host path ever becomes uncertain, use `docker cp` as a fallback:
+
+```bash
+docker stop memos-diary
 docker cp memos-diary:/var/opt/memos "/opt/memos-diary/data-backup-$(date +%Y%m%d-%H%M%S)"
 docker start memos-diary
 ```
