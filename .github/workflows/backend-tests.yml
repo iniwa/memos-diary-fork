@@ -2,12 +2,28 @@ name: Backend Tests
 
 on:
   push:
-    branches: [main, diary-mode]
-  pull_request:
-    branches: [main, diary-mode]
+    branches: [diary-mode]
     paths:
       - "go.mod"
       - "go.sum"
+      - "cmd/**"
+      - "internal/**"
+      - "server/**"
+      - "store/**"
+      - "proto/**"
+      - "scripts/**"
+      - "**.go"
+  pull_request:
+    branches: [diary-mode]
+    paths:
+      - "go.mod"
+      - "go.sum"
+      - "cmd/**"
+      - "internal/**"
+      - "server/**"
+      - "store/**"
+      - "proto/**"
+      - "scripts/**"
       - "**.go"
 
 concurrency:
@@ -83,7 +99,7 @@ jobs:
           DRIVER: ${{ matrix.test-group == 'store' && '' || 'sqlite' }}
 
       - name: Upload coverage
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/diary-mode'
         uses: codecov/codecov-action@v5
         with:
           files: ./coverage.out

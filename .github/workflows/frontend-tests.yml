@@ -2,9 +2,11 @@ name: Frontend Tests
 
 on:
   push:
-    branches: [main, diary-mode]
+    branches: [diary-mode]
+    paths:
+      - "web/**"
   pull_request:
-    branches: [main, diary-mode]
+    branches: [diary-mode]
     paths:
       - "web/**"
 
