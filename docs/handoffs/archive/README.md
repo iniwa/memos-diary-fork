@@ -2,7 +2,7 @@
 
 This directory contains completed Diary Mode handoffs.
 
-There are currently no active Diary Mode handoffs. If new work is ready to be delegated, create a new handoff one level up:
+Active handoffs, when present, are kept one level up:
 
 ```txt
 docs/handoffs/

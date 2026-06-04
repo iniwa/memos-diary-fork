@@ -1,6 +1,10 @@
 # Active Handoffs
 
-There are currently no active Diary Mode handoffs.
+Current active Diary Mode handoff:
+
+```txt
+docs/handoffs/2026-06-04-github-actions-fork-cleanup.md
+```
 
 Completed handoffs are archived under:
 
