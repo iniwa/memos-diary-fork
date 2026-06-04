@@ -122,6 +122,9 @@
     "exit-focus-mode": "フォーカスを終了",
     "focus-mode": "フォーカスモード",
     "add-tag": "タグを追加",
+    "diary-date-control": {
+      "set-date": "日記日付を変更"
+    },
     "no-changes-detected": "変更はありません",
     "save": "保存",
     "saving": "保存中...",

@@ -167,6 +167,9 @@
       "upload-file": "Upload file"
     },
     "add-tag": "Add tag",
+    "diary-date-control": {
+      "set-date": "Set diary date"
+    },
     "no-changes-detected": "No changes detected",
     "save": "Save",
     "saving": "Saving...",

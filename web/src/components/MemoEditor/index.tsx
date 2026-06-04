@@ -14,6 +14,7 @@ import { useTranslate } from "@/utils/i18n";
 import { convertVisibilityFromString } from "@/utils/memo";
 import {
   AudioRecorderPanel,
+  DiaryDateControl,
   EditorContent,
   EditorMetadata,
   EditorToolbar,
@@ -325,9 +326,14 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
         {/* Exit button is absolutely positioned in top-right corner when active */}
         <FocusModeExitButton isActive={state.ui.isFocusMode} onToggle={handleToggleFocusMode} title={t("editor.exit-focus-mode")} />
 
-        {(memoName || (!memo && state.timestamps.createTime)) && (
+        {memoName && (
           <div className="w-full -mb-1">
             <TimestampPopover />
+          </div>
+        )}
+        {!memo && !parentMemoName && (
+          <div className="w-full -mb-1">
+            <DiaryDateControl />
           </div>
         )}
 
