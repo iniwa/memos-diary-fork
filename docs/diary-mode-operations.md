@@ -63,6 +63,25 @@ Each GitHub Actions build pushes three tags:
 | `:diary-mode` | same as `:latest` |
 | `:sha-<SHA>` | pinned to the commit SHA; useful for rollback |
 
+### RAW image conversion
+
+RAW camera images (ARW, NEF, CR2, DNG, etc.) can be converted to JPEG at upload time.
+Requires the `imagemagick` and `imagemagick-raw` Alpine packages, which are included in the Docker image.
+
+Disabled by default. Enable only after taking a data backup.
+
+```txt
+MEMOS_RAW_IMAGE_CONVERSION_ENABLED=true
+MEMOS_RAW_IMAGE_CONVERSION_TIMEOUT_SECONDS=30
+```
+
+Output size and quality follow the `MEMOS_IMAGE_PREVIEW_*` settings.
+A failed conversion for a detected RAW file is returned to the user as an error;
+the original RAW blob is never stored.
+
+**Rollback:** set `MEMOS_RAW_IMAGE_CONVERSION_ENABLED=false` and redeploy.
+Previously stored converted JPEGs are not affected.
+
 ## 3. Manual Redeploy Procedure
 
 1. Push code to Gitea on the `diary-mode` branch.

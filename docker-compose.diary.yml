@@ -19,6 +19,10 @@ services:
       # MEMOS_IMAGE_THUMBNAIL_MAX_EDGE: "720"
       # MEMOS_IMAGE_THUMBNAIL_JPEG_QUALITY: "78"
       # MEMOS_IMAGE_KEEP_ORIGINAL: "true"
+      # RAW camera image conversion: opt-in, requires imagemagick in the image.
+      # Enable after taking a data backup. Output size/quality uses preview settings above.
+      # MEMOS_RAW_IMAGE_CONVERSION_ENABLED: "true"
+      # MEMOS_RAW_IMAGE_CONVERSION_TIMEOUT_SECONDS: "30"
     volumes:
       - ./memos-diary-data:/var/opt/memos
     ports:

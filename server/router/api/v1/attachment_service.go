@@ -165,6 +165,11 @@ func (s *APIV1Service) CreateAttachment(ctx context.Context, request *v1pb.Creat
 		}
 	}
 
+	// Convert RAW camera images to JPEG before EXIF stripping and optimization.
+	if err := s.maybeConvertRawImageAttachment(ctx, create); err != nil {
+		return nil, err
+	}
+
 	// Strip EXIF metadata from images for privacy protection.
 	// This removes sensitive information like GPS location, device details, etc.
 	if shouldStripExif(create.Type) && !IsAndroidMotionContainer(create.Payload.GetMotionMedia()) {

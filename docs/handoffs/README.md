@@ -3,7 +3,7 @@
 Current active Diary Mode handoff:
 
 ```txt
-docs/handoffs/2026-06-04-github-actions-fork-cleanup.md
+docs/handoffs/2026-06-05-raw-image-upload-jpeg-conversion.md
 ```
 
 Completed handoffs are archived under:
