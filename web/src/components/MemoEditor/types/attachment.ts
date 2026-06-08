@@ -21,6 +21,7 @@ export interface AttachmentItem {
 
 export interface LocalFile {
   readonly file: File;
+  readonly content?: Uint8Array;
   readonly previewUrl: string;
   readonly origin?: "audio_recording" | "upload";
   readonly audioMeta?: {

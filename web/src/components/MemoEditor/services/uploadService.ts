@@ -10,19 +10,23 @@ export const uploadService = {
 
     const attachments: Attachment[] = [];
 
-    for (const localFile of localFiles) {
+    for (const [index, localFile] of localFiles.entries()) {
       const { file, motionMedia } = localFile;
-      const buffer = new Uint8Array(await file.arrayBuffer());
-      const attachment = await attachmentServiceClient.createAttachment({
-        attachment: create(AttachmentSchema, {
-          filename: file.name,
-          size: BigInt(file.size),
-          type: file.type,
-          content: buffer,
-          motionMedia: motionMedia ? create(MotionMediaSchema, motionMedia) : undefined,
-        }),
-      });
-      attachments.push(attachment);
+      try {
+        const buffer = localFile.content ?? new Uint8Array(await file.arrayBuffer());
+        const attachment = await attachmentServiceClient.createAttachment({
+          attachment: create(AttachmentSchema, {
+            filename: file.name,
+            size: BigInt(file.size),
+            type: file.type,
+            content: buffer,
+            motionMedia: motionMedia ? create(MotionMediaSchema, motionMedia) : undefined,
+          }),
+        });
+        attachments.push(attachment);
+      } catch (error) {
+        throw new Error(`Failed to upload attachment ${index + 1}/${localFiles.length} (${file.name})`, { cause: error });
+      }
     }
 
     return attachments;
