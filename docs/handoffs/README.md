@@ -3,7 +3,7 @@
 Current active Diary Mode handoff:
 
 ```txt
-docs/handoffs/2026-06-05-raw-image-upload-jpeg-conversion.md
+docs/handoffs/2026-06-08-stabilize-bulk-image-upload.md
 ```
 
 Completed handoffs are archived under:

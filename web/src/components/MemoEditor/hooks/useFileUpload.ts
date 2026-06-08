@@ -1,29 +1,32 @@
 import { create } from "@bufbuild/protobuf";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { type MotionMedia, MotionMediaFamily, MotionMediaRole, MotionMediaSchema } from "@/types/proto/api/v1/attachment_service_pb";
 import type { LocalFile } from "../types/attachment";
+import { createLocalFiles } from "../utils/localFile";
 
 export const useFileUpload = (onFilesSelected: (localFiles: LocalFile[]) => void) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const selectingFlagRef = useRef(false);
+  const [selectingFlag, setSelectingFlag] = useState(false);
 
-  const handleFileInputChange = (event?: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileInputChange = async (event?: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(fileInputRef.current?.files || event?.target.files || []);
     if (files.length === 0 || selectingFlagRef.current) {
       return;
     }
     selectingFlagRef.current = true;
-    const localFiles: LocalFile[] = pairAppleLivePhotoFiles(
-      files.map((file) => ({
-        file,
-        previewUrl: URL.createObjectURL(file),
-        origin: "upload",
-      })),
-    );
-    onFilesSelected(localFiles);
-    selectingFlagRef.current = false;
-    // Optionally clear input value to allow re-selecting the same file
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    setSelectingFlag(true);
+    try {
+      const localFiles = pairAppleLivePhotoFiles(await createLocalFiles(files, (blob) => URL.createObjectURL(blob)));
+      onFilesSelected(localFiles);
+    } catch (error) {
+      console.error("Failed to read selected files:", error);
+    } finally {
+      selectingFlagRef.current = false;
+      setSelectingFlag(false);
+      // Optionally clear input value to allow re-selecting the same file
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   };
 
   const handleUploadClick = (accept = "*") => {
@@ -37,7 +40,7 @@ export const useFileUpload = (onFilesSelected: (localFiles: LocalFile[]) => void
 
   return {
     fileInputRef,
-    selectingFlag: selectingFlagRef.current,
+    selectingFlag,
     handleFileInputChange,
     handleUploadClick,
   };

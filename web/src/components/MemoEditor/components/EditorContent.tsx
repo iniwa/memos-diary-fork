@@ -3,19 +3,20 @@ import Editor, { type EditorRefActions } from "../Editor";
 import { useBlobUrls, useDragAndDrop } from "../hooks";
 import { useEditorContext } from "../state";
 import type { EditorContentProps } from "../types";
-import type { LocalFile } from "../types/attachment";
+import { createLocalFiles } from "../utils/localFile";
 
 export const EditorContent = forwardRef<EditorRefActions, EditorContentProps>(({ placeholder }, ref) => {
   const { state, actions, dispatch } = useEditorContext();
   const { createBlobUrl } = useBlobUrls();
 
   const { dragHandlers } = useDragAndDrop((files: FileList) => {
-    const localFiles: LocalFile[] = Array.from(files).map((file) => ({
-      file,
-      previewUrl: createBlobUrl(file),
-      origin: "upload",
-    }));
-    localFiles.forEach((localFile) => dispatch(actions.addLocalFile(localFile)));
+    void createLocalFiles(files, createBlobUrl)
+      .then((localFiles) => {
+        localFiles.forEach((localFile) => dispatch(actions.addLocalFile(localFile)));
+      })
+      .catch((error) => {
+        console.error("Failed to read dropped files:", error);
+      });
   });
 
   const handleCompositionStart = () => {
@@ -47,13 +48,14 @@ export const EditorContent = forwardRef<EditorRefActions, EditorContentProps>(({
 
     if (files.length === 0) return;
 
-    const localFiles: LocalFile[] = files.map((file) => ({
-      file,
-      previewUrl: createBlobUrl(file),
-      origin: "upload",
-    }));
-    localFiles.forEach((localFile) => dispatch(actions.addLocalFile(localFile)));
     event.preventDefault();
+    void createLocalFiles(files, createBlobUrl)
+      .then((localFiles) => {
+        localFiles.forEach((localFile) => dispatch(actions.addLocalFile(localFile)));
+      })
+      .catch((error) => {
+        console.error("Failed to read pasted files:", error);
+      });
   };
 
   return (
