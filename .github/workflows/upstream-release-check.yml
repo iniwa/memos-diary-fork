@@ -1,0 +1,59 @@
+name: Upstream Release Check
+
+on:
+  schedule:
+    - cron: "0 9 * * 1"  # Every Monday at 09:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Check for newer upstream release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Read current upstream version
+        id: current
+        run: |
+          version=$(cat .upstream-version | tr -d '[:space:]')
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Fetch latest stable upstream tag
+        id: latest
+        run: |
+          latest=$(curl -sf "https://api.github.com/repos/usememos/memos/releases" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            | jq -r '[.[] | select(.prerelease == false and .draft == false)] | first | .tag_name')
+          if [ -z "$latest" ] || [ "$latest" = "null" ]; then
+            echo "Failed to fetch upstream releases" >&2
+            exit 1
+          fi
+          echo "version=$latest" >> "$GITHUB_OUTPUT"
+
+      - name: Compare and report
+        env:
+          CURRENT: ${{ steps.current.outputs.version }}
+          LATEST: ${{ steps.latest.outputs.version }}
+        run: |
+          echo "## Upstream Release Check" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| | Version |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Integrated | \`$CURRENT\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Latest upstream | \`$LATEST\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$CURRENT" = "$LATEST" ]; then
+            echo "**Status: up to date.**" >> "$GITHUB_STEP_SUMMARY"
+            echo "Fork is up to date with upstream ($CURRENT)."
+          else
+            echo "**Status: upstream has a newer stable release.**" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "Run \`scripts/prepare-upstream-update.ps1 -Tag $LATEST\` on the dev machine to prepare the update." >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::Upstream $LATEST is available (current: $CURRENT). Run prepare-upstream-update.ps1 -Tag $LATEST to prepare the update."
+            exit 1
+          fi
