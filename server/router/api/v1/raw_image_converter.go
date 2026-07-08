@@ -22,12 +22,11 @@ const (
 	rawConversionEnabledEnv = "MEMOS_RAW_IMAGE_CONVERSION_ENABLED"
 	rawConversionTimeoutEnv = "MEMOS_RAW_IMAGE_CONVERSION_TIMEOUT_SECONDS"
 
+	// rawConverterBinary is the ImageMagick 7 binary installed by the imagemagick Alpine package.
+	rawConverterBinary = "magick"
+
 	defaultRawConversionTimeout = 30
 )
-
-// rawConverterBinary is the ImageMagick 7 binary installed by the imagemagick Alpine package.
-var rawConverterBinary = "magick"
-var rawConverterCommand = exec.CommandContext
 
 // rawExtensions is the set of lowercase filename extensions recognized as camera RAW formats.
 var rawExtensions = map[string]bool{
@@ -120,33 +119,11 @@ func convertRawImageToJPEG(ctx context.Context, blob []byte, filename, mimeType 
 	}
 	outputPath := filepath.Join(tmpDir, "output.jpg")
 
-	// ">": only downscale, never enlarge.
-	resizeGeom := strconv.Itoa(previewConfig.PreviewMaxEdge) + "x" + strconv.Itoa(previewConfig.PreviewMaxEdge) + ">"
-	quality := strconv.Itoa(previewConfig.PreviewQuality)
-
 	timeoutCtx, cancel := context.WithTimeout(ctx, time.Duration(config.TimeoutSeconds)*time.Second)
 	defer cancel()
 
-	// exec.CommandContext with a fixed binary name: no shell, no variable expansion.
-	cmd := rawConverterCommand(timeoutCtx, rawConverterBinary,
-		inputPath,
-		"-auto-orient",
-		"-resize", resizeGeom,
-		"-quality", quality,
-		outputPath,
-	)
-	var stderr bytes.Buffer
-	cmd.Stderr = &stderr
-
-	if err := cmd.Run(); err != nil {
-		if timeoutCtx.Err() != nil {
-			return nil, errors.New("RAW image conversion timed out")
-		}
-		msg := strings.TrimSpace(stderr.String())
-		if msg == "" {
-			return nil, errors.Wrap(err, "RAW image converter failed")
-		}
-		return nil, errors.Errorf("RAW image converter failed: %s", msg)
+	if err := runRawConverter(timeoutCtx, rawConverterBinary, rawConverterArguments(inputPath, outputPath, previewConfig)); err != nil {
+		return nil, err
 	}
 
 	jpegBytes, err := os.ReadFile(outputPath)
@@ -157,12 +134,51 @@ func convertRawImageToJPEG(ctx context.Context, blob []byte, filename, mimeType 
 		return nil, errors.New("converter produced empty output")
 	}
 
-	// Reject malformed or non-image output before storing.
-	if _, _, err := image.DecodeConfig(bytes.NewReader(jpegBytes)); err != nil {
-		return nil, errors.Wrap(err, "converter produced invalid image output")
+	if err := validateConvertedJPEG(jpegBytes); err != nil {
+		return nil, err
 	}
 
 	return jpegBytes, nil
+}
+
+func rawConverterArguments(inputPath, outputPath string, previewConfig imageOptimizerConfig) []string {
+	// ">": only downscale, never enlarge.
+	resizeGeom := strconv.Itoa(previewConfig.PreviewMaxEdge) + "x" + strconv.Itoa(previewConfig.PreviewMaxEdge) + ">"
+	quality := strconv.Itoa(previewConfig.PreviewQuality)
+	return []string{
+		inputPath,
+		"-auto-orient",
+		"-resize", resizeGeom,
+		"-quality", quality,
+		outputPath,
+	}
+}
+
+func runRawConverter(ctx context.Context, binary string, args []string) error {
+	// exec.CommandContext with a fixed binary name and fixed arguments: no shell, no variable expansion.
+	cmd := exec.CommandContext(ctx, binary, args...)
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+
+	if err := cmd.Run(); err != nil {
+		if ctx.Err() != nil {
+			return errors.New("RAW image conversion timed out")
+		}
+		msg := strings.TrimSpace(stderr.String())
+		if msg == "" {
+			return errors.Wrap(err, "RAW image converter failed")
+		}
+		return errors.Errorf("RAW image converter failed: %s", msg)
+	}
+	return nil
+}
+
+func validateConvertedJPEG(jpegBytes []byte) error {
+	// Reject malformed or non-image output before storing.
+	if _, _, err := image.DecodeConfig(bytes.NewReader(jpegBytes)); err != nil {
+		return errors.Wrap(err, "converter produced invalid image output")
+	}
+	return nil
 }
 
 // maybeConvertRawImageAttachment converts attachment.Blob from RAW to JPEG when RAW

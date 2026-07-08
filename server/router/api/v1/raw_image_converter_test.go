@@ -5,7 +5,6 @@ import (
 	"context"
 	"image"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"testing"
 
@@ -172,14 +171,10 @@ func TestMaybeConvertRawImageAttachment_NilAttachmentSkips(t *testing.T) {
 	require.NoError(t, err)
 }
 
-// TestConvertRawImageToJPEG_Integration runs only when a real RAW fixture and
-// the rawConverterBinary are available.
+// TestConvertRawImageToJPEG_Integration runs only when a real RAW fixture is available.
 // To run: set MEMOS_RAW_CONVERTER_TEST_FILE=/path/to/file.arw, ensure imagemagick
-// is installed, then go test ./server/router/api/v1/... -run TestConvertRawImageToJPEG
+// is installed, then go test ./server/router/api/v1/... -run TestConvertRawImageToJPEG.
 func TestConvertRawImageToJPEG_Integration(t *testing.T) {
-	if _, err := exec.LookPath(rawConverterBinary); err != nil {
-		t.Skipf("%s not found in PATH, skipping integration test", rawConverterBinary)
-	}
 
 	fixturePath := os.Getenv("MEMOS_RAW_CONVERTER_TEST_FILE")
 	if fixturePath == "" {
@@ -199,56 +194,28 @@ func TestConvertRawImageToJPEG_Integration(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "jpeg", format)
 }
-func TestConvertRawImageToJPEG_MissingConverterReportsFailure(t *testing.T) {
-	oldBinary := rawConverterBinary
-	t.Cleanup(func() { rawConverterBinary = oldBinary })
-	rawConverterBinary = filepath.Join(t.TempDir(), "missing-magick")
+func TestRunRawConverterMissingBinaryReportsFailure(t *testing.T) {
+	err := runRawConverter(context.Background(), filepath.Join(t.TempDir(), "missing-magick"), []string{"input.raw", "output.jpg"})
 
-	cfg := rawImageConversionConfig{Enabled: true, TimeoutSeconds: 1}
-	previewCfg := imageOptimizerConfig{PreviewMaxEdge: 2560, PreviewQuality: 90}
-
-	_, err := convertRawImageToJPEG(context.Background(), []byte("raw"), "image.arw", "", cfg, previewCfg)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "RAW image converter failed")
 }
 
-func TestConvertRawImageToJPEG_RejectsInvalidConverterOutput(t *testing.T) {
-	oldCommand := rawConverterCommand
-	t.Cleanup(func() { rawConverterCommand = oldCommand })
-	rawConverterCommand = func(ctx context.Context, name string, args ...string) *exec.Cmd {
-		helperArgs := append([]string{"-test.run=TestRawConverterHelperProcess", "--"}, args...)
-		cmd := exec.CommandContext(ctx, os.Args[0], helperArgs...)
-		cmd.Env = append(os.Environ(), "MEMOS_RAW_CONVERTER_HELPER=invalid-output")
-		return cmd
-	}
+func TestRawConverterArguments(t *testing.T) {
+	got := rawConverterArguments("input.arw", "output.jpg", imageOptimizerConfig{PreviewMaxEdge: 1280, PreviewQuality: 88})
 
-	cfg := rawImageConversionConfig{Enabled: true, TimeoutSeconds: 1}
-	previewCfg := imageOptimizerConfig{PreviewMaxEdge: 2560, PreviewQuality: 90}
-
-	_, err := convertRawImageToJPEG(context.Background(), []byte("raw"), "image.arw", "", cfg, previewCfg)
-	require.Error(t, err)
-	require.Contains(t, err.Error(), "converter produced invalid image output")
+	require.Equal(t, []string{
+		"input.arw",
+		"-auto-orient",
+		"-resize", "1280x1280>",
+		"-quality", "88",
+		"output.jpg",
+	}, got)
 }
 
-func TestRawConverterHelperProcess(t *testing.T) {
-	if os.Getenv("MEMOS_RAW_CONVERTER_HELPER") == "" {
-		return
-	}
+func TestValidateConvertedJPEGRejectsInvalidOutput(t *testing.T) {
+	err := validateConvertedJPEG([]byte("not a jpeg"))
 
-	separator := -1
-	for i, arg := range os.Args {
-		if arg == "--" {
-			separator = i
-			break
-		}
-	}
-	if separator < 0 || separator == len(os.Args)-1 {
-		os.Exit(2)
-	}
-	converterArgs := os.Args[separator+1:]
-	outputPath := converterArgs[len(converterArgs)-1]
-	if err := os.WriteFile(outputPath, []byte("not a jpeg"), 0600); err != nil {
-		os.Exit(3)
-	}
-	os.Exit(0)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "converter produced invalid image output")
 }

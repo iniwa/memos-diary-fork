@@ -123,7 +123,6 @@ func (s *APIV1Service) maybeOptimizeImageAttachment(ctx context.Context, attachm
 			slog.String("filename", attachment.Filename),
 			slog.String("type", attachment.Type),
 			slog.String("error", err.Error()))
-		optimized = attachment.Blob
 	} else if !config.KeepOriginal {
 		attachment.Blob = optimized
 		attachment.Size = int64(len(optimized))
