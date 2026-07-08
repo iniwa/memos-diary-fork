@@ -199,3 +199,56 @@ func TestConvertRawImageToJPEG_Integration(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "jpeg", format)
 }
+func TestConvertRawImageToJPEG_MissingConverterReportsFailure(t *testing.T) {
+	oldBinary := rawConverterBinary
+	t.Cleanup(func() { rawConverterBinary = oldBinary })
+	rawConverterBinary = filepath.Join(t.TempDir(), "missing-magick")
+
+	cfg := rawImageConversionConfig{Enabled: true, TimeoutSeconds: 1}
+	previewCfg := imageOptimizerConfig{PreviewMaxEdge: 2560, PreviewQuality: 90}
+
+	_, err := convertRawImageToJPEG(context.Background(), []byte("raw"), "image.arw", "", cfg, previewCfg)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "RAW image converter failed")
+}
+
+func TestConvertRawImageToJPEG_RejectsInvalidConverterOutput(t *testing.T) {
+	oldCommand := rawConverterCommand
+	t.Cleanup(func() { rawConverterCommand = oldCommand })
+	rawConverterCommand = func(ctx context.Context, name string, args ...string) *exec.Cmd {
+		helperArgs := append([]string{"-test.run=TestRawConverterHelperProcess", "--"}, args...)
+		cmd := exec.CommandContext(ctx, os.Args[0], helperArgs...)
+		cmd.Env = append(os.Environ(), "MEMOS_RAW_CONVERTER_HELPER=invalid-output")
+		return cmd
+	}
+
+	cfg := rawImageConversionConfig{Enabled: true, TimeoutSeconds: 1}
+	previewCfg := imageOptimizerConfig{PreviewMaxEdge: 2560, PreviewQuality: 90}
+
+	_, err := convertRawImageToJPEG(context.Background(), []byte("raw"), "image.arw", "", cfg, previewCfg)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "converter produced invalid image output")
+}
+
+func TestRawConverterHelperProcess(t *testing.T) {
+	if os.Getenv("MEMOS_RAW_CONVERTER_HELPER") == "" {
+		return
+	}
+
+	separator := -1
+	for i, arg := range os.Args {
+		if arg == "--" {
+			separator = i
+			break
+		}
+	}
+	if separator < 0 || separator == len(os.Args)-1 {
+		os.Exit(2)
+	}
+	converterArgs := os.Args[separator+1:]
+	outputPath := converterArgs[len(converterArgs)-1]
+	if err := os.WriteFile(outputPath, []byte("not a jpeg"), 0600); err != nil {
+		os.Exit(3)
+	}
+	os.Exit(0)
+}

@@ -98,7 +98,7 @@ export const TagSection: FC = () => {
               type="button"
               className="ml-0.5 opacity-50 hover:opacity-100 leading-none transition-opacity"
               onClick={() => removeTag(tag)}
-              aria-label={`Remove tag ${tag}`}
+              aria-label={t("editor.remove-tag", { tag })}
             >
               ×
             </button>

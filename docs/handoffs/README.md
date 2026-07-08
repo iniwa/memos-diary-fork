@@ -1,10 +1,6 @@
 # Active Handoffs
 
-Current active Diary Mode handoff:
-
-```txt
-docs/handoffs/2026-06-08-stabilize-bulk-image-upload.md
-```
+No active handoff at the moment (last completed batch archived 2026-07-07).
 
 Completed handoffs are archived under:
 

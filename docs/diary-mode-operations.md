@@ -2,12 +2,14 @@
 
 ## 1. System Overview
 
-Diary Mode is a fork of [usememos/memos](https://github.com/usememos/memos) v0.29.0 with the following additions:
+Diary Mode is a fork of [usememos/memos](https://github.com/usememos/memos) (currently based on v0.29.1, see `.upstream-version`) with the following additions:
 
 - Dedicated tag UI with boundary tag parsing and serialization
 - Twitter/X-style inline image grid (1+ images, expandable `+N` overlay)
 - `attachment.hasImage:true` image filter
 - JPEG / PNG / WebP upload optimization and thumbnail cache
+- RAW image upload conversion to JPEG (env-gated, see section 2)
+- Stabilized bulk image uploads (sequential upload, local-file previews)
 - Calendar date prefill: clicking an in-month date presets new memo `createTime` / `updateTime`
 - Month-level calendar filtering via `displayMonth:YYYY-MM`
 - Boundary `#photo` hidden from UI; `remove-photo-tag` CLI cleaned it from stored content

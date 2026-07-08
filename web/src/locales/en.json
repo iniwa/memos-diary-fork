@@ -167,6 +167,7 @@
       "upload-file": "Upload file"
     },
     "add-tag": "Add tag",
+    "remove-tag": "Remove tag {{tag}}",
     "diary-date-control": {
       "set-date": "Set diary date"
     },

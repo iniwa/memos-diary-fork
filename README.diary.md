@@ -1,37 +1,51 @@
-# Memos Diary Mode Documents
+# Memos Diary Mode Fork
 
-This archive contains the current design documents for the Memos Diary Mode fork.
+Personal diary fork of [usememos/memos](https://github.com/usememos/memos).
+The upstream `README.md` is kept untouched to ease upstream merges; this file
+describes the fork.
 
-## Files
+## Current state
 
-- `AGENTS.md`  
-  Project-specific Codex-side rules and design principles.
-
-- `CLAUDE.md`  
-  Project-specific Claude Code execution rules.
-
-- `docs/memos-diary-mode-design.md`  
-  Main design document.
-
-- `docs/diary-mode-operations.md`  
-  Day-to-day operations guide: manual Portainer redeploy, runtime env, post-deploy smoke checks, backup / restore notes, and maintenance CLI commands.
-
-- `docs/handoffs/`  
-  Active handoffs. Currently empty except for `README.md`; completed handoffs are archived under `docs/handoffs/archive/`.
-
-- `_base/`  
-  Uploaded base reference files used to prepare AGENTS / CLAUDE / handoff.
-
-## Current project direction
-
-- Base: Memos v0.29.0
+- Base: Memos v0.29.1 (see `.upstream-version`)
 - Runtime: Raspberry Pi Docker, `linux/arm64`
-- Deployment style: GHCR + Portainer Stack
-- Operation: separate Diary Mode app deployed at `http://192.168.1.205:5231` (MVP complete)
-- Key additions:
-  - dedicated tag UI
-  - Twitter/X-style image grid
-  - image-post filter based on image resources
-  - image optimization using `preview` and `thumbnail`
-  - calendar date prefill for new memos
-  - month-level calendar filtering with `displayMonth:YYYY-MM`
+- Deployment: GHCR (`ghcr.io/iniwa/memos-diary-fork`) + Portainer Stack, manual redeploy
+- Operation: separate Diary Mode app at `http://192.168.1.205:5231` (MVP complete, in daily use)
+
+## Key additions over upstream
+
+- Dedicated tag UI (boundary tag line parsing / serialization)
+- Twitter/X-style inline image grid
+- Image-post filter based on image attachments (`attachment.hasImage:true`)
+- Image optimization at upload (`preview` sizing + `.thumbnail_cache` thumbnails), env-gated
+- RAW image upload conversion to JPEG (ImageMagick), env-gated
+- Stabilized bulk image uploads (sequential upload, local-file preview handling)
+- Calendar date prefill for new memos
+- Month-level calendar filtering with `displayMonth:YYYY-MM`
+- `thumbnail-backfill` / `remove-photo-tag` maintenance CLI commands
+
+## Documents
+
+- `docs/memos-diary-mode-design.md` — main design document
+- `docs/diary-mode-operations.md` — deploy, smoke checks, backup/restore, maintenance CLI
+- `docs/upstream-update-process.md` — how upstream releases are detected and merged
+- `docs/decisions/` — durable design decisions
+- `docs/handoffs/` — active handoffs (completed ones under `docs/handoffs/archive/`)
+- `docs/improvements.md` — improvement checklist from code surveys
+- `iniwa-issues.md` — remaining issues / feature ideas
+- `AGENTS.md` / `CLAUDE.md` — local-only agent rules (excluded from version control)
+
+## Development workflow
+
+1. Codex (design side) turns a request into a handoff under `docs/handoffs/`
+   with explicit goal, files, constraints, non-goals, and verification.
+2. Claude Code (implementation side, auto mode) executes the handoff and
+   reports changed files, verification results, and design questions.
+3. Completed handoffs move to `docs/handoffs/archive/`.
+4. Improvement candidates live in `docs/improvements.md`; feature ideas and
+   open issues in `iniwa-issues.md`.
+
+### Verification
+
+- Frontend: `cd web && pnpm lint && pnpm test` (vitest), build with `pnpm release`
+- Backend: no local Go — verified via `docker build --platform linux/arm64 -f scripts/Dockerfile .` or CI
+- All work stays on the `diary-mode` branch; no automatic commits.

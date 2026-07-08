@@ -3,11 +3,13 @@ import { useRef, useState } from "react";
 import { type MotionMedia, MotionMediaFamily, MotionMediaRole, MotionMediaSchema } from "@/types/proto/api/v1/attachment_service_pb";
 import type { LocalFile } from "../types/attachment";
 import { createLocalFiles } from "../utils/localFile";
+import { useBlobUrls } from "./useBlobUrls";
 
 export const useFileUpload = (onFilesSelected: (localFiles: LocalFile[]) => void) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const selectingFlagRef = useRef(false);
   const [selectingFlag, setSelectingFlag] = useState(false);
+  const { createBlobUrl } = useBlobUrls();
 
   const handleFileInputChange = async (event?: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(fileInputRef.current?.files || event?.target.files || []);
@@ -17,7 +19,7 @@ export const useFileUpload = (onFilesSelected: (localFiles: LocalFile[]) => void
     selectingFlagRef.current = true;
     setSelectingFlag(true);
     try {
-      const localFiles = pairAppleLivePhotoFiles(await createLocalFiles(files, (blob) => URL.createObjectURL(blob)));
+      const localFiles = pairAppleLivePhotoFiles(await createLocalFiles(files, createBlobUrl));
       onFilesSelected(localFiles);
     } catch (error) {
       console.error("Failed to read selected files:", error);
@@ -46,7 +48,7 @@ export const useFileUpload = (onFilesSelected: (localFiles: LocalFile[]) => void
   };
 };
 
-const pairAppleLivePhotoFiles = (localFiles: LocalFile[]): LocalFile[] => {
+export const pairAppleLivePhotoFiles = (localFiles: LocalFile[]): LocalFile[] => {
   const stemMap = new Map<string, LocalFile[]>();
   for (const localFile of localFiles) {
     const stem = normalizeFilenameStem(localFile.file.name);

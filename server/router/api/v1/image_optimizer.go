@@ -81,7 +81,7 @@ func parseIntEnv(key string, fallback, minValue, maxValue int) int {
 }
 
 func imageOptimizerConcurrencyFromEnv() int64 {
-	return int64(parseIntEnv(imageOptimizerConcurrencyEnv, 2, 1, 8))
+	return int64(parseIntEnv(imageOptimizerConcurrencyEnv, 1, 1, 8))
 }
 
 func (s *APIV1Service) maybeOptimizeImageAttachment(ctx context.Context, attachment *store.Attachment) {
@@ -102,7 +102,22 @@ func (s *APIV1Service) maybeOptimizeImageAttachment(ctx context.Context, attachm
 	}
 	defer release()
 
-	optimized, err := optimizeImageBlob(attachment.Blob, attachment.Type, config.PreviewMaxEdge, config.PreviewQuality)
+	img, err := decodeOptimizableImage(attachment.Blob)
+	if err != nil {
+		slog.Warn("failed to optimize image attachment",
+			slog.String("filename", attachment.Filename),
+			slog.String("type", attachment.Type),
+			slog.String("error", err.Error()))
+		if err := WriteUploadThumbnailCache(ctx, s.Profile, attachment.UID, attachment.Blob, config.ThumbnailMaxEdge, config.ThumbnailQuality); err != nil {
+			slog.Warn("failed to generate image thumbnail cache",
+				slog.String("filename", attachment.Filename),
+				slog.String("type", attachment.Type),
+				slog.String("error", err.Error()))
+		}
+		return
+	}
+
+	optimized, err := optimizeDecodedImage(img, attachment.Type, config.PreviewMaxEdge, config.PreviewQuality)
 	if err != nil {
 		slog.Warn("failed to optimize image attachment",
 			slog.String("filename", attachment.Filename),
@@ -113,9 +128,10 @@ func (s *APIV1Service) maybeOptimizeImageAttachment(ctx context.Context, attachm
 		attachment.Blob = optimized
 		attachment.Size = int64(len(optimized))
 		attachment.Type = optimizedImageMimeType(attachment.Type)
+		attachment.Filename = optimizedImageFilename(attachment.Filename, attachment.Type)
 	}
 
-	if err := WriteUploadThumbnailCache(ctx, s.Profile, attachment.UID, optimized, config.ThumbnailMaxEdge, config.ThumbnailQuality); err != nil {
+	if err := writeUploadThumbnailCacheFromImage(ctx, s.Profile, attachment.UID, img, config.ThumbnailMaxEdge, config.ThumbnailQuality); err != nil {
 		slog.Warn("failed to generate image thumbnail cache",
 			slog.String("filename", attachment.Filename),
 			slog.String("type", attachment.Type),
@@ -140,7 +156,18 @@ func optimizedImageMimeType(mimeType string) string {
 	return "image/jpeg"
 }
 
-func optimizeImageBlob(blob []byte, mimeType string, maxEdge, quality int) ([]byte, error) {
+func optimizedImageFilename(filename, mimeType string) string {
+	if optimizedImageMimeType(mimeType) == "image/png" {
+		return filename
+	}
+	ext := filepath.Ext(filename)
+	if ext == "" {
+		return filename + ".jpg"
+	}
+	return strings.TrimSuffix(filename, ext) + ".jpg"
+}
+
+func decodeOptimizableImage(blob []byte) (image.Image, error) {
 	if err := validateImagePixelCount(blob); err != nil {
 		return nil, err
 	}
@@ -149,7 +176,18 @@ func optimizeImageBlob(blob []byte, mimeType string, maxEdge, quality int) ([]by
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to decode image")
 	}
+	return img, nil
+}
 
+func optimizeImageBlob(blob []byte, mimeType string, maxEdge, quality int) ([]byte, error) {
+	img, err := decodeOptimizableImage(blob)
+	if err != nil {
+		return nil, err
+	}
+	return optimizeDecodedImage(img, mimeType, maxEdge, quality)
+}
+
+func optimizeDecodedImage(img image.Image, mimeType string, maxEdge, quality int) ([]byte, error) {
 	img = resizeImageToMaxEdge(img, maxEdge)
 	return encodeOptimizedImage(img, mimeType, quality)
 }
@@ -193,14 +231,21 @@ func WriteUploadThumbnailCache(ctx context.Context, profile *profile.Profile, ui
 	if err := ctx.Err(); err != nil {
 		return err
 	}
-	if err := validateImagePixelCount(blob); err != nil {
+	img, err := decodeOptimizableImage(blob)
+	if err != nil {
+		return err
+	}
+	return writeUploadThumbnailCacheFromImage(ctx, profile, uid, img, maxEdge, quality)
+}
+
+func writeUploadThumbnailCacheFromImage(ctx context.Context, profile *profile.Profile, uid string, img image.Image, maxEdge, quality int) error {
+	if profile == nil || strings.TrimSpace(uid) == "" || img == nil {
+		return nil
+	}
+	if err := ctx.Err(); err != nil {
 		return err
 	}
 
-	img, err := imaging.Decode(bytes.NewReader(blob), imaging.AutoOrientation(true))
-	if err != nil {
-		return errors.Wrap(err, "failed to decode image")
-	}
 	img = resizeImageToMaxEdge(img, maxEdge)
 
 	cacheFolder := filepath.Join(profile.Data, ThumbnailCacheFolder)

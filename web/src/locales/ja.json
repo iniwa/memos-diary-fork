@@ -122,6 +122,7 @@
     "exit-focus-mode": "フォーカスを終了",
     "focus-mode": "フォーカスモード",
     "add-tag": "タグを追加",
+    "remove-tag": "タグ {{tag}} を削除",
     "diary-date-control": {
       "set-date": "日記日付を変更"
     },

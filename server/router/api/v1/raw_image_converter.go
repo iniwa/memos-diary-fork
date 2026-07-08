@@ -22,11 +22,12 @@ const (
 	rawConversionEnabledEnv = "MEMOS_RAW_IMAGE_CONVERSION_ENABLED"
 	rawConversionTimeoutEnv = "MEMOS_RAW_IMAGE_CONVERSION_TIMEOUT_SECONDS"
 
-	// rawConverterBinary is the ImageMagick 7 binary installed by the imagemagick Alpine package.
-	rawConverterBinary = "magick"
-
 	defaultRawConversionTimeout = 30
 )
+
+// rawConverterBinary is the ImageMagick 7 binary installed by the imagemagick Alpine package.
+var rawConverterBinary = "magick"
+var rawConverterCommand = exec.CommandContext
 
 // rawExtensions is the set of lowercase filename extensions recognized as camera RAW formats.
 var rawExtensions = map[string]bool{
@@ -127,7 +128,7 @@ func convertRawImageToJPEG(ctx context.Context, blob []byte, filename, mimeType 
 	defer cancel()
 
 	// exec.CommandContext with a fixed binary name: no shell, no variable expansion.
-	cmd := exec.CommandContext(timeoutCtx, rawConverterBinary,
+	cmd := rawConverterCommand(timeoutCtx, rawConverterBinary,
 		inputPath,
 		"-auto-orient",
 		"-resize", resizeGeom,

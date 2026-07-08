@@ -19,36 +19,6 @@ export interface TagLineResult {
 }
 
 /**
- * If `content` ends with a tag-only line (ignoring trailing blank lines),
- * returns the body without that line and the extracted tag values.
- * Otherwise returns the full content as the body with an empty tag array.
- */
-export function extractTrailingTagLine(content: string): TagLineResult {
-  if (!content.trim()) return { body: content, tags: [] };
-
-  const lines = content.split("\n");
-
-  let lastIdx = lines.length - 1;
-  while (lastIdx >= 0 && !lines[lastIdx].trim()) {
-    lastIdx--;
-  }
-
-  if (lastIdx < 0 || !isTagOnlyLine(lines[lastIdx])) {
-    return { body: content, tags: [] };
-  }
-
-  const tagLine = lines[lastIdx].trim();
-  const tags = tagLine.split(/\s+/).map((w) => w.slice(1));
-
-  const bodyLines = lines.slice(0, lastIdx);
-  while (bodyLines.length > 0 && !bodyLines[bodyLines.length - 1].trim()) {
-    bodyLines.pop();
-  }
-
-  return { body: bodyLines.join("\n"), tags };
-}
-
-/**
  * Extracts at most one leading and one trailing tag-only line, merges and
  * de-duplicates their tags (leading order first), and returns the remaining
  * body with surrounding blank lines trimmed.
