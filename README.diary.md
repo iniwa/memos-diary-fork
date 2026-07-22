@@ -39,8 +39,8 @@ describes the fork.
 1. Codex (design side) turns a request into a handoff under `docs/handoffs/`
    with explicit goal, files, constraints, non-goals, and verification.
 2. Codex delegates it with
-   `claude -p --model sonnet --permission-mode auto "<handoff path + task>"`;
-   Claude Code (implementation side, Sonnet 5) executes the handoff and
+   `claude -p --model sonnet --effort medium --permission-mode auto "<handoff/task prompt>"`;
+   Claude Code (implementation side, Sonnet) executes the handoff and
    reports changed files, verification results, and design questions.
 3. Completed handoffs move to `docs/handoffs/archive/`.
 4. Improvement candidates live in `docs/improvements.md`; feature ideas and
