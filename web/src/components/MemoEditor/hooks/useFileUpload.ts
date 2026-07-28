@@ -9,6 +9,8 @@ export const useFileUpload = (onFilesSelected: (localFiles: LocalFile[]) => void
   const fileInputRef = useRef<HTMLInputElement>(null);
   const selectingFlagRef = useRef(false);
   const [selectingFlag, setSelectingFlag] = useState(false);
+  // Track preview blob URLs so they're revoked on unmount instead of leaking
+  // (matches the paste/drop/audio paths, which all go through useBlobUrls).
   const { createBlobUrl } = useBlobUrls();
 
   const handleFileInputChange = async (event?: React.ChangeEvent<HTMLInputElement>) => {

@@ -1,13 +1,14 @@
 import type { FC } from "react";
 import { useTranslate } from "@/utils/i18n";
-import { useEditorContext } from "../state";
+import { useEditorContext, useEditorSelector } from "../state";
 import { TimestampPopover } from "./TimestampPopover";
 
 export const DiaryDateControl: FC = () => {
   const t = useTranslate();
-  const { state, actions, dispatch } = useEditorContext();
+  const { actions, dispatch } = useEditorContext();
+  const hasCreateTime = useEditorSelector((s) => Boolean(s.timestamps.createTime));
 
-  if (state.timestamps.createTime) {
+  if (hasCreateTime) {
     return <TimestampPopover />;
   }
 

@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { cn } from "@/lib/utils";
 import { useTranslate } from "@/utils/i18n";
 import { useAudioWaveform } from "../hooks/useAudioWaveform";
-import type { AudioRecorderPanelProps } from "../types/components";
+import type { AudioRecorderPanelProps } from "../types";
 import { VoiceWaveform } from "./VoiceWaveform";
 
 export const AudioRecorderPanel: FC<AudioRecorderPanelProps> = ({
@@ -63,20 +63,18 @@ export const AudioRecorderPanel: FC<AudioRecorderPanelProps> = ({
         </Button>
         {canTranscribe && (
           <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="-ml-2 inline-flex">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-full"
-                  onClick={onTranscribe}
-                  disabled={isTranscribeDisabled}
-                  aria-label={t("editor.audio-recorder.transcribe")}
-                >
-                  <AudioWaveformIcon className="size-4" />
-                </Button>
-              </span>
+            <TooltipTrigger render={<span className="-ml-2 inline-flex" />}>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="rounded-full"
+                onClick={onTranscribe}
+                disabled={isTranscribeDisabled}
+                aria-label={t("editor.audio-recorder.transcribe")}
+              >
+                <AudioWaveformIcon className="size-4" />
+              </Button>
             </TooltipTrigger>
             <TooltipContent side="top">
               <p>{t("editor.audio-recorder.transcribe")}</p>

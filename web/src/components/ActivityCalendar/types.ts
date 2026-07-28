@@ -38,7 +38,6 @@ export interface YearCalendarProps {
   data: CalendarData;
   onYearChange: (year: number) => void;
   onDateClick: (date: string) => void;
-  onMonthClick?: (month: string) => void;
   className?: string;
   timeBasis?: MemoTimeBasis;
 }

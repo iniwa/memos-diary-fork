@@ -1,5 +1,5 @@
 import MemoView from "@/components/MemoView";
-import PagedMemoList from "@/components/PagedMemoList";
+import PagedMemoList, { getMemoKey } from "@/components/PagedMemoList";
 import { useMemoFilters, useMemoSorting } from "@/hooks";
 import useCurrentUser from "@/hooks/useCurrentUser";
 import { State } from "@/types/proto/api/v1/common_pb";
@@ -23,7 +23,7 @@ const Archived = () => {
 
   return (
     <PagedMemoList
-      renderer={(memo: Memo) => <MemoView key={`${memo.name}-${memo.updateTime}`} memo={memo} showVisibility compact />}
+      renderer={(memo: Memo, { compact }) => <MemoView key={getMemoKey(memo)} memo={memo} showVisibility compact={compact} />}
       listSort={listSort}
       state={State.ARCHIVED}
       orderBy={orderBy}

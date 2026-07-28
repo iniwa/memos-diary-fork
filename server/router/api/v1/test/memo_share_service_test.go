@@ -59,14 +59,14 @@ func TestDeleteMemoShare_VerifiesShareBelongsToMemo(t *testing.T) {
 	require.Error(t, err)
 	require.Equal(t, codes.NotFound, status.Code(err))
 
-	sharedMemo, err := ts.Service.GetMemoByShare(ctx, &apiv1.GetMemoByShareRequest{
-		ShareId: shareToken,
+	sharedMemo, err := ts.Service.GetSharedMemo(ctx, &apiv1.GetSharedMemoRequest{
+		ShareToken: shareToken,
 	})
 	require.NoError(t, err)
 	require.Equal(t, memoTwo.Name, sharedMemo.Name)
 }
 
-func TestGetMemoByShare_IncludesReactions(t *testing.T) {
+func TestGetSharedMemo_IncludesReactions(t *testing.T) {
 	ctx := context.Background()
 
 	ts := NewTestService(t)
@@ -101,8 +101,8 @@ func TestGetMemoByShare_IncludesReactions(t *testing.T) {
 	require.NoError(t, err)
 
 	shareToken := share.Name[strings.LastIndex(share.Name, "/")+1:]
-	sharedMemo, err := ts.Service.GetMemoByShare(ctx, &apiv1.GetMemoByShareRequest{
-		ShareId: shareToken,
+	sharedMemo, err := ts.Service.GetSharedMemo(ctx, &apiv1.GetSharedMemoRequest{
+		ShareToken: shareToken,
 	})
 	require.NoError(t, err)
 	require.Len(t, sharedMemo.Reactions, 1)
@@ -110,7 +110,55 @@ func TestGetMemoByShare_IncludesReactions(t *testing.T) {
 	require.Equal(t, memo.Name, sharedMemo.Reactions[0].ContentId)
 }
 
-func TestGetMemoByShare_SkipsReactionsWithMissingCreators(t *testing.T) {
+func TestGetSharedMemo_ExcludesParentAndRelations(t *testing.T) {
+	ctx := context.Background()
+
+	ts := NewTestService(t)
+	defer ts.Cleanup()
+
+	user, err := ts.CreateRegularUser(ctx, "share-single-memo")
+	require.NoError(t, err)
+	userCtx := ts.CreateUserContext(ctx, user.ID)
+
+	parent, err := ts.Service.CreateMemo(userCtx, &apiv1.CreateMemoRequest{
+		Memo: &apiv1.Memo{
+			Content:    "parent must not be shared",
+			Visibility: apiv1.Visibility_PRIVATE,
+		},
+	})
+	require.NoError(t, err)
+
+	comment, err := ts.Service.CreateMemoComment(userCtx, &apiv1.CreateMemoCommentRequest{
+		Name: parent.Name,
+		Comment: &apiv1.Memo{
+			Content:    "only this memo is shared",
+			Visibility: apiv1.Visibility_PRIVATE,
+		},
+	})
+	require.NoError(t, err)
+	require.NotEmpty(t, comment.Relations)
+
+	regularMemo, err := ts.Service.GetMemo(userCtx, &apiv1.GetMemoRequest{Name: comment.Name})
+	require.NoError(t, err)
+	require.NotEmpty(t, regularMemo.GetParent())
+	require.NotEmpty(t, regularMemo.Relations)
+
+	share, err := ts.Service.CreateMemoShare(userCtx, &apiv1.CreateMemoShareRequest{
+		Parent:    comment.Name,
+		MemoShare: &apiv1.MemoShare{},
+	})
+	require.NoError(t, err)
+
+	shareToken := share.Name[strings.LastIndex(share.Name, "/")+1:]
+	sharedMemo, err := ts.Service.GetSharedMemo(ctx, &apiv1.GetSharedMemoRequest{
+		ShareToken: shareToken,
+	})
+	require.NoError(t, err)
+	require.Empty(t, sharedMemo.GetParent())
+	require.Empty(t, sharedMemo.Relations)
+}
+
+func TestGetSharedMemo_SkipsReactionsWithMissingCreators(t *testing.T) {
 	ctx := context.Background()
 
 	ts := NewTestService(t)
@@ -151,27 +199,27 @@ func TestGetMemoByShare_SkipsReactionsWithMissingCreators(t *testing.T) {
 	require.NoError(t, err)
 
 	shareToken := share.Name[strings.LastIndex(share.Name, "/")+1:]
-	sharedMemo, err := ts.Service.GetMemoByShare(ctx, &apiv1.GetMemoByShareRequest{
-		ShareId: shareToken,
+	sharedMemo, err := ts.Service.GetSharedMemo(ctx, &apiv1.GetSharedMemoRequest{
+		ShareToken: shareToken,
 	})
 	require.NoError(t, err)
 	require.Empty(t, sharedMemo.Reactions)
 }
 
-func TestGetMemoByShare_ReturnsNotFoundForUnknownShare(t *testing.T) {
+func TestGetSharedMemo_ReturnsNotFoundForUnknownShare(t *testing.T) {
 	ctx := context.Background()
 
 	ts := NewTestService(t)
 	defer ts.Cleanup()
 
-	_, err := ts.Service.GetMemoByShare(ctx, &apiv1.GetMemoByShareRequest{
-		ShareId: "missing-share-token",
+	_, err := ts.Service.GetSharedMemo(ctx, &apiv1.GetSharedMemoRequest{
+		ShareToken: "missing-share-token",
 	})
 	require.Error(t, err)
 	require.Equal(t, codes.NotFound, status.Code(err))
 }
 
-func TestGetMemoByShare_ReturnsNotFoundForExpiredShare(t *testing.T) {
+func TestGetSharedMemo_ReturnsNotFoundForExpiredShare(t *testing.T) {
 	ctx := context.Background()
 
 	ts := NewTestService(t)
@@ -198,14 +246,14 @@ func TestGetMemoByShare_ReturnsNotFoundForExpiredShare(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	_, err = ts.Service.GetMemoByShare(ctx, &apiv1.GetMemoByShareRequest{
-		ShareId: expiredShare.UID,
+	_, err = ts.Service.GetSharedMemo(ctx, &apiv1.GetSharedMemoRequest{
+		ShareToken: expiredShare.UID,
 	})
 	require.Error(t, err)
 	require.Equal(t, codes.NotFound, status.Code(err))
 }
 
-func TestGetMemoByShare_ReturnsNotFoundForArchivedMemo(t *testing.T) {
+func TestGetSharedMemo_ReturnsNotFoundForArchivedMemo(t *testing.T) {
 	ctx := context.Background()
 
 	ts := NewTestService(t)
@@ -242,8 +290,8 @@ func TestGetMemoByShare_ReturnsNotFoundForArchivedMemo(t *testing.T) {
 	require.NoError(t, err)
 
 	shareToken := share.Name[strings.LastIndex(share.Name, "/")+1:]
-	_, err = ts.Service.GetMemoByShare(ctx, &apiv1.GetMemoByShareRequest{
-		ShareId: shareToken,
+	_, err = ts.Service.GetSharedMemo(ctx, &apiv1.GetSharedMemoRequest{
+		ShareToken: shareToken,
 	})
 	require.Error(t, err)
 	require.Equal(t, codes.NotFound, status.Code(err))

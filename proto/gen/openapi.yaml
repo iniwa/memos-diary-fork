@@ -95,6 +95,7 @@ paths:
                   description: |-
                     Optional. The attachment ID to use for this attachment.
                      If empty, a unique ID will be generated.
+                     Format: ^[a-zA-Z0-9]([a-zA-Z0-9-]{0,34}[a-zA-Z0-9])?$
                   schema:
                     type: string
             requestBody:
@@ -349,6 +350,7 @@ paths:
                   description: |-
                     Optional. The ID to use for the identity provider, which will become the final component of the resource name.
                      If not provided, the system will generate one.
+                     Format: ^[a-zA-Z0-9]([a-zA-Z0-9-]{0,34}[a-zA-Z0-9])?$
                   schema:
                     type: string
             requestBody:
@@ -648,15 +650,27 @@ paths:
                      Default to "create_time desc".
                      Supports comma-separated list of fields following AIP-132.
                      Example: "pinned desc, create_time desc" or "update_time asc"
-                     Supported fields: pinned, create_time, update_time, name
+                     Supported fields: pinned, create_time, update_time, name.
+                     Note: order_by uses create_time / update_time, while the filter
+                     expression uses created_ts / updated_ts for the same timestamps.
                   schema:
                     type: string
                 - name: filter
                   in: query
                   description: |-
-                    Optional. Filter to apply to the list results.
-                     Filter is a CEL expression to filter memos.
-                     Refer to `Shortcut.filter`.
+                    Optional. A CEL expression to filter memos. Combine terms with && and ||.
+                     Available fields:
+                       content (string), creator (string, e.g. "users/1"),
+                       created_ts / updated_ts (timestamp), pinned (bool),
+                       visibility (string: PRIVATE | PROTECTED | PUBLIC),
+                       tags (list<string>; match with `"work" in tags`, not `tag == "work"`),
+                       has_task_list / has_link / has_code / has_incomplete_tasks (bool).
+                     Note: the time fields here are created_ts / updated_ts, which differ from
+                     the create_time / update_time names used by order_by.
+                     Examples:
+                       pinned == true && visibility == "PUBLIC"
+                       tags.exists(t, t == "urgent")
+                       content.contains("roadmap") && created_ts > now - duration("168h")
                   schema:
                     type: string
                 - name: showDeleted
@@ -680,7 +694,10 @@ paths:
         post:
             tags:
                 - MemoService
-            description: CreateMemo creates a memo.
+            description: |-
+                CreateMemo creates a memo. The request body is a Memo; set its content
+                 (Markdown) and visibility (PRIVATE | PROTECTED | PUBLIC, default PRIVATE).
+                 The memo is owned by the authenticated user; requires authentication.
             operationId: MemoService_CreateMemo
             parameters:
                 - name: memoId
@@ -688,6 +705,7 @@ paths:
                   description: |-
                     Optional. The memo ID to use for this memo.
                      If empty, a unique ID will be generated.
+                     Format: ^[a-zA-Z0-9]([a-zA-Z0-9-]{0,34}[a-zA-Z0-9])?$
                   schema:
                     type: string
             requestBody:
@@ -889,7 +907,10 @@ paths:
         patch:
             tags:
                 - MemoService
-            description: SetMemoAttachments sets attachments for a memo.
+            description: |-
+                SetMemoAttachments replaces the full set of attachments on a memo with the
+                 provided list (not an append). Pass the complete desired set; an empty list
+                 clears all attachments. Idempotent.
             operationId: MemoService_SetMemoAttachments
             parameters:
                 - name: memo
@@ -1032,7 +1053,9 @@ paths:
         post:
             tags:
                 - MemoService
-            description: UpsertMemoReaction upserts a reaction for a memo.
+            description: |-
+                UpsertMemoReaction adds or updates the authenticated user's reaction on a
+                 memo. The reaction's content_id is the memo's resource name (memos/{memo}).
             operationId: MemoService_UpsertMemoReaction
             parameters:
                 - name: memo
@@ -1129,7 +1152,10 @@ paths:
         patch:
             tags:
                 - MemoService
-            description: SetMemoRelations sets relations for a memo.
+            description: |-
+                SetMemoRelations replaces the full set of relations on a memo with the
+                 provided list (not an append). Pass the complete desired set; an empty list
+                 clears all relations. Idempotent.
             operationId: MemoService_SetMemoRelations
             parameters:
                 - name: memo
@@ -1240,18 +1266,18 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /api/v1/shares/{shareId}:
+    /api/v1/shares/{shareToken}/memo:
         get:
             tags:
                 - MemoService
             description: |-
-                GetMemoByShare resolves a share token to its memo. No authentication required.
+                GetSharedMemo resolves a share token to its memo. No authentication required.
                  Returns NOT_FOUND if the token is invalid or expired.
-            operationId: MemoService_GetMemoByShare
+            operationId: MemoService_GetSharedMemo
             parameters:
-                - name: shareId
+                - name: shareToken
                   in: path
-                  description: Required. The share token extracted from the share URL (/s/{share_id}).
+                  description: Required. The opaque bearer token extracted from the share URL.
                   required: true
                   schema:
                     type: string
@@ -1328,9 +1354,9 @@ paths:
                 - name: userId
                   in: query
                   description: |-
-                    Optional. The user ID to use for this user.
-                     If empty, a unique ID will be generated.
-                     Must match the pattern [a-z0-9-]+
+                    Optional. The resource ID to use for this user. If set, it must equal
+                     user.username, follow the UID format, and not consist entirely of digits.
+                     Format: ^[a-zA-Z0-9]([a-zA-Z0-9-]{0,34}[a-zA-Z0-9])?$
                   schema:
                     type: string
                 - name: validateOnly
@@ -1370,7 +1396,7 @@ paths:
                 - UserService
             description: |-
                 GetUser gets a user by username.
-                 Format: users/{username} (e.g., users/steven)
+                 Format: users/{user} (e.g., users/steven)
             operationId: UserService_GetUser
             parameters:
                 - name: user
@@ -1919,7 +1945,10 @@ paths:
         get:
             tags:
                 - ShortcutService
-            description: ListShortcuts returns a list of shortcuts for a user.
+            description: |-
+                ListShortcuts returns a user's saved shortcuts. Each shortcut is a named,
+                 reusable CEL filter (see Shortcut.filter); pass its filter string directly
+                 to the ListMemos `filter` argument to reuse a saved view.
             operationId: ShortcutService_ListShortcuts
             parameters:
                 - name: user
@@ -2203,6 +2232,41 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/UserWebhook'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /api/v1/users/{user}/webhooks/{webhook}:getSigningSecret:
+        get:
+            tags:
+                - UserService
+            description: |-
+                GetUserWebhookSigningSecret returns the signing secret for a webhook.
+                 The secret is returned only through this explicit, owner-gated call; it is
+                 never included in List/Create/Update responses.
+            operationId: UserService_GetUserWebhookSigningSecret
+            parameters:
+                - name: user
+                  in: path
+                  description: The user id.
+                  required: true
+                  schema:
+                    type: string
+                - name: webhook
+                  in: path
+                  description: The webhook id.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetUserWebhookSigningSecretResponse'
                 default:
                     description: Default error response
                     content:
@@ -2577,7 +2641,7 @@ components:
                     type: string
                     description: |-
                         Required. The identity provider to link.
-                         Format: identity-providers/{uid}
+                         Format: identity-providers/{idp}
                 code:
                     type: string
                     description: Required. The authorization code from the identity provider.
@@ -2644,6 +2708,12 @@ components:
                     allOf:
                         - $ref: '#/components/schemas/User'
                     description: The authenticated user's information.
+        GetUserWebhookSigningSecretResponse:
+            type: object
+            properties:
+                signingSecret:
+                    type: string
+                    description: The signing secret, in the Standard Webhooks "whsec_<base64>" form.
         GoogleProtobufAny:
             type: object
             properties:
@@ -2702,11 +2772,19 @@ components:
                     allOf:
                         - $ref: '#/components/schemas/User'
                     description: |-
-                        The first administrator who set up this instance.
-                         When null, instance requires initial setup (creating the first admin account).
+                        The first administrator who set up this instance, for display purposes.
+                         May be null on an instance that has lost all admins; use needs_setup to
+                         determine whether initial setup is actually required.
                 commit:
                     type: string
                     description: Commit is the current build commit of instance.
+                needsSetup:
+                    type: boolean
+                    description: |-
+                        NeedsSetup is true when the instance has no users yet and requires initial
+                         setup (creating the first admin account). Unlike a null admin, this stays
+                         false once any user exists, so an instance that has lost its admins is not
+                         mistaken for a fresh install.
             description: Instance profile message containing basic instance information.
         InstanceSetting:
             type: object
@@ -2878,7 +2956,10 @@ components:
                          Each key is treated as an anchored regular expression (^pattern$),
                          so a single entry like "project/.*" matches all tags under that prefix.
                          Exact tag names are also valid (they are trivially valid regex patterns).
-            description: Tag metadata configuration.
+            description: |-
+                Tag metadata configuration.
+                 Active tag metadata is stored in per-user tag settings.
+                 This message remains for backward compatibility with existing clients and migrations.
         InstanceSetting_TranscriptionConfig:
             type: object
             properties:
@@ -2953,7 +3034,7 @@ components:
                     type: string
                     description: |-
                         The resource name of the identity provider.
-                         Format: identity-providers/{uid}
+                         Format: identity-providers/{idp}
                 externUid:
                     readOnly: true
                     type: string
@@ -2980,10 +3061,6 @@ components:
                     description: |-
                         A token that can be sent as `page_token` to retrieve the next page.
                          If this field is omitted, there are no subsequent pages.
-                totalSize:
-                    type: integer
-                    description: The total count of attachments (may be approximate).
-                    format: int32
         ListIdentityProvidersResponse:
             type: object
             properties:
@@ -3022,10 +3099,6 @@ components:
                 nextPageToken:
                     type: string
                     description: A token for the next page of results.
-                totalSize:
-                    type: integer
-                    description: The total count of comments.
-                    format: int32
         ListMemoReactionsResponse:
             type: object
             properties:
@@ -3037,10 +3110,6 @@ components:
                 nextPageToken:
                     type: string
                     description: A token for the next page of results.
-                totalSize:
-                    type: integer
-                    description: The total count of reactions.
-                    format: int32
         ListMemoRelationsResponse:
             type: object
             properties:
@@ -3084,10 +3153,6 @@ components:
                 nextPageToken:
                     type: string
                     description: A token for the next page of results.
-                totalSize:
-                    type: integer
-                    description: The total count of personal access tokens.
-                    format: int32
         ListShortcutsResponse:
             type: object
             properties:
@@ -3118,10 +3183,6 @@ components:
                     description: |-
                         A token that can be sent as `page_token` to retrieve the next page.
                          If this field is omitted, there are no subsequent pages.
-                totalSize:
-                    type: integer
-                    description: The total count of settings (may be approximate).
-                    format: int32
             description: Response message for ListUserSettings method.
         ListUserWebhooksResponse:
             type: object
@@ -3144,10 +3205,6 @@ components:
                     description: |-
                         A token that can be sent as `page_token` to retrieve the next page.
                          If this field is omitted, there are no subsequent pages.
-                totalSize:
-                    type: integer
-                    description: The total count of users (may be approximate).
-                    format: int32
         Location:
             type: object
             properties:
@@ -3173,7 +3230,7 @@ components:
                     type: string
                     description: |-
                         The resource name of the memo.
-                         Format: memos/{memo}, memo is the user defined id or uuid.
+                         Format: memos/{memo}, where memo is the user-defined UID.
                 state:
                     enum:
                         - STATE_UNSPECIFIED
@@ -3210,7 +3267,10 @@ components:
                         - PROTECTED
                         - PUBLIC
                     type: string
-                    description: The visibility of the memo.
+                    description: |-
+                        The visibility of the memo.
+                         One of PRIVATE (creator only), PROTECTED (signed-in users), or
+                         PUBLIC (anyone). Defaults to PRIVATE on creation when unspecified.
                     format: enum
                 tags:
                     readOnly: true
@@ -3511,13 +3571,15 @@ components:
                     type: string
                     description: |-
                         The resource name of the shortcut.
-                         Format: users/{username}/shortcuts/{shortcut}
+                         Format: users/{user}/shortcuts/{shortcut}
                 title:
                     type: string
                     description: The title of the shortcut.
                 filter:
                     type: string
-                    description: The filter expression for the shortcut.
+                    description: |-
+                        The CEL filter expression for the shortcut, using the same grammar as the
+                         ListMemos `filter` argument. Reuse it by passing this value to ListMemos.
         SignInRequest:
             type: object
             properties:
@@ -3553,7 +3615,7 @@ components:
                     type: string
                     description: |-
                         The resource name of the SSO provider.
-                         Format: identity-providers/{uid}
+                         Format: identity-providers/{idp}
                 code:
                     type: string
                     description: The authorization code from the SSO provider.
@@ -3616,6 +3678,12 @@ components:
                     type: string
                 usePathStyle:
                     type: boolean
+                insecureSkipTlsVerify:
+                    type: boolean
+                    description: |-
+                        insecure_skip_tls_verify disables TLS certificate verification when connecting
+                         to the S3 endpoint. Only enable this for trusted endpoints that use a self-signed
+                         certificate; it removes protection against man-in-the-middle attacks.
             description: |-
                 S3 configuration for cloud storage backend.
                  Reference: https://developers.cloudflare.com/r2/examples/aws/aws-sdk-go/
@@ -3829,12 +3897,14 @@ components:
                     type: string
                     description: |-
                         The name of the user setting.
-                         Format: users/{username}/settings/{setting}, {setting} is the key for the setting.
+                         Format: users/{user}/settings/{setting}, {setting} is the key for the setting.
                          For example, "users/steven/settings/GENERAL" for general settings.
                 generalSetting:
                     $ref: '#/components/schemas/UserSetting_GeneralSetting'
                 webhooksSetting:
                     $ref: '#/components/schemas/UserSetting_WebhooksSetting'
+                tagsSetting:
+                    $ref: '#/components/schemas/UserSetting_TagsSetting'
             description: User settings message
         UserSetting_GeneralSetting:
             type: object
@@ -3852,6 +3922,30 @@ components:
                          This references a CSS file in the web/public/themes/ directory.
                          If not set, the default theme will be used.
             description: General user settings configuration.
+        UserSetting_TagMetadata:
+            type: object
+            properties:
+                backgroundColor:
+                    allOf:
+                        - $ref: '#/components/schemas/Color'
+                    description: |-
+                        Optional background color for the tag label.
+                         When unset, the default tag color is used.
+                blurContent:
+                    type: boolean
+                    description: Whether memos with this tag should have their content blurred.
+            description: Tag metadata for user-specific display rules.
+        UserSetting_TagsSetting:
+            type: object
+            properties:
+                tags:
+                    type: object
+                    additionalProperties:
+                        $ref: '#/components/schemas/UserSetting_TagMetadata'
+                    description: |-
+                        Map of tag name pattern to tag metadata.
+                         Each key is treated as an anchored regular expression (^pattern$).
+            description: User-specific tag metadata.
         UserSetting_WebhooksSetting:
             type: object
             properties:
@@ -3867,8 +3961,8 @@ components:
                 name:
                     type: string
                     description: |-
-                        The resource name of the user whose stats these are.
-                         Format: users/{user}
+                        The resource name of the user statistics singleton.
+                         Format: users/{user}/stats
                 memoTypeStats:
                     allOf:
                         - $ref: '#/components/schemas/UserStats_MemoTypeStats'
@@ -3944,6 +4038,16 @@ components:
                     type: string
                     description: The last update time of the webhook.
                     format: date-time
+                signingSecret:
+                    writeOnly: true
+                    type: string
+                    description: |-
+                        Optional. Signing secret used to HMAC-SHA256 sign the webhook request body.
+                         This field is input-only; it is never returned in responses.
+                signingSecretSet:
+                    readOnly: true
+                    type: boolean
+                    description: Whether a signing secret is configured for this webhook.
             description: UserWebhook represents a webhook owned by a user.
 tags:
     - name: AIService

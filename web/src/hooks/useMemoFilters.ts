@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMemoFilterContext } from "@/contexts/MemoFilterContext";
-import { buildMemoCreatorFilter } from "@/helpers/resource-names";
+import { buildMemoCreatorFilter } from "@/lib/resource-names";
 import { Visibility } from "@/types/proto/api/v1/memo_service_pb";
 
 const getVisibilityName = (visibility: Visibility): string => {
@@ -23,19 +23,6 @@ const getShortcutId = (name: string): string => {
 };
 
 const escapeFilterValue = (value: string): string => JSON.stringify(value);
-
-const MONTH_RE = /^(\d{4})-(\d{2})$/;
-
-export function parseMonthFilterRange(value: string): { start: number; end: number } | undefined {
-  const match = MONTH_RE.exec(value);
-  if (!match) return undefined;
-  const year = Number(match[1]);
-  const month = Number(match[2]);
-  if (month < 1 || month > 12) return undefined;
-  const start = new Date(year, month - 1, 1, 0, 0, 0, 0).getTime() / 1000;
-  const end = new Date(year, month, 1, 0, 0, 0, 0).getTime() / 1000;
-  return { start, end };
-}
 
 export interface UseMemoFiltersOptions {
   creatorName?: string;
@@ -94,14 +81,10 @@ export const useMemoFilters = (options: UseMemoFiltersOptions = {}): string | un
       } else if (filter.factor === "displayTime") {
         const filterDate = new Date(filter.value);
         const filterUtcTimestamp = filterDate.getTime() + filterDate.getTimezoneOffset() * 60 * 1000;
-        const timestampAfter = filterUtcTimestamp / 1000;
+        const startTimestamp = Math.floor(filterUtcTimestamp / 1000);
+        const endTimestamp = startTimestamp + 60 * 60 * 24;
 
-        conditions.push(`created_ts >= ${timestampAfter} && created_ts < ${timestampAfter + 60 * 60 * 24}`);
-      } else if (filter.factor === "displayMonth") {
-        const range = parseMonthFilterRange(filter.value);
-        if (range) {
-          conditions.push(`created_ts >= ${range.start} && created_ts < ${range.end}`);
-        }
+        conditions.push(`created_ts >= timestamp(${startTimestamp}) && created_ts < timestamp(${endTimestamp})`);
       }
     }
 

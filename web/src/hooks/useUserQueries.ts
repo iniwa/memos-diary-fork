@@ -1,9 +1,9 @@
 import { create } from "@bufbuild/protobuf";
 import { FieldMaskSchema } from "@bufbuild/protobuf/wkt";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { shortcutServiceClient, userServiceClient } from "@/connect";
-import { buildUserSettingName } from "@/helpers/resource-names";
 import useCurrentUser from "@/hooks/useCurrentUser";
+import { buildUserSettingName, userNamePrefix } from "@/lib/resource-names";
 import {
   type ListAllUserStatsRequest,
   ListAllUserStatsRequestSchema,
@@ -16,6 +16,7 @@ import {
 } from "@/types/proto/api/v1/user_service_pb";
 
 const BATCH_GET_USERS_LIMIT = 100;
+const USER_PROFILE_STALE_TIME = 1000 * 60 * 5;
 type ListAllUserStatsQuery = Pick<ListAllUserStatsRequest, "state" | "filter">;
 
 // Query keys factory
@@ -33,19 +34,21 @@ export const userKeys = {
   byUsernames: (usernames: string[]) => [...userKeys.all, "byUsernames", ...[...usernames].sort()] as const,
 };
 
+export const userDetailQueryOptions = (name: string) =>
+  queryOptions({
+    queryKey: userKeys.detail(name),
+    queryFn: () => userServiceClient.getUser({ name }),
+    staleTime: USER_PROFILE_STALE_TIME,
+  });
+
 export function useUser(name: string, options?: { enabled?: boolean }) {
   return useQuery({
-    queryKey: userKeys.detail(name),
-    queryFn: async () => {
-      const user = await userServiceClient.getUser({ name });
-      return user;
-    },
+    ...userDetailQueryOptions(name),
     enabled: options?.enabled ?? true,
-    staleTime: 1000 * 60 * 5, // 5 minutes - user profiles don't change often
   });
 }
 
-export function useUserStats(username?: string) {
+export function useUserStats(username?: string, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: username ? userKeys.userStats(username) : userKeys.stats(),
     queryFn: async () => {
@@ -55,7 +58,7 @@ export function useUserStats(username?: string) {
       const stats = await userServiceClient.getUserStats({ name: username });
       return stats;
     },
-    enabled: !!username,
+    enabled: !!username && (options?.enabled ?? true),
   });
 }
 
@@ -205,12 +208,18 @@ export function useUpdateUserSetting() {
   });
 }
 
-// Hook to list all users
+// Hook to list all users, paging through every result.
 export function useListUsers() {
   return useQuery({
     queryKey: userKeys.all,
     queryFn: async () => {
-      const { users } = await userServiceClient.listUsers({});
+      const users: User[] = [];
+      let pageToken = "";
+      do {
+        const response = await userServiceClient.listUsers({ pageToken });
+        users.push(...response.users);
+        pageToken = response.nextPageToken;
+      } while (pageToken);
       return users;
     },
   });
@@ -248,8 +257,9 @@ export function useUpdateUserGeneralSetting(currentUserName?: string) {
 }
 
 // Hook to fetch multiple users by names (returns Map<name, User>)
-export function useUsersByNames(names: string[]) {
-  const enabled = names.length > 0;
+export function useUsersByNames(names: string[], options?: { enabled?: boolean }) {
+  const queryClient = useQueryClient();
+  const enabled = (options?.enabled ?? true) && names.length > 0;
   const uniqueNames = Array.from(new Set(names));
 
   return useQuery({
@@ -258,7 +268,7 @@ export function useUsersByNames(names: string[]) {
       const users = await Promise.all(
         uniqueNames.map(async (name) => {
           try {
-            const user = await userServiceClient.getUser({ name });
+            const user = await queryClient.fetchQuery(userDetailQueryOptions(name));
             return { name, user };
           } catch {
             return { name, user: undefined };
@@ -273,25 +283,44 @@ export function useUsersByNames(names: string[]) {
       return userMap;
     },
     enabled,
-    staleTime: 1000 * 60 * 5, // 5 minutes - user profiles don't change often
+    staleTime: USER_PROFILE_STALE_TIME,
   });
 }
 
 // Hook to fetch multiple users by usernames (returns Map<username, User>)
 export function useUsersByUsernames(usernames: string[], options?: { enabled?: boolean }) {
+  const queryClient = useQueryClient();
   const enabled = (options?.enabled ?? true) && usernames.length > 0;
   const uniqueUsernames = Array.from(new Set(usernames));
 
   return useQuery({
     queryKey: userKeys.byUsernames(uniqueUsernames),
     queryFn: async () => {
+      const usersByUsername = new Map<string, User>();
+      const missingUsernames: string[] = [];
+      for (const username of uniqueUsernames) {
+        const detailKey = userKeys.detail(`${userNamePrefix}${username}`);
+        const cachedUser = queryClient.getQueryData<User>(detailKey);
+        const cachedState = queryClient.getQueryState(detailKey);
+        const cacheIsFresh = cachedState ? Date.now() - cachedState.dataUpdatedAt < USER_PROFILE_STALE_TIME : false;
+        if (cachedUser && cacheIsFresh) {
+          usersByUsername.set(username, cachedUser);
+        } else {
+          missingUsernames.push(username);
+        }
+      }
+
       const batches = [];
-      for (let i = 0; i < uniqueUsernames.length; i += BATCH_GET_USERS_LIMIT) {
-        batches.push(uniqueUsernames.slice(i, i + BATCH_GET_USERS_LIMIT));
+      for (let i = 0; i < missingUsernames.length; i += BATCH_GET_USERS_LIMIT) {
+        batches.push(missingUsernames.slice(i, i + BATCH_GET_USERS_LIMIT));
       }
 
       const responses = await Promise.all(batches.map((batch) => userServiceClient.batchGetUsers({ usernames: batch })));
-      const usersByUsername = new Map(responses.flatMap((response) => response.users).map((user) => [user.username, user] as const));
+      const users = responses.flatMap((response) => response.users);
+      for (const user of users) {
+        usersByUsername.set(user.username, user);
+        queryClient.setQueryData(userKeys.detail(user.name), user);
+      }
 
       const userMap = new Map<string, User | undefined>();
       for (const username of uniqueUsernames) {
@@ -300,6 +329,6 @@ export function useUsersByUsernames(usernames: string[], options?: { enabled?: b
       return userMap;
     },
     enabled,
-    staleTime: 1000 * 60 * 5,
+    staleTime: USER_PROFILE_STALE_TIME,
   });
 }

@@ -9,9 +9,11 @@ export {
   AUTH_REASON_PARAM,
   AUTH_REASON_PROTECTED_MEMO,
   AUTH_REDIRECT_PARAM,
+  appendSearchParams,
   buildAuthRoute,
   getSafeRedirectPath,
   isPublicRoute,
+  shouldGatePrivateInstance,
 } from "./redirect-safety";
 
 /**

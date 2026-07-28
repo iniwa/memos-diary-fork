@@ -269,6 +269,14 @@ func (s *ConnectServiceHandler) DeleteUserWebhook(ctx context.Context, req *conn
 	return connect.NewResponse(resp), nil
 }
 
+func (s *ConnectServiceHandler) GetUserWebhookSigningSecret(ctx context.Context, req *connect.Request[v1pb.GetUserWebhookSigningSecretRequest]) (*connect.Response[v1pb.GetUserWebhookSigningSecretResponse], error) {
+	resp, err := s.APIV1Service.GetUserWebhookSigningSecret(ctx, req.Msg)
+	if err != nil {
+		return nil, convertGRPCError(err)
+	}
+	return connect.NewResponse(resp), nil
+}
+
 func (s *ConnectServiceHandler) ListUserNotifications(ctx context.Context, req *connect.Request[v1pb.ListUserNotificationsRequest]) (*connect.Response[v1pb.ListUserNotificationsResponse], error) {
 	resp, err := s.APIV1Service.ListUserNotifications(ctx, req.Msg)
 	if err != nil {
@@ -431,8 +439,8 @@ func (s *ConnectServiceHandler) DeleteMemoShare(ctx context.Context, req *connec
 	return connect.NewResponse(resp), nil
 }
 
-func (s *ConnectServiceHandler) GetMemoByShare(ctx context.Context, req *connect.Request[v1pb.GetMemoByShareRequest]) (*connect.Response[v1pb.Memo], error) {
-	resp, err := s.APIV1Service.GetMemoByShare(ctx, req.Msg)
+func (s *ConnectServiceHandler) GetSharedMemo(ctx context.Context, req *connect.Request[v1pb.GetSharedMemoRequest]) (*connect.Response[v1pb.Memo], error) {
+	resp, err := s.APIV1Service.GetSharedMemo(ctx, req.Msg)
 	if err != nil {
 		return nil, convertGRPCError(err)
 	}

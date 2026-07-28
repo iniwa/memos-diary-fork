@@ -35,8 +35,9 @@ func TestGetInstanceProfile(t *testing.T) {
 		require.True(t, resp.Demo)
 		require.Equal(t, "http://localhost:8080", resp.InstanceUrl)
 
-		// Instance should not be initialized since no admin users are created
+		// Instance should not be initialized since no users exist at all.
 		require.Nil(t, resp.Admin)
+		require.True(t, resp.NeedsSetup)
 	})
 
 	t.Run("GetInstanceProfile with initialized instance", func(t *testing.T) {
@@ -66,6 +67,29 @@ func TestGetInstanceProfile(t *testing.T) {
 		// Instance should be initialized since an admin user exists
 		require.NotNil(t, resp.Admin)
 		require.Equal(t, hostUser.Username, resp.Admin.Username)
+		require.False(t, resp.NeedsSetup)
+	})
+
+	t.Run("GetInstanceProfile with users but no admin", func(t *testing.T) {
+		// Create test service for this specific test
+		ts := NewTestService(t)
+		defer ts.Cleanup()
+
+		// Create a regular user but no admin. This mirrors an instance that has
+		// lost all of its admins: admin is nil, but the instance is NOT a fresh
+		// install and must not be flagged for first-run setup.
+		regularUser, err := ts.CreateRegularUser(ctx, "alice")
+		require.NoError(t, err)
+		require.NotNil(t, regularUser)
+
+		req := &v1pb.GetInstanceProfileRequest{}
+		resp, err := ts.Service.GetInstanceProfile(ctx, req)
+		require.NoError(t, err)
+		require.NotNil(t, resp)
+
+		// No admin to display, but setup is already done because a user exists.
+		require.Nil(t, resp.Admin)
+		require.False(t, resp.NeedsSetup)
 	})
 }
 
@@ -687,11 +711,12 @@ func TestUpdateInstanceSetting(t *testing.T) {
 				Value: &v1pb.InstanceSetting_StorageSetting_{
 					StorageSetting: &v1pb.InstanceSetting_StorageSetting{
 						S3Config: &v1pb.InstanceSetting_StorageSetting_S3Config{
-							AccessKeyId:     "AKID",
-							AccessKeySecret: "super-secret",
-							Endpoint:        "s3.example.com",
-							Region:          "us-east-1",
-							Bucket:          "memos",
+							AccessKeyId:           "AKID",
+							AccessKeySecret:       "super-secret",
+							Endpoint:              "s3.example.com",
+							Region:                "us-east-1",
+							Bucket:                "memos",
+							InsecureSkipTlsVerify: true,
 						},
 					},
 				},
@@ -706,6 +731,8 @@ func TestUpdateInstanceSetting(t *testing.T) {
 		require.NoError(t, err)
 		require.Empty(t, resp.GetStorageSetting().GetS3Config().GetAccessKeySecret(),
 			"AccessKeySecret must never be returned in responses")
+		require.True(t, resp.GetStorageSetting().GetS3Config().GetInsecureSkipTlsVerify(),
+			"insecure_skip_tls_verify must round-trip through the API")
 
 		// Update with empty secret; original must be preserved in the store.
 		_, err = ts.Service.UpdateInstanceSetting(adminCtx, &v1pb.UpdateInstanceSettingRequest{
@@ -714,11 +741,12 @@ func TestUpdateInstanceSetting(t *testing.T) {
 				Value: &v1pb.InstanceSetting_StorageSetting_{
 					StorageSetting: &v1pb.InstanceSetting_StorageSetting{
 						S3Config: &v1pb.InstanceSetting_StorageSetting_S3Config{
-							AccessKeyId:     "AKID",
-							AccessKeySecret: "", // omitted / not changed
-							Endpoint:        "s3-v2.example.com",
-							Region:          "us-east-1",
-							Bucket:          "memos",
+							AccessKeyId:           "AKID",
+							AccessKeySecret:       "", // omitted / not changed
+							Endpoint:              "s3-v2.example.com",
+							Region:                "us-east-1",
+							Bucket:                "memos",
+							InsecureSkipTlsVerify: true,
 						},
 					},
 				},
@@ -731,6 +759,7 @@ func TestUpdateInstanceSetting(t *testing.T) {
 		require.Equal(t, "super-secret", stored.GetS3Config().GetAccessKeySecret(),
 			"existing AccessKeySecret must be preserved when an empty value is sent")
 		require.Equal(t, "s3-v2.example.com", stored.GetS3Config().GetEndpoint())
+		require.True(t, stored.GetS3Config().GetInsecureSkipTlsVerify())
 	})
 
 	t.Run("UpdateInstanceSetting - AI provider keys are write-only and preserved on empty", func(t *testing.T) {

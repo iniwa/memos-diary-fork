@@ -1,7 +1,7 @@
 import { timestampDate } from "@bufbuild/protobuf/wkt";
 import { ConnectError } from "@connectrpc/connect";
 import { CheckIcon, CopyIcon, LinkIcon, Loader2Icon, Trash2Icon } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -59,7 +59,7 @@ function ShareLinkRow({ share, memoName }: ShareLinkRowProps) {
         <span className="truncate font-mono text-xs text-muted-foreground">{url}</span>
         <div className="flex shrink-0 items-center gap-1">
           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleCopy} title={t("memo.share.copy")}>
-            {copied ? <CheckIcon className="h-3.5 w-3.5 text-green-500" /> : <CopyIcon className="h-3.5 w-3.5" />}
+            {copied ? <CheckIcon className="h-3.5 w-3.5 text-success" /> : <CopyIcon className="h-3.5 w-3.5" />}
           </Button>
           <Button
             variant="ghost"
@@ -89,6 +89,16 @@ const MemoSharePanel = ({ open, onClose, memoName }: MemoSharePanelProps) => {
   const [expiry, setExpiry] = useState<ExpiryOption>("never");
   const { data: shares = [], isLoading } = useMemoShares(memoName, { enabled: open });
   const createShare = useCreateMemoShare();
+
+  const expiryOptions = useMemo(
+    () => [
+      { value: "never", label: t("memo.share.expiry-never") },
+      { value: "1d", label: t("memo.share.expiry-1-day") },
+      { value: "7d", label: t("memo.share.expiry-7-days") },
+      { value: "30d", label: t("memo.share.expiry-30-days") },
+    ],
+    [t],
+  );
 
   const handleCreate = async () => {
     try {
@@ -127,15 +137,16 @@ const MemoSharePanel = ({ open, onClose, memoName }: MemoSharePanelProps) => {
 
           {/* Create new link */}
           <div className="flex items-center gap-2">
-            <Select value={expiry} onValueChange={(v) => setExpiry(v as ExpiryOption)}>
+            <Select value={expiry} items={expiryOptions} onValueChange={(v) => setExpiry(v as ExpiryOption)}>
               <SelectTrigger className="w-36">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="never">{t("memo.share.expiry-never")}</SelectItem>
-                <SelectItem value="1d">{t("memo.share.expiry-1-day")}</SelectItem>
-                <SelectItem value="7d">{t("memo.share.expiry-7-days")}</SelectItem>
-                <SelectItem value="30d">{t("memo.share.expiry-30-days")}</SelectItem>
+                {expiryOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <Button onClick={handleCreate} disabled={createShare.isPending} className="flex-1">

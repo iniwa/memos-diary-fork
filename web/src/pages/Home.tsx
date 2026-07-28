@@ -1,14 +1,21 @@
+import { useMemo } from "react";
+import MemoEditor from "@/components/MemoEditor";
+import { deriveDefaultCreateTimeFromFilters } from "@/components/MemoEditor/utils/deriveDefaultCreateTime";
 import MemoView from "@/components/MemoView";
-import PagedMemoList from "@/components/PagedMemoList";
-import { useInstance } from "@/contexts/InstanceContext";
+import PagedMemoList, { getMemoKey } from "@/components/PagedMemoList";
+import { useMemoFilterContext } from "@/contexts/MemoFilterContext";
+import { NewMemoProvider } from "@/contexts/NewMemoContext";
 import { useMemoFilters, useMemoSorting } from "@/hooks";
 import useCurrentUser from "@/hooks/useCurrentUser";
 import { State } from "@/types/proto/api/v1/common_pb";
 import { Memo } from "@/types/proto/api/v1/memo_service_pb";
+import { useTranslate } from "@/utils/i18n";
 
 const Home = () => {
   const user = useCurrentUser();
-  const { isInitialized } = useInstance();
+  const t = useTranslate();
+  const { filters } = useMemoFilterContext();
+  const defaultCreateTime = useMemo(() => deriveDefaultCreateTimeFromFilters(filters), [filters]);
 
   const memoFilter = useMemoFilters({
     creatorName: user?.name,
@@ -23,14 +30,24 @@ const Home = () => {
 
   return (
     <div className="w-full min-h-full bg-background text-foreground">
-      <PagedMemoList
-        renderer={(memo: Memo) => <MemoView key={`${memo.name}-${memo.updateTime}`} memo={memo} showVisibility showPinned compact />}
-        listSort={listSort}
-        orderBy={orderBy}
-        filter={memoFilter}
-        enabled={isInitialized}
-        showMemoEditor
-      />
+      <NewMemoProvider>
+        <PagedMemoList
+          renderer={(memo: Memo, { compact }) => (
+            <MemoView key={getMemoKey(memo)} memo={memo} showVisibility showPinned compact={compact} />
+          )}
+          listSort={listSort}
+          orderBy={orderBy}
+          filter={memoFilter}
+          renderLeading={({ useGrid }) => (
+            <MemoEditor
+              className={useGrid ? undefined : "mb-2"}
+              cacheKey="home-memo-editor"
+              placeholder={t("editor.any-thoughts")}
+              defaultCreateTime={defaultCreateTime}
+            />
+          )}
+        />
+      </NewMemoProvider>
     </div>
   );
 };

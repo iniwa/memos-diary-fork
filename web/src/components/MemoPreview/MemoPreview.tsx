@@ -1,6 +1,6 @@
 import { create } from "@bufbuild/protobuf";
 import { FileIcon } from "lucide-react";
-import { extractMemoIdFromName } from "@/helpers/resource-names";
+import { extractMemoIdFromName } from "@/lib/resource-names";
 import { cn } from "@/lib/utils";
 import type { Attachment } from "@/types/proto/api/v1/attachment_service_pb";
 import { MemoSchema } from "@/types/proto/api/v1/memo_service_pb";
@@ -55,6 +55,7 @@ const AttachmentThumbnails = ({ attachments }: { attachments: Attachment[] }) =>
             alt={item.filename}
             className="w-10 h-10 rounded border border-border object-cover bg-muted/40"
             loading="lazy"
+            decoding="async"
           />
           {item.kind === "motion" && (
             <span className="absolute left-1 top-1 rounded bg-black/70 px-1 py-0.5 text-[8px] font-semibold leading-none text-white">
@@ -128,7 +129,13 @@ const MemoPreview = ({
       <div className="text-sm text-muted-foreground truncate min-w-0">No content</div>
     )
   ) : (
-    hasContent && <MemoContent content={content} compact={compact} />
+    // Previews are inert (pointer-events-none), so a static CSS bound replaces the
+    // interactive clamp a full memo card gets.
+    hasContent && (
+      <div className="max-h-36 w-full overflow-hidden">
+        <MemoContent content={content} compact={compact} />
+      </div>
+    )
   );
 
   return (

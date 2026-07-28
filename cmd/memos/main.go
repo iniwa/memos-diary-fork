@@ -67,6 +67,11 @@ var (
 				slog.Error("failed to migrate", "error", err)
 				return
 			}
+			if err := storeInstance.LoadDeploymentConfiguration(ctx); err != nil {
+				cancel()
+				slog.Error("failed to load deployment configuration", "error", err)
+				return
+			}
 
 			s, err := server.NewServer(ctx, instanceProfile, storeInstance)
 			if err != nil {
@@ -194,6 +199,13 @@ func printGreetings(profile *profile.Profile) {
 	} else {
 		fmt.Printf("Server running on unix socket: %s\n", profile.UNIXSock)
 	}
+
+	// Access mode is derived from instance_url: set = public, unset = private.
+	accessMode := "private"
+	if profile.AllowAnonymous() {
+		accessMode = "public"
+	}
+	fmt.Printf("Access mode: %s\n", accessMode)
 
 	fmt.Println()
 	fmt.Printf("Documentation: %s\n", "https://usememos.com")

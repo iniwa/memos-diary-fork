@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/
 import { addMonths, formatMonth, getMonthFromDate, getYearFromDate, setYearAndMonth } from "@/lib/calendar-utils";
 import type { MonthNavigatorProps } from "@/types/statistics";
 
-export const MonthNavigator = memo(({ visibleMonth, onMonthChange, activityStats, timeBasis, onMonthClick }: MonthNavigatorProps) => {
+export const MonthNavigator = memo(({ visibleMonth, onMonthChange, activityStats, timeBasis }: MonthNavigatorProps) => {
   const { i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -37,16 +37,6 @@ export const MonthNavigator = memo(({ visibleMonth, onMonthChange, activityStats
     [onMonthChange],
   );
 
-  const handleMonthClick = useCallback(
-    (month: string) => {
-      if (onMonthClick) {
-        onMonthClick(month);
-        setIsOpen(false);
-      }
-    },
-    [onMonthClick],
-  );
-
   const handleYearChange = useCallback(
     (year: number) => onMonthChange(setYearAndMonth(year, currentMonthNum)),
     [currentMonthNum, onMonthChange],
@@ -55,13 +45,15 @@ export const MonthNavigator = memo(({ visibleMonth, onMonthChange, activityStats
   return (
     <header className="w-full mb-2 flex items-center justify-between gap-2">
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogTrigger asChild>
-          <button
-            type="button"
-            className="py-0.5 text-sm text-foreground font-medium transition-colors hover:text-foreground/80 select-none"
-          >
-            {monthLabel}
-          </button>
+        <DialogTrigger
+          render={
+            <button
+              type="button"
+              className="py-0.5 text-sm text-foreground font-medium transition-colors hover:text-foreground/80 select-none"
+            />
+          }
+        >
+          {monthLabel}
         </DialogTrigger>
         <DialogContent
           className="p-0 border border-border/20 bg-background md:max-w-6xl w-[min(100vw-24px,1200px)] max-h-[85vh] overflow-y-auto rounded-xl shadow-xl"
@@ -74,29 +66,16 @@ export const MonthNavigator = memo(({ visibleMonth, onMonthChange, activityStats
             data={activityStats}
             onYearChange={handleYearChange}
             onDateClick={handleDateClick}
-            onMonthClick={onMonthClick ? handleMonthClick : undefined}
             timeBasis={timeBasis}
           />
         </DialogContent>
       </Dialog>
 
       <nav className="flex items-center shrink-0" aria-label="Month navigation">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handlePrevMonth}
-          aria-label="Previous month"
-          className="h-7 w-7 p-0 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/40"
-        >
+        <Button variant="ghost" size="icon-sm" onClick={handlePrevMonth} aria-label="Previous month">
           <ChevronLeftIcon className="w-4 h-4" />
         </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleNextMonth}
-          aria-label="Next month"
-          className="h-7 w-7 p-0 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/40"
-        >
+        <Button variant="ghost" size="icon-sm" onClick={handleNextMonth} aria-label="Next month">
           <ChevronRightIcon className="w-4 h-4" />
         </Button>
       </nav>

@@ -23,7 +23,7 @@ var embeddedFiles embed.FS
 const (
 	frontendHTMLCacheControl        = "no-cache, no-store, must-revalidate"
 	frontendStaticAssetCacheControl = "public, max-age=3600"
-	frontendHashedAssetCacheControl = "public, max-age=3600, immutable"
+	frontendHashedAssetCacheControl = "public, max-age=2592000, immutable"
 )
 
 type FrontendService struct {
@@ -85,7 +85,6 @@ func shouldSkipFrontendStatic(requestPath string) bool {
 	}
 	return hasPathPrefix(requestPath, "/api") ||
 		hasPathPrefix(requestPath, "/file") ||
-		hasPathPrefix(requestPath, "/mcp") ||
 		requestPath == "/memos.api.v1" ||
 		strings.HasPrefix(requestPath, "/memos.api.v1.")
 }

@@ -16,7 +16,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 const emojiRegex = /^(\p{Emoji_Presentation}|\p{Emoji}\uFE0F)$/u;
 
 // Helper function to extract shortcut ID from resource name
-// Format: users/{username}/shortcuts/{shortcut}
+// Format: users/{user}/shortcuts/{shortcut}
 const getShortcutId = (name: string): string => {
   const parts = name.split("/");
   return parts.length === 4 ? parts[3] : "";
@@ -55,9 +55,7 @@ function ShortcutsSection() {
         <span>{t("common.shortcuts")}</span>
         <TooltipProvider>
           <Tooltip>
-            <TooltipTrigger asChild>
-              <PlusIcon className="w-4 h-auto cursor-pointer" onClick={handleCreateShortcut} />
-            </TooltipTrigger>
+            <TooltipTrigger render={<PlusIcon className="w-4 h-auto cursor-pointer" onClick={handleCreateShortcut} />} />
             <TooltipContent>
               <p>{t("common.create")}</p>
             </TooltipContent>
@@ -84,9 +82,10 @@ function ShortcutsSection() {
                 {title.trim()}
               </span>
               <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <MoreVerticalIcon className="w-4 h-auto shrink-0 text-muted-foreground cursor-pointer hover:text-foreground" />
-                </DropdownMenuTrigger>
+                <DropdownMenuTrigger
+                  nativeButton={false}
+                  render={<MoreVerticalIcon className="w-4 h-auto shrink-0 text-muted-foreground cursor-pointer hover:text-foreground" />}
+                />
                 <DropdownMenuContent align="end" alignOffset={-12}>
                   <DropdownMenuItem onClick={() => handleEditShortcut(shortcut)}>
                     <Edit3Icon className="w-4 h-auto" />

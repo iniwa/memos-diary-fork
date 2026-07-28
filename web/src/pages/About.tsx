@@ -1,164 +1,129 @@
-import { ExternalLinkIcon } from "lucide-react";
-import { useEffect, useState } from "react";
-import TileSpriteStrip from "@/components/Placeholder/TileSpriteStrip";
-import { TILE_SPRITES, type TileSprite } from "@/components/Placeholder/tileSprites";
-import SettingGroup from "@/components/Settings/SettingGroup";
-import SettingSection from "@/components/Settings/SettingSection";
-import { Button } from "@/components/ui/button";
+import { ExternalLinkIcon, ScissorsIcon } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { useInstance } from "@/contexts/InstanceContext";
+import { WEB_CLIPPER_URL } from "@/lib/constants";
+import { useTranslate } from "@/utils/i18n";
 
-const SPRITE_SCALE = 2;
+const GITHUB_COMMIT_URL_PREFIX = "https://github.com/usememos/memos/commit/";
+const GITHUB_RELEASE_URL_PREFIX = "https://github.com/usememos/memos/releases/tag/v";
 
-const PRODUCT_LINKS = [
-  { label: "Website", href: "https://usememos.com/" },
-  { label: "GitHub", href: "https://github.com/usememos/memos" },
-  { label: "Docs", href: "https://usememos.com/docs" },
-];
+const DEFAULT_TITLE = "Memos";
+const DEFAULT_TAGLINE = "Capture first. Keep it yours.";
+const DEFAULT_LOGO = "/logo.webp";
 
-const PRODUCT_POINTS = ["Open. Write. Done.", "Markdown-native.", "Fully yours."];
+const isCommitSha = (commit: string) => /^[0-9a-f]{7,40}$/i.test(commit);
+const isSemver = (version: string) => /^\d+\.\d+\.\d+/.test(version);
 
-const SPONSORS = [
-  {
-    label: "CodeRabbit",
-    href: "https://coderabbit.link/usememos",
-    description: "Cut code review time & bugs in half, instantly.",
-    lightLogo: "https://victorious-bubble-f69a016683.media.strapiapp.com/Orange_Typemark_43bf516c9d.svg",
-    darkLogo: "https://victorious-bubble-f69a016683.media.strapiapp.com/White_Typemark_79b9189d19.svg",
-  },
-  {
-    label: "Warp",
-    href: "https://go.warp.dev/memos",
-    description: "The agentic development environment.",
-    lightLogo: "https://raw.githubusercontent.com/warpdotdev/brand-assets/refs/heads/main/Logos/Warp-Wordmark-Black.png",
-    darkLogo: "https://raw.githubusercontent.com/warpdotdev/brand-assets/refs/heads/main/Logos/Warp-Wordmark-White.png",
-  },
-];
-
-type Sponsor = (typeof SPONSORS)[number];
-
-const isDarkThemeName = (theme: string | null): boolean => {
-  return theme?.endsWith("-dark") || theme?.endsWith(".dark") || false;
-};
-
-const getCurrentThemeUsesDarkLogo = (): boolean => {
-  if (typeof document === "undefined") {
-    return false;
+const Chip = ({ href, children }: { href?: string; children: React.ReactNode }) => {
+  const className = "inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 font-mono text-xs text-muted-foreground";
+  if (href) {
+    return (
+      <a className={`${className} hover:bg-accent hover:text-foreground`} href={href} target="_blank" rel="noreferrer">
+        {children}
+      </a>
+    );
   }
-  return isDarkThemeName(document.documentElement.getAttribute("data-theme"));
+  return <span className={className}>{children}</span>;
 };
 
-const BirdSprite = ({ sprite }: { sprite: TileSprite }) => {
-  return (
-    <figure className="flex w-auto min-w-28 flex-none flex-col items-center gap-3 rounded-xl border border-border bg-muted/20 px-4 py-4 text-center">
-      <TileSpriteStrip sprite={sprite} scale={SPRITE_SCALE} className="size-16" testId="about-bird-sprite" />
-      <figcaption className="min-w-0">
-        <h3 className="font-mono text-sm text-foreground">{sprite.name}</h3>
-      </figcaption>
-    </figure>
-  );
-};
-
-const SponsorLogo = ({ sponsor }: { sponsor: Sponsor }) => {
-  const [usesDarkLogo, setUsesDarkLogo] = useState(getCurrentThemeUsesDarkLogo);
-
-  useEffect(() => {
-    const updateLogoTheme = () => setUsesDarkLogo(getCurrentThemeUsesDarkLogo());
-
-    updateLogoTheme();
-
-    const observer = new MutationObserver(updateLogoTheme);
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-
-    return () => observer.disconnect();
-  }, []);
-
-  return (
-    <img
-      className="h-9 max-w-44 object-contain object-left"
-      src={usesDarkLogo ? sponsor.darkLogo : sponsor.lightLogo}
-      alt={sponsor.label}
-    />
-  );
-};
+const SectionLabel = ({ children }: { children: React.ReactNode }) => (
+  <h2 className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground/55">{children}</h2>
+);
 
 const About = () => {
+  const t = useTranslate();
+  const { profile, generalSetting } = useInstance();
+
+  // Instance identity: custom branding when the admin has set it, Memos defaults otherwise.
+  const customProfile = generalSetting.customProfile;
+  const instanceTitle = customProfile?.title || DEFAULT_TITLE;
+  const instanceTagline = customProfile?.description || DEFAULT_TAGLINE;
+  const instanceLogo = customProfile?.logoUrl || DEFAULT_LOGO;
+  const isCustomBranded = instanceTitle !== DEFAULT_TITLE;
+
+  // Dev builds report version "dev" and commit "unknown"; show the raw version and skip the commit row.
+  const hasSemver = isSemver(profile.version);
+  const releaseUrl = hasSemver ? `${GITHUB_RELEASE_URL_PREFIX}${profile.version}` : "";
+  const versionLabel = hasSemver ? `v${profile.version}` : profile.version;
+  const hasCommitSha = isCommitSha(profile.commit);
+  const commitUrl = hasCommitSha ? `${GITHUB_COMMIT_URL_PREFIX}${profile.commit}` : "";
+  const shortCommit = hasCommitSha ? profile.commit.slice(0, 7) : "";
+
+  const buildRows: { label: string; value: React.ReactNode }[] = [];
+  if (profile.version) {
+    buildRows.push({ label: t("common.version"), value: <Chip href={releaseUrl || undefined}>{versionLabel}</Chip> });
+  }
+  if (shortCommit) {
+    buildRows.push({ label: t("about.commit"), value: <Chip href={commitUrl}>{shortCommit}</Chip> });
+  }
+  buildRows.push({ label: t("about.license"), value: <Chip href="https://github.com/usememos/memos/blob/main/LICENSE">MIT</Chip> });
+  if (isCustomBranded) {
+    buildRows.push({
+      label: t("about.distribution"),
+      value: <span className="text-[13px] text-muted-foreground">{t("about.powered-by")}</span>,
+    });
+  }
+
+  const projectLinks = [
+    { label: t("about.official-website"), note: "the project homepage", href: "https://usememos.com/" },
+    { label: t("about.documents"), note: "deploy, configure, use", href: "https://usememos.com/docs" },
+    { label: "API Docs", note: "REST + gRPC reference", href: "https://usememos.com/docs/api" },
+    { label: t("about.github-repository"), note: "source, issues, releases", href: "https://github.com/usememos/memos" },
+    { label: "Web Clipper", note: t("about.web-clipper-platforms"), href: WEB_CLIPPER_URL, icon: ScissorsIcon },
+  ];
+
   return (
     <section className="mx-auto w-full max-w-5xl min-h-full flex flex-col justify-start items-start sm:pt-3 md:pt-6 pb-8">
-      <div className="w-full px-4 sm:px-6">
-        <div className="w-full rounded-xl border border-border bg-background px-4 py-4 text-muted-foreground">
-          <SettingSection
-            title="About Memos"
-            description="Open-source, self-hosted note-taking built for quick capture: Markdown-native, lightweight, and fully yours."
-          >
-            <SettingGroup>
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex min-w-0 items-center gap-3">
-                  <img className="size-12 shrink-0 select-none rounded-md" src="/logo.webp" alt="" draggable={false} />
-                  <div className="min-w-0">
-                    <h1 className="text-2xl font-semibold tracking-tight text-foreground">Memos</h1>
-                    <p className="mt-1 text-sm text-muted-foreground">Capture first. Keep it yours.</p>
-                  </div>
-                </div>
-                <div className="flex shrink-0 flex-wrap gap-2">
-                  {PRODUCT_LINKS.map((link) => (
-                    <Button key={link.href} asChild variant="outline" size="lg">
-                      <a href={link.href} target="_blank" rel="noreferrer">
-                        {link.label}
-                        <ExternalLinkIcon className="size-3.5" />
-                      </a>
-                    </Button>
-                  ))}
-                </div>
+      <div className="mx-auto w-full max-w-2xl px-1 py-6 sm:py-8">
+        <header>
+          <img className="size-10 shrink-0 select-none rounded-md" src={instanceLogo} alt="" draggable={false} />
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <h1 className="text-lg font-semibold tracking-tight text-foreground">{instanceTitle}</h1>
+            {profile.demo && <Badge variant="warning">Demo</Badge>}
+          </div>
+          <p className="mt-1 max-w-md text-[26px] font-light leading-snug tracking-[-0.015em] text-foreground">{instanceTagline}</p>
+        </header>
+
+        <section className="mt-9">
+          <SectionLabel>{t("about.build")}</SectionLabel>
+          <dl className="mt-2.5 border-t border-border">
+            {buildRows.map((row) => (
+              <div key={row.label} className="grid grid-cols-[110px_1fr] items-center border-b border-border/60 py-2">
+                <dt className="text-[13px] text-muted-foreground">{row.label}</dt>
+                <dd className="m-0 flex min-w-0 items-center">{row.value}</dd>
               </div>
-            </SettingGroup>
+            ))}
+          </dl>
+        </section>
 
-            <SettingGroup
-              showSeparator
-              title="Product"
-              description="A small timeline for notes that should be saved now and organized later."
-            >
-              <div className="grid gap-3 sm:grid-cols-3">
-                {PRODUCT_POINTS.map((item) => (
-                  <div key={item} className="rounded-lg bg-muted/40 px-3 py-2 text-sm text-foreground">
-                    {item}
-                  </div>
-                ))}
-              </div>
-            </SettingGroup>
+        <section className="mt-9">
+          <SectionLabel>{t("about.project")}</SectionLabel>
+          <nav aria-label="Project links" className="mt-2.5 border-t border-border">
+            {projectLinks.map((link) => (
+              <a
+                key={link.href}
+                className="group flex items-baseline justify-between gap-4 border-b border-border/60 py-2.5"
+                href={link.href}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <span className="flex min-w-0 items-baseline gap-2">
+                  {link.icon && <link.icon className="size-3.5 shrink-0 translate-y-0.5 text-muted-foreground" />}
+                  <span className="text-[13px] font-medium text-foreground group-hover:underline group-hover:underline-offset-2">
+                    {link.label}
+                  </span>
+                  <span className="hidden truncate text-xs text-muted-foreground sm:inline">{link.note}</span>
+                </span>
+                <span className="inline-flex shrink-0 items-center gap-1 font-mono text-xs text-muted-foreground group-hover:text-foreground">
+                  {link.href.replace("https://", "")}
+                  <ExternalLinkIcon className="size-3" />
+                </span>
+              </a>
+            ))}
+          </nav>
+        </section>
 
-            <SettingGroup showSeparator title="Sponsors" description="Featured sponsors helping keep Memos open-source and independent.">
-              <section aria-label="Sponsors" className="grid gap-3 sm:grid-cols-2">
-                {SPONSORS.map((sponsor) => (
-                  <a
-                    key={sponsor.href}
-                    href={sponsor.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="group flex min-h-32 min-w-0 flex-col justify-between gap-5 rounded-lg border border-border bg-muted/20 px-4 py-4 text-muted-foreground transition-colors hover:border-primary/40 hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                  >
-                    <div className="flex min-w-0 items-start justify-between gap-4">
-                      <SponsorLogo sponsor={sponsor} />
-                      <ExternalLinkIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground transition-colors group-hover:text-foreground" />
-                    </div>
-                    <div className="flex min-w-0 flex-col gap-3">
-                      <p className="text-sm leading-6 text-muted-foreground">{sponsor.description}</p>
-                      <span className="text-xs font-medium text-foreground transition-colors group-hover:text-primary">
-                        Visit {sponsor.label}
-                      </span>
-                    </div>
-                  </a>
-                ))}
-              </section>
-            </SettingGroup>
-
-            <SettingGroup showSeparator title="Birds" description="Pixel tile strips used by empty states.">
-              <section aria-label="Birds" className="flex flex-row flex-wrap gap-3">
-                {TILE_SPRITES.map((sprite) => (
-                  <BirdSprite key={sprite.name} sprite={sprite} />
-                ))}
-              </section>
-            </SettingGroup>
-          </SettingSection>
-        </div>
+        <p className="mt-8 text-xs text-muted-foreground">Free and open source under the MIT license.</p>
       </div>
     </section>
   );

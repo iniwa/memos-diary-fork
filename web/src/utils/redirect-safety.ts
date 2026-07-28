@@ -71,3 +71,28 @@ const PUBLIC_ROUTE_PREFIXES = [
 export function isPublicRoute(path: string): boolean {
   return PUBLIC_ROUTE_PREFIXES.some((route) => path.startsWith(route));
 }
+
+/**
+ * Reports whether an anonymous visitor to a private instance should be redirected
+ * to the sign-in page for the given path.
+ *
+ * A private instance (no configured instance URL) hides everything from anonymous
+ * visitors except share-link pages, which stay accessible so public shares keep
+ * working. Authenticated visitors and open instances are never gated.
+ */
+export function shouldGatePrivateInstance(params: { isPrivateInstance: boolean; isAuthenticated: boolean; pathname: string }): boolean {
+  const { isPrivateInstance, isAuthenticated, pathname } = params;
+  if (!isPrivateInstance || isAuthenticated) {
+    return false;
+  }
+  return !pathname.startsWith(`${ROUTES.SHARED_MEMO}/`);
+}
+
+/**
+ * Appends the given search params to a path, so links between auth pages
+ * (sign-in <-> sign-up) preserve the redirect target and other params.
+ */
+export function appendSearchParams(path: string, searchParams: URLSearchParams): string {
+  const queryString = searchParams.toString();
+  return queryString ? `${path}?${queryString}` : path;
+}

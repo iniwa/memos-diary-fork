@@ -148,10 +148,10 @@ func (s *APIV1Service) DeleteMemoShare(ctx context.Context, request *v1pb.Delete
 	return &emptypb.Empty{}, nil
 }
 
-// GetMemoByShare resolves a share token to its memo. No authentication required.
+// GetSharedMemo resolves a share token to its memo. No authentication required.
 // Returns NOT_FOUND for invalid or expired tokens (no information leakage).
-func (s *APIV1Service) GetMemoByShare(ctx context.Context, request *v1pb.GetMemoByShareRequest) (*v1pb.Memo, error) {
-	ms, err := s.getActiveMemoShare(ctx, request.ShareId)
+func (s *APIV1Service) GetSharedMemo(ctx context.Context, request *v1pb.GetSharedMemoRequest) (*v1pb.Memo, error) {
+	ms, err := s.getActiveMemoShare(ctx, request.ShareToken)
 	if err != nil {
 		return nil, err
 	}
@@ -176,18 +176,17 @@ func (s *APIV1Service) GetMemoByShare(ctx context.Context, request *v1pb.GetMemo
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to list attachments")
 	}
-	relations, err := s.batchConvertMemoRelations(ctx, []*store.Memo{memo}, true)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to load memo relations")
-	}
 
-	memoMessage, err := s.convertMemoFromStore(ctx, memo, reactions, attachments, relations[memo.ID])
+	memoMessage, err := s.convertMemoFromStore(ctx, memo, reactions, attachments, nil)
 	if err != nil {
 		if stderrors.Is(err, errMemoCreatorNotFound) {
 			return nil, status.Errorf(codes.NotFound, "not found")
 		}
 		return nil, errors.Wrap(err, "failed to convert memo")
 	}
+	// A share token grants access to this memo only, not to its surrounding
+	// conversation or relation graph.
+	memoMessage.Parent = nil
 	return memoMessage, nil
 }
 

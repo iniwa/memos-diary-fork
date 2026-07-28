@@ -17,11 +17,6 @@ describe("deriveDefaultCreateTimeFromFilters", () => {
     expect(deriveDefaultCreateTimeFromFilters(filters, now)).toBeUndefined();
   });
 
-  it("ignores displayMonth filter — month filter must not prefill create time", () => {
-    const filters: MemoFilter[] = [{ factor: "displayMonth", value: "2026-05" }];
-    expect(deriveDefaultCreateTimeFromFilters(filters, now)).toBeUndefined();
-  });
-
   it("merges the displayTime date with the current local hh:mm:ss", () => {
     const filters: MemoFilter[] = [{ factor: "displayTime", value: "2025-05-01" }];
     const result = deriveDefaultCreateTimeFromFilters(filters, now);

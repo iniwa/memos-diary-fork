@@ -16,8 +16,6 @@ import {
   InstanceSetting_NotificationSettingSchema,
   InstanceSetting_StorageSetting,
   InstanceSetting_StorageSettingSchema,
-  InstanceSetting_TagsSetting,
-  InstanceSetting_TagsSettingSchema,
 } from "@/types/proto/api/v1/instance_service_pb";
 
 const instanceSettingNamePrefix = "instance/settings/";
@@ -30,6 +28,8 @@ const buildInstanceSettingName = (key: InstanceSetting_Key): string => {
 interface InstanceState {
   profile: InstanceProfile;
   settings: InstanceSetting[];
+  /** Instance profile has settled, while non-routing settings may still be loading. */
+  isProfileInitialized: boolean;
   isInitialized: boolean;
   isLoading: boolean;
   // True only when the profile was successfully fetched from the server.
@@ -42,7 +42,6 @@ interface InstanceContextValue extends InstanceState {
   generalSetting: InstanceSetting_GeneralSetting;
   memoRelatedSetting: InstanceSetting_MemoRelatedSetting;
   storageSetting: InstanceSetting_StorageSetting;
-  tagsSetting: InstanceSetting_TagsSetting;
   notificationSetting: InstanceSetting_NotificationSetting;
   aiSetting: InstanceSetting_AISetting;
   initialize: () => Promise<void>;
@@ -57,6 +56,7 @@ export function InstanceProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<InstanceState>({
     profile: create(InstanceProfileSchema, {}),
     settings: [],
+    isProfileInitialized: false,
     isInitialized: false,
     isLoading: true,
     profileLoaded: false,
@@ -89,14 +89,6 @@ export function InstanceProvider({ children }: { children: ReactNode }) {
     return create(InstanceSetting_StorageSettingSchema, {});
   }, [state.settings]);
 
-  const tagsSetting = useMemo((): InstanceSetting_TagsSetting => {
-    const setting = state.settings.find((s) => s.name === `${instanceSettingNamePrefix}TAGS`);
-    if (setting?.value.case === "tagsSetting") {
-      return setting.value.value;
-    }
-    return create(InstanceSetting_TagsSettingSchema, {});
-  }, [state.settings]);
-
   const notificationSetting = useMemo((): InstanceSetting_NotificationSetting => {
     const setting = state.settings.find((s) => s.name === `${instanceSettingNamePrefix}NOTIFICATION`);
     if (setting?.value.case === "notificationSetting") {
@@ -115,35 +107,44 @@ export function InstanceProvider({ children }: { children: ReactNode }) {
 
   const initialize = useCallback(async () => {
     setState((prev) => ({ ...prev, isLoading: true }));
-    try {
-      const profile = await instanceServiceClient.getInstanceProfile({});
 
-      const settingsResponse = await instanceServiceClient.batchGetInstanceSettings({
-        names: [
-          buildInstanceSettingName(InstanceSetting_Key.GENERAL),
-          buildInstanceSettingName(InstanceSetting_Key.MEMO_RELATED),
-          buildInstanceSettingName(InstanceSetting_Key.TAGS),
-        ],
+    const profileRequest = instanceServiceClient
+      .getInstanceProfile({})
+      .then((profile) => {
+        setState((prev) => ({
+          ...prev,
+          profile,
+          isProfileInitialized: true,
+          profileLoaded: true,
+        }));
+      })
+      .catch((error) => {
+        console.error("Failed to initialize instance profile:", error);
+        setState((prev) => ({ ...prev, isProfileInitialized: true }));
       });
-      for (const setting of settingsResponse.settings) {
-        fetchedSettingsRef.current.add(setting.name);
-      }
 
-      setState({
-        profile,
-        settings: settingsResponse.settings,
-        isInitialized: true,
-        isLoading: false,
-        profileLoaded: true,
+    const settingsRequest = instanceServiceClient
+      .batchGetInstanceSettings({
+        names: [buildInstanceSettingName(InstanceSetting_Key.GENERAL), buildInstanceSettingName(InstanceSetting_Key.MEMO_RELATED)],
+      })
+      .then((settingsResponse) => {
+        for (const setting of settingsResponse.settings) {
+          fetchedSettingsRef.current.add(setting.name);
+        }
+        setState((prev) => ({ ...prev, settings: settingsResponse.settings }));
+      })
+      .catch((error) => {
+        console.error("Failed to initialize instance settings:", error);
       });
-    } catch (error) {
-      console.error("Failed to initialize instance:", error);
-      setState((prev) => ({
-        ...prev,
-        isInitialized: true,
-        isLoading: false,
-      }));
-    }
+
+    // Profile and settings are independent. Starting both together removes one
+    // network round trip; the profile can unlock routing before settings settle.
+    await Promise.all([profileRequest, settingsRequest]);
+    setState((prev) => ({
+      ...prev,
+      isInitialized: true,
+      isLoading: false,
+    }));
   }, []);
 
   const fetchSettings = useCallback(async (keys: InstanceSetting_Key[]) => {
@@ -204,7 +205,6 @@ export function InstanceProvider({ children }: { children: ReactNode }) {
       generalSetting,
       memoRelatedSetting,
       storageSetting,
-      tagsSetting,
       notificationSetting,
       aiSetting,
       initialize,
@@ -217,7 +217,6 @@ export function InstanceProvider({ children }: { children: ReactNode }) {
       generalSetting,
       memoRelatedSetting,
       storageSetting,
-      tagsSetting,
       notificationSetting,
       aiSetting,
       initialize,

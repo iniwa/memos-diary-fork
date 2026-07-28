@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -23,8 +24,26 @@ func TestValidateWritableUsername(t *testing.T) {
 			username: "alice-smith",
 		},
 		{
-			name:     "uuid",
-			username: "550e8400-e29b-41d4-a716-446655440000",
+			name:     "one character",
+			username: "a",
+		},
+		{
+			name:     "maximum length",
+			username: "a" + strings.Repeat("b", 35),
+		},
+		{
+			name:      "too long",
+			username:  "a" + strings.Repeat("b", 36),
+			wantError: true,
+		},
+		{
+			name:     "digit first",
+			username: "1alice",
+		},
+		{
+			name:      "hyphen last",
+			username:  "alice-",
+			wantError: true,
 		},
 		{
 			name:      "empty",

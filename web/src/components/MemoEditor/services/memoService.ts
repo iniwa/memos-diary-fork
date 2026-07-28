@@ -125,8 +125,15 @@ export const memoService = {
     return { memoName: memo.name, hasChanges: true };
   },
 
-  /** Build editor state from an already-loaded Memo entity (no network request). */
-  fromMemo(memo: Memo): EditorState {
+  /**
+   * Build the INIT_MEMO payload from an already-loaded Memo entity (no network
+   * request). Returns only the fields the reducer's INIT_MEMO case consumes —
+   * UI state (mode, loading flags, …) is owned by the reducer, not by memos.
+   *
+   * Diary Mode: the stored content is split into a body and its boundary tag
+   * lines, so `tags` can feed the dedicated TagSection.
+   */
+  fromMemo(memo: Memo): Pick<EditorState, "content" | "tags" | "metadata" | "timestamps"> {
     const { body, tags } = extractBoundaryTagLines(memo.content);
     return {
       content: body,
@@ -137,22 +144,9 @@ export const memoService = {
         relations: memo.relations,
         location: memo.location,
       },
-      ui: {
-        isFocusMode: false,
-        isLoading: { saving: false, uploading: false, loading: false },
-        isComposing: false,
-      },
       timestamps: {
         createTime: memo.createTime ? timestampDate(memo.createTime) : undefined,
         updateTime: memo.updateTime ? timestampDate(memo.updateTime) : undefined,
-      },
-      localFiles: [],
-      audioRecorder: {
-        isSupported: true,
-        permission: "unknown",
-        status: "idle",
-        elapsedSeconds: 0,
-        error: undefined,
       },
     };
   },

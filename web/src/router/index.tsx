@@ -1,28 +1,17 @@
-import { lazy } from "react";
 import { createBrowserRouter, Navigate, type RouteObject } from "react-router-dom";
 import App from "@/App";
 import { ChunkLoadErrorFallback } from "@/components/ErrorBoundary";
 import MainLayout from "@/layouts/MainLayout";
 import RootLayout from "@/layouts/RootLayout";
-import { LandingRoute, RequireAuthRoute, RequireGuestRoute } from "./guards";
+import { lazyWithReload } from "@/utils/lazy";
+import {
+  LandingRoute,
+  RequireAuthRoute,
+  RequireFullInitializationRoute,
+  RequireGuestRoute,
+  RequireInstanceInitializationRoute,
+} from "./guards";
 import { ROUTES } from "./routes";
-
-// Wrap lazy imports to auto-reload on chunk load failure (e.g., after redeployment).
-function lazyWithReload<T extends React.ComponentType>(factory: () => Promise<{ default: T }>) {
-  return lazy(() =>
-    factory().catch((error) => {
-      const isChunkError =
-        error?.message?.includes("Failed to fetch dynamically imported module") ||
-        error?.message?.includes("Importing a module script failed");
-      const reloadKey = "chunk-reload";
-      if (isChunkError && !sessionStorage.getItem(reloadKey)) {
-        sessionStorage.setItem(reloadKey, "1");
-        window.location.reload();
-      }
-      throw error;
-    }),
-  );
-}
 
 const AdminSignIn = lazyWithReload(() => import("@/pages/AdminSignIn"));
 const About = lazyWithReload(() => import("@/pages/About"));
@@ -64,11 +53,16 @@ export const routeConfig: RouteObject[] = [
           // one-time OAuth state. Keep it outside the guest-only subtree.
           { path: "callback", element: <AuthCallback /> },
           {
-            element: <RequireGuestRoute />,
+            element: <RequireInstanceInitializationRoute />,
             children: [
-              { path: "", element: <SignIn /> },
-              { path: "admin", element: <AdminSignIn /> },
-              { path: "signup", element: <SignUp /> },
+              {
+                element: <RequireGuestRoute />,
+                children: [
+                  { path: "", element: <SignIn /> },
+                  { path: "admin", element: <AdminSignIn /> },
+                  { path: "signup", element: <SignUp /> },
+                ],
+              },
             ],
           },
         ],
@@ -85,14 +79,20 @@ export const routeConfig: RouteObject[] = [
                 element: <LandingRoute />,
                 children: [{ index: true, element: <Home /> }],
               },
-              { path: Routes.ABOUT, element: <About /> },
+              {
+                element: <RequireInstanceInitializationRoute />,
+                children: [{ path: Routes.ABOUT, element: <About /> }],
+              },
               { path: Routes.EXPLORE, element: <Explore /> },
               { path: "u/:username", element: <UserProfile /> },
               {
                 element: <RequireAuthRoute />,
                 children: [
                   { path: Routes.ARCHIVED, element: <Archived /> },
-                  { path: Routes.SHORTCUTS, element: <Shortcuts /> },
+                  {
+                    element: <RequireFullInitializationRoute />,
+                    children: [{ path: Routes.SHORTCUTS, element: <Shortcuts /> }],
+                  },
                 ],
               },
             ],
@@ -102,9 +102,14 @@ export const routeConfig: RouteObject[] = [
           {
             element: <RequireAuthRoute />,
             children: [
-              { path: Routes.ATTACHMENTS, element: <Attachments /> },
-              { path: Routes.INBOX, element: <Inboxes /> },
-              { path: Routes.SETTING, element: <Setting /> },
+              {
+                element: <RequireFullInitializationRoute />,
+                children: [
+                  { path: Routes.ATTACHMENTS, element: <Attachments /> },
+                  { path: Routes.INBOX, element: <Inboxes /> },
+                  { path: Routes.SETTING, element: <Setting /> },
+                ],
+              },
             ],
           },
           { path: "403", element: <PermissionDenied /> },

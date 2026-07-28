@@ -11,19 +11,9 @@ import (
 )
 
 func (d *DB) CreateUser(ctx context.Context, create *store.User) (*store.User, error) {
-	fields := []string{"username", "role", "email", "nickname", "password_hash", "avatar_url"}
-	args := []any{create.Username, create.Role, create.Email, create.Nickname, create.PasswordHash, create.AvatarURL}
-	stmt := "INSERT INTO \"user\" (" + strings.Join(fields, ", ") + ") VALUES (" + placeholders(len(args)) + ") RETURNING id, description, created_ts, updated_ts, row_status"
-	if err := d.db.QueryRowContext(ctx, stmt, args...).Scan(
-		&create.ID,
-		&create.Description,
-		&create.CreatedTs,
-		&create.UpdatedTs,
-		&create.RowStatus,
-	); err != nil {
+	if err := insertUser(ctx, d.db, create); err != nil {
 		return nil, err
 	}
-
 	return create, nil
 }
 
@@ -86,7 +76,7 @@ func (d *DB) UpdateUser(ctx context.Context, update *store.UpdateUser) (*store.U
 
 func (d *DB) ListUsers(ctx context.Context, find *store.FindUser) ([]*store.User, error) {
 	where, args := []string{"1 = 1"}, []any{}
-	orderBy := []string{"created_ts DESC", "row_status DESC"}
+	orderBy := []string{"created_ts DESC", "row_status DESC", "id DESC"}
 
 	if len(find.Filters) > 0 {
 		return nil, errors.Errorf("user filters are not supported")
@@ -156,6 +146,9 @@ func (d *DB) ListUsers(ctx context.Context, find *store.FindUser) ([]*store.User
 		WHERE ` + strings.Join(where, " AND ") + ` ORDER BY ` + strings.Join(orderBy, ", ")
 	if v := find.Limit; v != nil {
 		query += fmt.Sprintf(" LIMIT %d", *v)
+		if v := find.Offset; v != nil {
+			query += fmt.Sprintf(" OFFSET %d", *v)
+		}
 	}
 	rows, err := d.db.QueryContext(ctx, query, args...)
 	if err != nil {

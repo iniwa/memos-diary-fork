@@ -6,11 +6,12 @@ import { getVisibleDiaryTags, isHiddenLegacyTag, normalizeDiaryTag } from "@/lib
 import { cn } from "@/lib/utils";
 import { Routes } from "@/router";
 import { useTranslate } from "@/utils/i18n";
-import { useEditorContext } from "../state";
+import { useEditorContext, useEditorSelector } from "../state";
 
 export const TagSection: FC = () => {
   const t = useTranslate();
-  const { state, actions, dispatch } = useEditorContext();
+  const { actions, dispatch } = useEditorContext();
+  const tags = useEditorSelector((s) => s.tags);
   const [inputValue, setInputValue] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIdx, setSelectedIdx] = useState(-1);
@@ -19,15 +20,15 @@ export const TagSection: FC = () => {
 
   const isExplorePage = Boolean(matchPath(Routes.EXPLORE, window.location.pathname));
   const { data: tagCounts = {} } = useTagCounts(!isExplorePage);
-  const visibleTags = useMemo(() => getVisibleDiaryTags(state.tags), [state.tags]);
+  const visibleTags = useMemo(() => getVisibleDiaryTags(tags), [tags]);
 
   const suggestions = useMemo(() => {
     const query = inputValue.replace(/^#+/, "").toLowerCase();
     return Object.keys(tagCounts)
-      .filter((tag) => !isHiddenLegacyTag(tag) && !state.tags.includes(tag) && (!query || tag.toLowerCase().includes(query)))
+      .filter((tag) => !isHiddenLegacyTag(tag) && !tags.includes(tag) && (!query || tag.toLowerCase().includes(query)))
       .sort((a, b) => (tagCounts[b] ?? 0) - (tagCounts[a] ?? 0) || a.localeCompare(b))
       .slice(0, 8);
-  }, [inputValue, tagCounts, state.tags]);
+  }, [inputValue, tagCounts, tags]);
 
   useEffect(() => {
     setSelectedIdx(-1);
@@ -46,18 +47,18 @@ export const TagSection: FC = () => {
 
   const addTag = (raw: string) => {
     const tag = normalizeDiaryTag(raw);
-    if (!tag || isHiddenLegacyTag(tag) || state.tags.includes(tag)) {
+    if (!tag || isHiddenLegacyTag(tag) || tags.includes(tag)) {
       setInputValue("");
       setShowSuggestions(false);
       return;
     }
-    dispatch(actions.setTags([...state.tags, tag]));
+    dispatch(actions.setTags([...tags, tag]));
     setInputValue("");
     setShowSuggestions(false);
   };
 
   const removeTag = (tag: string) => {
-    dispatch(actions.setTags(state.tags.filter((t) => t !== tag)));
+    dispatch(actions.setTags(tags.filter((existing) => existing !== tag)));
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {

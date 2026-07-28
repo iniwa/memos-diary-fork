@@ -1,6 +1,7 @@
 package markdown
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -347,6 +348,29 @@ func TestExtractAllMentions(t *testing.T) {
 	require.NoError(t, err)
 	assert.ElementsMatch(t, []string{"alice", "bob"}, data.Mentions)
 	assert.ElementsMatch(t, []string{"tag"}, data.Tags)
+
+	maxLengthUsername := "a" + strings.Repeat("b", 62)
+	data, err = svc.ExtractAll([]byte("@" + maxLengthUsername))
+	require.NoError(t, err)
+	assert.Equal(t, []string{maxLengthUsername}, data.Mentions)
+
+	data, err = svc.ExtractAll([]byte("@" + maxLengthUsername + "c"))
+	require.NoError(t, err)
+	assert.Empty(t, data.Mentions)
+}
+
+func TestExtractAllSkipsTagsInsideLinks(t *testing.T) {
+	svc := NewService(WithTagExtension())
+
+	data, err := svc.ExtractAll([]byte(
+		"[release #notes](https://example.com/releases#release-notes)\n\n" +
+			"![preview #image](https://example.com/image#preview)\n\n" +
+			"Outside #memo-tag",
+	))
+	require.NoError(t, err)
+
+	assert.ElementsMatch(t, []string{"memo-tag"}, data.Tags)
+	assert.True(t, data.Property.HasLink)
 }
 
 func TestExtractTags(t *testing.T) {
@@ -411,6 +435,30 @@ func TestExtractTags(t *testing.T) {
 			expected: []string{"todo", "done"},
 		},
 		{
+			name:     "autolink URL fragment not tag",
+			content:  "https://github.com/dmtrKovalenko/fff#pi-agent-extension\n\nProject #memo-tag",
+			withExt:  true,
+			expected: []string{"memo-tag"},
+		},
+		{
+			name:     "markdown link text and fragment not tags",
+			content:  "[release #notes](https://example.com/releases#release-notes) Outside #memo-tag",
+			withExt:  true,
+			expected: []string{"memo-tag"},
+		},
+		{
+			name:     "reference link text and fragment not tags",
+			content:  "[reference #anchor][docs]\n\n[docs]: https://example.com/docs#reference-anchor\n\nOutside #memo-tag",
+			withExt:  true,
+			expected: []string{"memo-tag"},
+		},
+		{
+			name:     "image alt text and fragment not tags",
+			content:  "![preview #image](https://example.com/image#preview)\n\nOutside #memo-tag",
+			withExt:  true,
+			expected: []string{"memo-tag"},
+		},
+		{
 			name:     "no extension enabled",
 			content:  "Text with #tag",
 			withExt:  false,
@@ -468,6 +516,19 @@ func TestExtractTags(t *testing.T) {
 			assert.ElementsMatch(t, tt.expected, tags)
 		})
 	}
+}
+
+func TestRenameTagSkipsTagsInsideLinks(t *testing.T) {
+	svc := NewService(WithTagExtension())
+
+	result, err := svc.RenameTag(
+		[]byte("[release #notes](https://example.com/releases#release-notes)\n\nOutside #notes"),
+		"notes",
+		"done",
+	)
+	require.NoError(t, err)
+
+	assert.Equal(t, "[release #notes](https://example.com/releases#release-notes)\n\nOutside #done", result)
 }
 
 func TestUniquePreserveCase(t *testing.T) {
