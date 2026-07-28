@@ -6,7 +6,7 @@ describes the fork.
 
 ## Current state
 
-- Base: Memos v0.29.1 (see `.upstream-version`)
+- Base: Memos v0.30.0 (see `.upstream-version`)
 - Runtime: Raspberry Pi Docker, `linux/arm64`
 - Deployment: GHCR (`ghcr.io/iniwa/memos-diary-fork`) + Portainer Stack, manual redeploy
 - Operation: separate Diary Mode app at `http://192.168.1.205:5231` (MVP complete, in daily use)
@@ -20,7 +20,9 @@ describes the fork.
 - RAW image upload conversion to JPEG (ImageMagick), env-gated
 - Stabilized bulk image uploads (sequential upload, local-file preview handling)
 - Calendar date prefill for new memos
-- Month-level calendar filtering with `displayMonth:YYYY-MM`
+- (Temporarily removed) Month-level calendar filtering — dropped in the v0.30.0
+  merge because upstream changed `created_ts` to a CEL timestamp. Being rebuilt
+  on the new time accessors; see `docs/decisions/0003-upstream-v0.30.0-integration.md`.
 - `thumbnail-backfill` / `remove-photo-tag` maintenance CLI commands
 
 ## Documents
@@ -50,5 +52,9 @@ describes the fork.
 ### Verification
 
 - Frontend: `cd web && pnpm lint && pnpm test` (vitest), build with `pnpm release`
-- Backend: no local Go — verified via `docker build --platform linux/arm64 -f scripts/Dockerfile .` or CI
+- Backend: Go toolchain available locally — `go build ./...`, `go vet ./...`,
+  `go test ./...`, and `golangci-lint run` (CI pins v2.11.3). Note that on
+  Windows some tests fail only in `t.TempDir()` cleanup because SQLite keeps the
+  file open; Linux CI is the authority. Image verification still needs
+  `docker build --platform linux/arm64 -f scripts/Dockerfile .` or CI.
 - All work stays on the `diary-mode` branch; no automatic commits.

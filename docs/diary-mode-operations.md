@@ -2,7 +2,7 @@
 
 ## 1. System Overview
 
-Diary Mode is a fork of [usememos/memos](https://github.com/usememos/memos) (currently based on v0.29.1, see `.upstream-version`) with the following additions:
+Diary Mode is a fork of [usememos/memos](https://github.com/usememos/memos) (currently based on v0.30.0, see `.upstream-version`) with the following additions:
 
 - Dedicated tag UI with boundary tag parsing and serialization
 - Twitter/X-style inline image grid (1+ images, expandable `+N` overlay)
@@ -11,7 +11,9 @@ Diary Mode is a fork of [usememos/memos](https://github.com/usememos/memos) (cur
 - RAW image upload conversion to JPEG (env-gated, see section 2)
 - Stabilized bulk image uploads (sequential upload, local-file previews)
 - Calendar date prefill: clicking an in-month date presets new memo `createTime` / `updateTime`
-- Month-level calendar filtering via `displayMonth:YYYY-MM`
+- Month-level calendar filtering via `displayMonth:YYYY-MM` — temporarily removed
+  in the v0.30.0 merge, being rebuilt on upstream's CEL time accessors
+  (see `docs/decisions/0003-upstream-v0.30.0-integration.md`)
 - Boundary `#photo` hidden from UI; `remove-photo-tag` CLI cleaned it from stored content
 
 Diary Mode runs separately from the production Memos instance on port `5230`. Diary Mode uses port `5231` and its own data directory.
@@ -111,15 +113,17 @@ Expected: `INFO` and `OK` lines only. No `WARN`, `ERROR`, or `panic`.
 
 Run after every redeploy:
 
-- [ ] App opens at `http://192.168.1.205:5231`
-- [ ] `docker logs --tail 80 memos-diary` shows no `WARN` / `ERROR` / `panic`
-- [ ] Memo timeline loads
-- [ ] Tag chips render on memos with tags
-- [ ] Image grid renders on memos with attachments
-- [ ] Image filter `hasImage:true` returns only image-bearing memos
-- [ ] Calendar date click sets `displayTime` filter and shows timestamp popover in create editor
-- [ ] Calendar month header click sets `displayMonth` filter and does not show a timestamp popover
-- [ ] No test memo remains from verification
+- [x] App opens at `http://192.168.1.205:5231`
+- [x] `docker logs --tail 80 memos-diary` shows no `WARN` / `ERROR` / `panic`
+- [x] Memo timeline loads
+- [x] Tag chips render on memos with tags
+- [x] Image grid renders on memos with attachments
+- [x] Image filter `hasImage:true` returns only image-bearing memos
+- [x] Calendar date click sets `displayTime` filter and shows timestamp popover in create editor
+- [x] Editing a tagged memo and saving preserves its tags (no loss, no duplication)
+- [x] A draft with body text and tags survives a page reload with its tags
+- [x] Dropping or pasting several images at once uploads all of them
+- [x] No test memo remains from verification
 
 ## 5. Backup and Restore
 

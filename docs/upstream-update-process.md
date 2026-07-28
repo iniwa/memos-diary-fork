@@ -82,8 +82,22 @@ pnpm release
 
 ### Backend
 
-Go is not installed locally. Backend verification runs through CI after push
-or via Docker:
+A Go toolchain is available locally, so most backend verification can run
+before pushing:
+
+```powershell
+go build ./...
+go vet ./...
+go test ./...
+golangci-lint run --timeout=3m   # CI pins v2.11.3
+```
+
+On Windows, `server/router/frontend` and `store/test` report failures that come
+only from `t.TempDir()` cleanup — SQLite still holds `memos_prod.db` open, so
+`RemoveAll` fails after the test body has already passed. Linux CI is the
+authority for those packages.
+
+Image verification still requires Docker:
 
 ```powershell
 docker build --platform linux/arm64 -f scripts/Dockerfile .
