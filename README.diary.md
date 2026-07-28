@@ -29,6 +29,7 @@ describes the fork.
 - `docs/diary-mode-operations.md` — deploy, smoke checks, backup/restore, maintenance CLI
 - `docs/upstream-update-process.md` — how upstream releases are detected and merged
 - `docs/decisions/` — durable design decisions
+- `docs/plans/` — pre-implementation specifications
 - `docs/handoffs/` — active handoffs (completed ones under `docs/handoffs/archive/`)
 - `docs/improvements.md` — improvement checklist from code surveys
 - `iniwa-issues.md` — remaining issues / feature ideas
