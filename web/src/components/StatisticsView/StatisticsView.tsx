@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import { useState } from "react";
 import { calculateMaxCount, MonthCalendar } from "@/components/ActivityCalendar";
-import { useDateFilterNavigation } from "@/hooks";
+import { useDateFilterNavigation, useMonthFilterNavigation } from "@/hooks";
 import type { StatisticsData } from "@/types/statistics";
 import { MonthNavigator } from "./MonthNavigator";
 
@@ -13,6 +13,7 @@ const StatisticsView = (props: Props) => {
   const { statisticsData } = props;
   const { activityStats, timeBasis } = statisticsData;
   const navigateToDateFilter = useDateFilterNavigation();
+  const navigateToMonthFilter = useMonthFilterNavigation();
   const [visibleMonthString, setVisibleMonthString] = useState(dayjs().format("YYYY-MM"));
 
   return (
@@ -22,6 +23,7 @@ const StatisticsView = (props: Props) => {
         onMonthChange={setVisibleMonthString}
         activityStats={activityStats}
         timeBasis={timeBasis}
+        onMonthClick={navigateToMonthFilter}
       />
 
       <div className="w-full animate-scale-in">

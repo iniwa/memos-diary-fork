@@ -9,6 +9,7 @@ export * from "./useLocalStorage";
 export * from "./useMediaQuery";
 export * from "./useMemoFilters";
 export * from "./useMemoSorting";
+export * from "./useMonthFilterNavigation";
 export * from "./useNavigateTo";
 export * from "./useUserLocale";
 export * from "./useUserTheme";

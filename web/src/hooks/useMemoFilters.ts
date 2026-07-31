@@ -24,6 +24,26 @@ const getShortcutId = (name: string): string => {
 
 const escapeFilterValue = (value: string): string => JSON.stringify(value);
 
+const MONTH_RE = /^(\d{4})-(\d{2})$/;
+
+/**
+ * Convert a `YYYY-MM` month filter value into the epoch-second boundaries of
+ * that month in the viewer's local time zone. The boundaries are local — the
+ * same basis the `displayTime` day filter and the activity calendar use — so
+ * they are emitted as `timestamp(<epoch>)` rather than as CEL timestamp
+ * accessors, which extract in UTC and would shift the month by the UTC offset.
+ */
+export function parseMonthFilterRange(value: string): { start: number; end: number } | undefined {
+  const match = MONTH_RE.exec(value);
+  if (!match) return undefined;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  if (month < 1 || month > 12) return undefined;
+  const start = new Date(year, month - 1, 1, 0, 0, 0, 0).getTime() / 1000;
+  const end = new Date(year, month, 1, 0, 0, 0, 0).getTime() / 1000;
+  return { start, end };
+}
+
 export interface UseMemoFiltersOptions {
   creatorName?: string;
   includeShortcuts?: boolean;
@@ -85,6 +105,11 @@ export const useMemoFilters = (options: UseMemoFiltersOptions = {}): string | un
         const endTimestamp = startTimestamp + 60 * 60 * 24;
 
         conditions.push(`created_ts >= timestamp(${startTimestamp}) && created_ts < timestamp(${endTimestamp})`);
+      } else if (filter.factor === "displayMonth") {
+        const range = parseMonthFilterRange(filter.value);
+        if (range) {
+          conditions.push(`created_ts >= timestamp(${range.start}) && created_ts < timestamp(${range.end})`);
+        }
       }
     }
 

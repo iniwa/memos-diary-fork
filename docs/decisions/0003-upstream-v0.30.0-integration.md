@@ -134,7 +134,34 @@ extension surface, which is the part of upstream most likely to churn again.
 
 ## Follow-up
 
-- Rebuild `displayMonth` on the CEL timestamp accessors, after the merge is
-  committed and verified. Track in `iniwa-issues.md`.
+- ~~Rebuild `displayMonth` on the CEL timestamp accessors, after the merge is
+  committed and verified. Track in `iniwa-issues.md`.~~ **Done 2026-07-31**, with
+  the amendment below.
 - Re-evaluate whether upstream's per-user tag metadata (colour, blur) should be
   surfaced in the Diary Mode UI. Not in scope for the merge.
+
+## Amendment 2026-07-31 — `displayMonth` uses a `timestamp()` range, not accessors
+
+Decision 2 above specified rebuilding the month filter as
+`created_ts.getFullYear() == YYYY && created_ts.getMonth() == MM`. Implementation
+found that this changes the month boundary the fork had:
+
+- `renderer.timestampAccessorExpr` (`internal/filter/render.go`) extracts date
+  parts in **UTC** on SQLite (`strftime(..., 'unixepoch')`) and Postgres, and a
+  timezone argument is not supported (`internal/filter/README.md`).
+- The Diary Mode instance runs on SQLite, and both the `displayTime` day filter
+  and the activity calendar use **local** day boundaries.
+
+Under JST the accessor form would shift the month window by 9 hours, so a diary
+entry written at 01:00 on the 1st would be filtered into the previous month.
+
+**Amended: `displayMonth` emits `created_ts >= timestamp(start) && created_ts <
+timestamp(end)`,** where `start` / `end` are the local month boundaries in epoch
+seconds (`parseMonthFilterRange` in `web/src/hooks/useMemoFilters.ts`). This keeps
+the pre-merge month semantics and matches the `displayTime` day filter. The
+original objection in Decision 2 — that the fork emitted a bare epoch integer
+that no longer type-checks — is resolved by the `timestamp()` wrapper, which is
+the same form upstream itself adopted for `displayTime`.
+
+The timestamp accessors remain the right tool for filters that are genuinely
+calendar-part based and timezone-insensitive (e.g. an "on this day" filter).

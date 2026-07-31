@@ -11,9 +11,12 @@ Diary Mode is a fork of [usememos/memos](https://github.com/usememos/memos) (cur
 - RAW image upload conversion to JPEG (env-gated, see section 2)
 - Stabilized bulk image uploads (sequential upload, local-file previews)
 - Calendar date prefill: clicking an in-month date presets new memo `createTime` / `updateTime`
-- Month-level calendar filtering via `displayMonth:YYYY-MM` — temporarily removed
-  in the v0.30.0 merge, being rebuilt on upstream's CEL time accessors
-  (see `docs/decisions/0003-upstream-v0.30.0-integration.md`)
+- Month-level calendar filtering via `displayMonth:YYYY-MM` — click a month
+  heading in the year calendar. Rebuilt after the v0.30.0 merge as a
+  `created_ts >= timestamp(start) && created_ts < timestamp(end)` range over the
+  local month, because CEL time accessors extract in UTC on SQLite
+  (see the 2026-07-31 amendment in
+  `docs/decisions/0003-upstream-v0.30.0-integration.md`)
 - Boundary `#photo` hidden from UI; `remove-photo-tag` CLI cleaned it from stored content
 
 Diary Mode runs separately from the production Memos instance on port `5230`. Diary Mode uses port `5231` and its own data directory.
@@ -120,6 +123,7 @@ Run after every redeploy:
 - [x] Image grid renders on memos with attachments
 - [x] Image filter `hasImage:true` returns only image-bearing memos
 - [x] Calendar date click sets `displayTime` filter and shows timestamp popover in create editor
+- [ ] Year-calendar month heading click sets the `displayMonth` filter and lists only that month's memos, including entries written just after local midnight on the 1st
 - [x] Editing a tagged memo and saving preserves its tags (no loss, no duplication)
 - [x] A draft with body text and tags survives a page reload with its tags
 - [x] Dropping or pasting several images at once uploads all of them
