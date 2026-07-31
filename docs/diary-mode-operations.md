@@ -123,7 +123,7 @@ Run after every redeploy:
 - [x] Image grid renders on memos with attachments
 - [x] Image filter `hasImage:true` returns only image-bearing memos
 - [x] Calendar date click sets `displayTime` filter and shows timestamp popover in create editor
-- [ ] Year-calendar month heading click sets the `displayMonth` filter and lists only that month's memos, including entries written just after local midnight on the 1st
+- [x] Year-calendar month heading click sets the `displayMonth` filter and lists only that month's memos, including entries written just after local midnight on the 1st
 - [x] Editing a tagged memo and saving preserves its tags (no loss, no duplication)
 - [x] A draft with body text and tags survives a page reload with its tags
 - [x] Dropping or pasting several images at once uploads all of them
