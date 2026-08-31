@@ -61,8 +61,17 @@ Checklist:
 - Fork-added hooks exports still in `web/src/hooks/index.ts`.
 - No intentionally removed upstream workflows reintroduced under
   `.github/workflows/`.
-- No database migration files added (check `store/migration/`).
-- No API schema changes (check `proto/` diff).
+- No unapproved database migration or API schema changes: enumerate and link
+  every difference in `store/migration/` and `proto/`, and link any applicable
+  existing explicit approval. Stop only for unapproved differences or changes
+  outside that approval's scope. Approved changes require recorded
+  compatibility and verification, plus any required backup/restore conditions
+  before data writes. [Decision 0003](decisions/0003-upstream-v0.30.0-integration.md)
+  narrowly approves the upstream v0.30.0 database migration; it does not
+  approve all v0.30.0 schema or contract changes, nor future changes. Do not
+  assume an image-only rollback is safe after a schema change.
+- Preserve Decision 0003's prohibition on fork-local migration additions,
+  modifications, or reordering; accepting the upstream migration does not lift it.
 - `AGENTS.md` and `CLAUDE.md` are not staged (`git status --short`).
 - `.upstream-version` is staged with the new tag.
 

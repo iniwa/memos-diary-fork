@@ -9,9 +9,20 @@ pnpm 11 toolchain. The deployed service is a separate `linux/arm64` Docker
 application built through the existing GHCR flow and manually redeployed in
 Portainer.
 
-This file is the active Codex instruction source. `CLAUDE.md` is only a
+This file is the active Codex project policy. `CLAUDE.md` is only a
 retired compatibility stub and remains ignored local metadata. Preserve
 upstream `README.md`; fork orientation belongs in `README.diary.md`.
+
+### Authority
+
+Use this file for current project policy. Use `.upstream-version` and
+repository manifests for machine facts; active decisions and explicit
+amendments for design and approval; `README.diary.md` for current orientation;
+and the operations and upstream-update documents for their stated scopes.
+Original design documents, completed plans, and archived handoffs are
+historical evidence, not active instructions. Explicit superseding decisions
+or amendments prevail. If active sources leave a material ambiguity, block the
+affected scope and preserve the evidence rather than guessing.
 
 ## Repository Map
 
@@ -51,6 +62,15 @@ change, inspect and reuse existing code or platform capabilities first, and
 include directly related tests and documentation. Preserve unrelated or
 unexpected work and keep a single writer for overlapping files or behavior.
 
+For this personal-use tool, implement only the requested normal path. A brief
+diff check or cheap relevant check is enough to try plausible behavior on the
+existing Diary Mode instance; do not add speculative edge-case handling,
+abstractions, test harnesses, full suites, or independent review merely for
+routine iteration. Use the existing delivery flow, smoke-test normal use, fix
+observed errors, and finish when the requested behavior works. Required schema,
+data-safety, CI/image, and approval gates still apply. Report an unavailable
+runtime check as not tested, not as a successful deployment.
+
 Preserve these Diary Mode invariants:
 
 - `diary-mode` is the sole Diary Mode working branch; `original` remains the
@@ -79,6 +99,15 @@ deployment state, storage, networking, ports, domains, or exposure unless the
 task explicitly requires it. Back up data before approved data modification and
 follow `docs/diary-mode-operations.md`.
 
+An implementation or fix request includes routine reversible deployment and
+necessary restart of the existing separate Diary Mode service through its
+known Portainer procedure, without repeated confirmation. This covers use of
+an available image under the existing CI/image requirements; it does not
+authorize Git or GHCR publication, upstream integration, schema/data changes,
+new targets, changed feature-flag defaults, credentials, storage/networking,
+exposure, or effects on the other production Memos service. Those retain their
+existing approval gates.
+
 Do not commit, push, merge upstream, publish, deploy, restart, or make another
 remote mutation unless authorized. Upstream preparation may be automated, but
 integration preserves merge history, fork changes, and intentionally removed
@@ -86,47 +115,60 @@ workflows.
 
 ## Delegation
 
-The user selects the primary model at runtime. The primary session owns task
+- Use GPT-5.6 Sol as the preferred main worker; the user's actual runtime model and reasoning choice remains authoritative. Use configured Luna roles (`bounded_explorer`/`bounded_implementer`) for bounded work and Terra roles (`adaptive_implementer`/`bounded_reviewer`) for adaptive implementation or risk-justified review; do not force delegation or pin the main reasoning level in project instructions. The primary session owns task
 interpretation, material design, approval boundaries, integration, and user
 communication. Use native Codex subagents for ordinary delegation; Claude Code
 requires an explicit user policy change. Keep small, conversation-dependent,
 design-heavy, or approval-sensitive work in the primary session.
 
-For a settled cohesive outcome requiring multiple implementation steps, use one
-`bounded_implementer` as the default writer when transfer cost is justified.
-Use `bounded_explorer` for genuinely independent read-only questions,
-`adaptive_implementer` only when the bounded slice needs broader adaptive
-reasoning, and `bounded_reviewer` only for a concrete material risk. Only the
-primary delegates; delegated agents do not spawn further agents. Parallelize
-independent read-only work, not overlapping writes. Explorers and reviewers are
-behaviorally read-only. If a role is unavailable or unobservable, reclaim the
-work or use an observable equivalent and report the fallback.
+For settled multi-step work, use one `bounded_implementer` when transfer cost is
+justified. Use `bounded_explorer` for independent questions, and
+`adaptive_implementer` for materially unresolved native, platform, runtime, or
+cross-subsystem reasoning. `bounded_explorer` and `bounded_reviewer` are
+behaviorally read-only; use `bounded_reviewer` only for a concrete material
+risk. Only the primary delegates; delegated agents do not spawn agents,
+overlapping work has one writer, and unavailable or unobservable roles are
+reclaimed by the primary or replaced with an observable equivalent, with the
+fallback disclosed. Configured roles launch
+without inherited conversation history or explicit model/effort overrides when
+supported; otherwise use and disclose the observable fallback.
 
 Before delegating a writer, fix acceptance mechanics, protected regressions and
-gates, focused checks plus any affected full suite, the stable-diff/reference
-sweep, and evidence marking each criterion `passed`, `blocked`, or `unmet`.
-The writer owns related inspection, implementation, tests, documentation,
-verification, corrections, and stable-diff self-review. Add independent review
-only for material risk; normally skip it for localized deterministic docs or
-configuration.
+gates, focused checks plus any explicitly required or concrete-risk full suite,
+the stable-diff/reference sweep, and evidence marking each criterion `passed`,
+`blocked`, or `unmet`.
+The writer owns related inspection, implementation, coupled artifacts,
+verification, minor corrections, and stable self-review. That self-review and
+all required checks are a barrier before independent acceptance review. Do not
+start or retain a reviewer while the writer is producing the candidate. If
+implementation changes after review starts, invalidate its acceptance evidence,
+finish the writer self-gate, and send a fresh stable snapshot to the same
+reviewer. Independent review is conditional on material risk and normally
+skipped for localized deterministic documentation or configuration.
+When review is warranted, name the material risk in the review handoff after
+the writer self-gate.
+
+If a required safety or approval review must precede application, hand back the
+stable source/diff and pre-application checks first, with runtime application
+and smoke explicitly not yet run. Clear that gate before applying; this
+handoff is not overall completion. Ordinary personal-use changes need no
+independent review.
 
 Normally use at most one independent reviewer per cohesive outcome. A second
 reviewer requires a distinct material risk or an unusable or blocked first
 review, and the primary records that reason. At the second correction round,
 or after two blocked or partial implementation returns caused by an unresolved
 acceptance, authority, or environment issue, pause further corrective
-delegation. The primary classifies the cause and restates acceptance,
-protected boundaries, authority, environment, and remaining evidence before
-choosing the same bounded writer only if the remainder is still bounded, an
-adaptive route for genuinely broader reasoning, approval or user input for
-missing authority, or a fresh independent task boundary. This token-efficiency
-circuit breaker does not weaken verification or protected project gates.
+delegation and reset the contract. Classify the cause, restate acceptance,
+protected boundaries, authority, environment, and evidence, then choose the
+same bounded route only if still bounded, adaptive, approval/user input, or a
+fresh task boundary as applicable. This circuit breaker does not weaken
+verification or protected project gates.
 
 Use an inline prompt for ordinary delegation. Persist a handoff under
 `docs/handoffs/` only for cross-session, interruption-sensitive, operationally
 risky, separately executed, or resume-dependent work; archive it after the
-whole workflow completes. Keep cohesive corrections in the current task, but
-identify a genuinely independent phase as a fresh task/chat boundary.
+whole workflow completes. Keep cohesive corrections in the current task.
 
 Before implementation, classify the initial route from acceptance evidence:
 `small-primary` for small or transfer-negative work, `bounded` for settled
@@ -134,11 +176,9 @@ multi-step work with one verifiable writer, `adaptive` when unresolved
 native/platform/runtime or cross-subsystem behavior is material, or
 `non-implementation` for analysis, design, review, or operations. This does
 not force delegation; reclassify only after a material scope change or
-contract reset. Name any material reviewer risk after the writer's stable
-self-review (pre-stable review is diagnostic only), reset the contract at the
-second correction round or after two blocked/partial returns, and use a fresh
-task boundary for an independent phase. The primary reintegrates through the
-stable diff and evidence rather than repeating discovery.
+contract reset. A genuinely independent phase gets a fresh task/chat boundary;
+the primary reintegrates through its stable diff and evidence rather than
+repeating discovery.
 
 ## Definition of Done
 
@@ -149,9 +189,13 @@ stable diff and evidence rather than repeating discovery.
   Mode regressions.
 - Report material dependency, configuration, migration, build, CI, schema, or
   cross-system effects. Keep `CLAUDE.md` ignored and unrelated work intact.
+- Keep operational checklists aligned with the exact approval scope. Retain
+  important required deferred checks in `iniwa-issues.md` with verification,
+  approval, and resume conditions; do not open issues for speculative checks.
 
 ## On-Demand Documentation
 
 Read `docs/diary-mode-operations.md` for runtime or data work;
 `docs/upstream-update-process.md` and decisions 0002–0003 for upstream work;
-and `docs/decisions/0004-codex-native-delegation-policy.md` for delegation.
+and `docs/decisions/0004-codex-native-delegation-policy.md` for delegation,
+as refined by `docs/decisions/0005-personal-use-iteration.md` for routine work.
