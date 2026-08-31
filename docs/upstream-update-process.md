@@ -63,6 +63,8 @@ Checklist:
   `.github/workflows/`.
 - No database migration files added (check `store/migration/`).
 - No API schema changes (check `proto/` diff).
+- Preserve Decision 0003's prohibition on fork-local migration additions,
+  modifications, or reordering; accepting the upstream migration does not lift it.
 - `AGENTS.md` and `CLAUDE.md` are not staged (`git status --short`).
 - `.upstream-version` is staged with the new tag.
 

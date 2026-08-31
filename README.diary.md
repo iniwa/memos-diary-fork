@@ -39,6 +39,22 @@ describes the fork.
 
 ## Development workflow
 
+For routine personal use, make the smallest change, try the normal path on the
+existing Diary Mode instance through the established deployment flow, and fix
+observed errors. Working normal use is enough; speculative edge-case matrices
+and hardening are not a prerequisite. `AGENTS.md` defines the bounded routine
+deployment/restart allowance and the schema, data, publication, and other gates
+that remain protected.
+
+The writer self-reviews a stable diff and runs the relevant required checks
+before any independent acceptance review. If that review must precede
+deployment, runtime application and smoke remain unrun until it clears.
+Review is added only for a concrete material risk; if implementation changes
+after review begins, its
+evidence is invalid and a fresh stable snapshot is required. The final
+report records every acceptance criterion as `passed`, `blocked`, or `unmet`
+(see `AGENTS.md`).
+
 1. Codex (design side) turns a request into a handoff under `docs/handoffs/`
    with explicit goal, files, constraints, non-goals, and verification.
 2. Codex delegates it with
@@ -50,6 +66,12 @@ describes the fork.
    open issues in `iniwa-issues.md`.
 
 ### Verification
+
+Select the smallest useful normal-path check from the available commands below.
+Full suites are not mandatory for every routine edit; explicit acceptance,
+affected data/security risks, and the upstream/CI/image workflow keep their
+required checks. Documentation-only edits need no runtime exercise. Do not
+report readiness or an unavailable smoke check as verified live operation.
 
 - Frontend: `cd web && pnpm lint && pnpm test` (vitest), build with `pnpm release`
 - Backend: Go toolchain available locally — `go build ./...`, `go vet ./...`,
