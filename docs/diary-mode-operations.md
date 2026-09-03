@@ -179,7 +179,9 @@ If `sqlite3` is available on the host, use `.backup` to create a consistent copy
 
 ### Restore
 
-A tested restore procedure for this specific Portainer deployment layout has not been formally verified. In an emergency:
+A tested restore procedure for this specific Portainer deployment layout has
+not been formally verified; track the open verification work in
+[`iniwa-issues.md`](../iniwa-issues.md). In an emergency:
 
 1. Stop the container.
 2. Replace the data directory contents with the backup copy.

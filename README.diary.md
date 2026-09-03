@@ -21,9 +21,8 @@ describes the fork.
 - RAW image upload conversion to JPEG (ImageMagick), env-gated
 - Stabilized bulk image uploads (sequential upload, local-file preview handling)
 - Calendar date prefill for new memos
-- (Temporarily removed) Month-level calendar filtering — dropped in the v0.30.0
-  merge because upstream changed `created_ts` to a CEL timestamp. Being rebuilt
-  on the new time accessors; see `docs/decisions/0003-upstream-v0.30.0-integration.md`.
+- Month-level calendar filtering via `displayMonth:YYYY-MM`, rebuilt for the
+  v0.30.0 CEL timestamp contract while preserving local month boundaries
 - `thumbnail-backfill` / `remove-photo-tag` maintenance CLI commands
 
 ## Documents

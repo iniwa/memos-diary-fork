@@ -52,9 +52,28 @@ var exifCapableImageTypes = map[string]bool{
 	"image/heif": true,
 }
 
+// requestContextStatusError converts request cancellation into the corresponding
+// gRPC status while preserving unrelated errors for their caller to handle.
+func requestContextStatusError(ctx context.Context, err error) error {
+	if contextErr := ctx.Err(); contextErr != nil {
+		return status.FromContextError(contextErr).Err()
+	}
+	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+		return status.FromContextError(err).Err()
+	}
+	return nil
+}
+
 func (s *APIV1Service) CreateAttachment(ctx context.Context, request *v1pb.CreateAttachmentRequest) (*v1pb.Attachment, error) {
+	if err := requestContextStatusError(ctx, nil); err != nil {
+		return nil, err
+	}
+
 	user, err := s.fetchCurrentUser(ctx)
 	if err != nil {
+		if contextErr := requestContextStatusError(ctx, err); contextErr != nil {
+			return nil, contextErr
+		}
 		return nil, status.Errorf(codes.Internal, "failed to get current user: %v", err)
 	}
 	if user == nil {
@@ -114,6 +133,9 @@ func (s *APIV1Service) CreateAttachment(ctx context.Context, request *v1pb.Creat
 
 	instanceStorageSetting, err := s.Store.GetInstanceStorageSetting(ctx)
 	if err != nil {
+		if contextErr := requestContextStatusError(ctx, err); contextErr != nil {
+			return nil, contextErr
+		}
 		return nil, status.Errorf(codes.Internal, "failed to get instance storage setting: %v", err)
 	}
 	size := binary.Size(request.Attachment.Content)
@@ -134,6 +156,9 @@ func (s *APIV1Service) CreateAttachment(ctx context.Context, request *v1pb.Creat
 		}
 		memo, err := s.Store.GetMemo(ctx, &store.FindMemo{UID: &memoUID})
 		if err != nil {
+			if contextErr := requestContextStatusError(ctx, err); contextErr != nil {
+				return nil, contextErr
+			}
 			return nil, status.Errorf(codes.Internal, "failed to find memo: %v", err)
 		}
 		if memo == nil {
@@ -154,6 +179,9 @@ func (s *APIV1Service) CreateAttachment(ctx context.Context, request *v1pb.Creat
 
 	// Convert RAW camera images to JPEG before EXIF stripping and optimization.
 	if err := s.maybeConvertRawImageAttachment(ctx, create); err != nil {
+		if contextErr := requestContextStatusError(ctx, err); contextErr != nil {
+			return nil, contextErr
+		}
 		return nil, err
 	}
 
@@ -162,6 +190,9 @@ func (s *APIV1Service) CreateAttachment(ctx context.Context, request *v1pb.Creat
 	if shouldStripExif(create.Type) && !IsAndroidMotionContainer(create.Payload.GetMotionMedia()) {
 		release, err := s.acquireImageProcessingSlot(ctx)
 		if err != nil {
+			if contextErr := requestContextStatusError(ctx, err); contextErr != nil {
+				return nil, contextErr
+			}
 			return nil, status.Errorf(codes.ResourceExhausted, "too many image processing requests")
 		}
 		strippedBlob, stripErr := stripImageExif(create.Blob, create.Type)
@@ -178,14 +209,25 @@ func (s *APIV1Service) CreateAttachment(ctx context.Context, request *v1pb.Creat
 		}
 	}
 
-	s.maybeOptimizeImageAttachment(ctx, create)
+	if err := s.maybeOptimizeImageAttachment(ctx, create); err != nil {
+		return nil, status.FromContextError(err).Err()
+	}
+	if err := requestContextStatusError(ctx, nil); err != nil {
+		return nil, err
+	}
 
 	if err := SaveAttachmentBlob(ctx, s.Profile, s.Store, create); err != nil {
+		if contextErr := requestContextStatusError(ctx, err); contextErr != nil {
+			return nil, contextErr
+		}
 		return nil, status.Errorf(codes.Internal, "failed to save attachment blob: %v", err)
 	}
 
 	attachment, err := s.Store.CreateAttachment(ctx, create)
 	if err != nil {
+		if contextErr := requestContextStatusError(ctx, err); contextErr != nil {
+			return nil, contextErr
+		}
 		return nil, status.Errorf(codes.Internal, "failed to create attachment: %v", err)
 	}
 

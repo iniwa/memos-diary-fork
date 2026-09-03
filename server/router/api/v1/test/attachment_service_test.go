@@ -2,9 +2,13 @@ package test
 
 import (
 	"context"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/usememos/memos/internal/testutil"
 	v1pb "github.com/usememos/memos/proto/gen/api/v1"
@@ -83,6 +87,38 @@ func TestCreateAttachment(t *testing.T) {
 		})
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "invalid MIME type format")
+	})
+
+	t.Run("CanceledContext_DoesNotPersistAttachment", func(t *testing.T) {
+		_, err := ts.Store.UpsertInstanceSetting(ctx, &storepb.InstanceSetting{
+			Key: storepb.InstanceSettingKey_STORAGE,
+			Value: &storepb.InstanceSetting_StorageSetting{
+				StorageSetting: &storepb.InstanceStorageSetting{
+					StorageType:      storepb.InstanceStorageSetting_LOCAL,
+					FilepathTemplate: "assets/{filename}",
+				},
+			},
+		})
+		require.NoError(t, err)
+
+		canceledCtx, cancel := context.WithCancel(userCtx)
+		cancel()
+		_, err = ts.Service.CreateAttachment(canceledCtx, &v1pb.CreateAttachmentRequest{
+			Attachment: &v1pb.Attachment{
+				Filename: "canceled.txt",
+				Type:     "text/plain",
+				Content:  []byte("canceled"),
+			},
+		})
+		require.Equal(t, codes.Canceled, status.Code(err))
+
+		attachments, err := ts.Store.ListAttachments(ctx, &store.FindAttachment{CreatorID: &user.ID})
+		require.NoError(t, err)
+		for _, attachment := range attachments {
+			require.NotEqual(t, "canceled.txt", attachment.Filename)
+		}
+		_, statErr := os.Stat(filepath.Join(ts.Profile.Data, "assets", "canceled.txt"))
+		require.True(t, os.IsNotExist(statErr))
 	})
 
 	t.Run("LocalStorage_PathCollisionUsesUniqueReference", func(t *testing.T) {

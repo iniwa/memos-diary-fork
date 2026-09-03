@@ -1,6 +1,9 @@
 # Decision 0001 — Phase 0 Foundation
 
 Date: 2026-06-01
+Status: Historical; current policy and operating guidance are in `AGENTS.md`,
+`README.diary.md`, active decisions/amendments, and the scoped operations and
+upstream-update documents.
 
 ## Context
 

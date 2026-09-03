@@ -84,46 +84,69 @@ func imageOptimizerConcurrencyFromEnv() int64 {
 	return int64(parseIntEnv(imageOptimizerConcurrencyEnv, 1, 1, 8))
 }
 
-func (s *APIV1Service) maybeOptimizeImageAttachment(ctx context.Context, attachment *store.Attachment) {
+// maybeOptimizeImageAttachment preserves the non-fatal optimization fallback, but
+// returns a canceled request context so callers do not persist an abandoned upload.
+func (s *APIV1Service) maybeOptimizeImageAttachment(ctx context.Context, attachment *store.Attachment) error {
 	config := imageOptimizerConfigFromEnv()
 	if !config.Enabled || attachment == nil || len(attachment.Blob) == 0 || !IsOptimizableStaticImage(attachment.Type) {
-		return
+		return nil
 	}
 	if IsAndroidMotionContainer(attachment.Payload.GetMotionMedia()) {
-		return
+		return nil
+	}
+	if err := ctx.Err(); err != nil {
+		return err
 	}
 
 	release, err := s.acquireImageProcessingSlot(ctx)
 	if err != nil {
+		if contextErr := ctx.Err(); contextErr != nil {
+			return contextErr
+		}
 		slog.Warn("skipping image optimization because processing slot could not be acquired",
 			slog.String("filename", attachment.Filename),
 			slog.String("error", err.Error()))
-		return
+		return nil
 	}
 	defer release()
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 
 	img, err := decodeOptimizableImage(attachment.Blob)
 	if err != nil {
+		if contextErr := ctx.Err(); contextErr != nil {
+			return contextErr
+		}
 		slog.Warn("failed to optimize image attachment",
 			slog.String("filename", attachment.Filename),
 			slog.String("type", attachment.Type),
 			slog.String("error", err.Error()))
 		if err := WriteUploadThumbnailCache(ctx, s.Profile, attachment.UID, attachment.Blob, config.ThumbnailMaxEdge, config.ThumbnailQuality); err != nil {
+			if contextErr := ctx.Err(); contextErr != nil {
+				return contextErr
+			}
 			slog.Warn("failed to generate image thumbnail cache",
 				slog.String("filename", attachment.Filename),
 				slog.String("type", attachment.Type),
 				slog.String("error", err.Error()))
 		}
-		return
+		return nil
 	}
 
 	optimized, err := optimizeDecodedImage(img, attachment.Type, config.PreviewMaxEdge, config.PreviewQuality)
 	if err != nil {
+		if contextErr := ctx.Err(); contextErr != nil {
+			return contextErr
+		}
 		slog.Warn("failed to optimize image attachment",
 			slog.String("filename", attachment.Filename),
 			slog.String("type", attachment.Type),
 			slog.String("error", err.Error()))
 	} else if !config.KeepOriginal {
+		if contextErr := ctx.Err(); contextErr != nil {
+			return contextErr
+		}
 		attachment.Blob = optimized
 		attachment.Size = int64(len(optimized))
 		attachment.Type = optimizedImageMimeType(attachment.Type)
@@ -131,11 +154,15 @@ func (s *APIV1Service) maybeOptimizeImageAttachment(ctx context.Context, attachm
 	}
 
 	if err := writeUploadThumbnailCacheFromImage(ctx, s.Profile, attachment.UID, img, config.ThumbnailMaxEdge, config.ThumbnailQuality); err != nil {
+		if contextErr := ctx.Err(); contextErr != nil {
+			return contextErr
+		}
 		slog.Warn("failed to generate image thumbnail cache",
 			slog.String("filename", attachment.Filename),
 			slog.String("type", attachment.Type),
 			slog.String("error", err.Error()))
 	}
+	return nil
 }
 
 // IsOptimizableStaticImage reports whether mimeType can be processed by the image optimizer.

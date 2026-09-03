@@ -4,9 +4,11 @@
 対象は **フォーク独自コードのみ**。upstream 由来コードは本家追従を容易に保つため
 リファクタ対象にしない。
 
-**運用方法**: 着手したい項目にチェック `[x]` を入れる → Codex が handoff
-(`docs/handoffs/`)を作成し、Claude Code が実装する。
-handoff を挟むまでもない小粒な項目は Claude Code に直接依頼してもよい。
+**運用方法**: 着手する項目にチェック `[x]` を入れる。小さく会話依存の作業は
+Codex の primary session で完結させる。設計済みで複数の実装手順を要する一体的な
+変更は、引き継ぎコストに見合う場合に Codex native の `bounded_implementer` 1名へ
+委任する。通常は短い inline task を使い、`docs/handoffs/` の persisted handoff は
+セッションをまたぐ作業、復帰条件が必要な作業、または運用リスクがある作業に限る。
 実装完了した項目は「完了アーカイブ」へ移動する。
 
 - 機能追加・未検証項目はこのファイルの対象外(`iniwa-issues.md` で管理)。

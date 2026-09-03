@@ -1,5 +1,12 @@
 # Memos Diary Mode 設計書
 
+> **文書の位置づけ（2026-08-05）**: 本書は Memos v0.29.0 を起点にした
+> Diary Mode の原設計と段階導入方針を記録する歴史的な設計基準である。現在の
+> 統合済み upstream は `.upstream-version`、実装・運用の現況は
+> `README.diary.md` と `docs/diary-mode-operations.md`、v0.30.0 追随時の変更は
+> `docs/decisions/0003-upstream-v0.30.0-integration.md` を正とする。本書内の
+> v0.29.x、初期フェーズ、推奨ブランチ例は現行状態を示す運用指示ではない。
+
 ## 1. 概要
 
 本設計書は、OSSメモアプリ **Memos v0.29.0** をベースに、個人用の日記ツールとして拡張するための設計をまとめる。

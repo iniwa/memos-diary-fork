@@ -69,7 +69,7 @@ func TestMaybeOptimizeImageAttachmentFallsBackOnInvalidBlob(t *testing.T) {
 		Blob:     []byte("not an image"),
 	}
 
-	service.maybeOptimizeImageAttachment(context.Background(), attachment)
+	require.NoError(t, service.maybeOptimizeImageAttachment(context.Background(), attachment))
 
 	require.Equal(t, []byte("not an image"), attachment.Blob)
 	require.Equal(t, int64(10), attachment.Size)
@@ -97,7 +97,7 @@ func TestMaybeOptimizeImageAttachmentRewritesBlobMetadataAndThumbnail(t *testing
 		Blob:     input,
 	}
 
-	service.maybeOptimizeImageAttachment(context.Background(), attachment)
+	require.NoError(t, service.maybeOptimizeImageAttachment(context.Background(), attachment))
 
 	require.NotEqual(t, input, attachment.Blob)
 	require.Equal(t, int64(len(attachment.Blob)), attachment.Size)
@@ -117,6 +117,24 @@ func TestMaybeOptimizeImageAttachmentRewritesBlobMetadataAndThumbnail(t *testing
 	require.Equal(t, "jpeg", thumbnailFormat)
 	require.Equal(t, 50, thumbnailConfig.Width)
 	require.Equal(t, 25, thumbnailConfig.Height)
+}
+
+func TestMaybeOptimizeImageAttachmentReturnsCanceledContext(t *testing.T) {
+	t.Setenv(imageOptimizerEnabledEnv, "true")
+	service := &APIV1Service{Profile: &profile.Profile{Data: t.TempDir()}}
+	attachment := &store.Attachment{
+		UID:      "canceled-image",
+		Filename: "photo.jpg",
+		Type:     "image/jpeg",
+		Blob:     testJPEGBlob(t, 10, 10),
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	err := service.maybeOptimizeImageAttachment(ctx, attachment)
+	require.ErrorIs(t, err, context.Canceled)
+	_, statErr := os.Stat(filepath.Join(service.Profile.Data, ThumbnailCacheFolder, "canceled-image.v2.jpeg"))
+	require.True(t, os.IsNotExist(statErr))
 }
 
 func testJPEGBlob(t *testing.T, width, height int) []byte {

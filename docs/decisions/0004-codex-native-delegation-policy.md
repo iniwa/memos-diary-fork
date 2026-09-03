@@ -79,3 +79,14 @@ environment, the primary pauses further corrective delegation and resets the
 contract before selecting a bounded, adaptive, approval, or fresh-task route.
 This controls token churn without weakening Diary Mode behavior, upstream
 integration requirements, deployment approvals, or verification.
+
+## 2026-08-31 Stable Writer Gate Refinement
+
+The writer's stable self-review and focused plus required affected checks are a
+dispatch barrier before independent acceptance review. A reviewer must not
+start or remain active while the writer is producing the candidate. If the
+implementation changes after review starts, that review evidence is invalid;
+the writer must complete the self-gate again and provide a fresh stable
+snapshot to the same reviewer. Independent review remains conditional on a
+concrete material risk and is normally skipped for localized deterministic
+documentation or configuration changes.
