@@ -1,5 +1,15 @@
 # memos-diary-fork
 
+<!-- iniwa-codex-migration-notice:v2:start -->
+> **ドキュメント更新予定（2026-09-19）**
+>
+> 次回このプロジェクトで作業する際は、実体の現行文書・固有仕様・承認境界を確認し、合意済みの共通設計v3に沿ってドキュメントを更新すること。今回はこの通知の追記のみで、本文の全面移行は未実施です。
+>
+> 以前ユーザーが追加した独自のトークン・効率収集、集計、比較、未回収分の後追い義務は撤回済みです。旧本文・参照先に残っていても実施条件に戻しません。標準ログ、既存データ、通知・復旧は保持します。検証結果・再発知見・再利用可能な環境情報は有効な個人共通入口が案内する私的知識領域へ必要時に短く保存し、保存不可でも独立作業を進めます。
+>
+> この通知は固有仕様、データ保護、必要な検証・必須承認・独立レビューを解除しません。自律進行・委託を含む旧本文の他の規則まで更新済みとは扱わないでください。
+<!-- iniwa-codex-migration-notice:v2:end -->
+
 Fork of Memos with Diary Mode. Read `README.diary.md`, `.upstream-version`, affected Go/web files and manifests, `docs/diary-mode-operations.md`, `docs/upstream-update-process.md`, relevant decisions/plans, and active handoffs. `README.md` remains upstream orientation.
 
 Preserve upstream structure/API routes, Diary Mode branch and feature-flag boundaries, `createTime`/`updateTime`/`displayTime` semantics, image and resource behavior, existing GHCR/Portainer/Docker arm64 deployment, storage/network/port contracts, and upstream-update provenance. Do not rewrite upstream-derived code or planning snapshots casually. Keep secrets, `.env`, local settings, persistent data, migrations, deployment, publication, and remote state gated.
