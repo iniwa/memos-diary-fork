@@ -16,7 +16,7 @@ import (
 	"github.com/usememos/memos/internal/profile"
 	"github.com/usememos/memos/internal/version"
 	storepb "github.com/usememos/memos/proto/gen/store"
-	"github.com/usememos/memos/server/router/api/v1"
+	apiv1 "github.com/usememos/memos/server/api/v1"
 	"github.com/usememos/memos/store"
 	"github.com/usememos/memos/store/db"
 )
@@ -94,8 +94,8 @@ func runThumbnailBackfill(cmd *cobra.Command, _ []string) error {
 		force:     force,
 		limit:     limit,
 		filterUID: strings.TrimSpace(filterUID),
-		maxEdge:   thumbnailBackfillParseIntEnv(v1.ThumbnailMaxEdgeEnv, v1.DefaultThumbnailMaxEdge),
-		quality:   thumbnailBackfillParseIntEnv(v1.ThumbnailJPEGQualityEnv, v1.DefaultThumbnailJPEGQuality),
+		maxEdge:   thumbnailBackfillParseIntEnv(apiv1.ThumbnailMaxEdgeEnv, apiv1.DefaultThumbnailMaxEdge),
+		quality:   thumbnailBackfillParseIntEnv(apiv1.ThumbnailJPEGQualityEnv, apiv1.DefaultThumbnailJPEGQuality),
 	}
 	fmt.Fprintf(os.Stderr, "thumbnail settings: max_edge=%d quality=%d\n", opts.maxEdge, opts.quality)
 
@@ -151,11 +151,11 @@ func backfillAttachments(ctx context.Context, st *store.Store, prof *profile.Pro
 		for _, att := range attachments {
 			stats.scanned++
 
-			if !v1.IsOptimizableStaticImage(att.Type) {
+			if !apiv1.IsOptimizableStaticImage(att.Type) {
 				stats.skipped++
 				continue
 			}
-			if att.Payload != nil && v1.IsAndroidMotionContainer(att.Payload.GetMotionMedia()) {
+			if att.Payload != nil && apiv1.IsAndroidMotionContainer(att.Payload.GetMotionMedia()) {
 				stats.skipped++
 				continue
 			}
@@ -190,7 +190,7 @@ func backfillAttachments(ctx context.Context, st *store.Store, prof *profile.Pro
 				continue
 			}
 
-			if err := v1.WriteUploadThumbnailCache(ctx, prof, att.UID, blob, opts.maxEdge, opts.quality); err != nil {
+			if err := apiv1.WriteUploadThumbnailCache(ctx, prof, att.UID, blob, opts.maxEdge, opts.quality); err != nil {
 				slog.Warn("failed to write thumbnail cache",
 					slog.String("uid", att.UID),
 					slog.Any("err", err))

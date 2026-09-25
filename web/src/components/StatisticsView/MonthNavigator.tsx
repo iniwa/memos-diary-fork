@@ -1,93 +1,58 @@
-import dayjs from "dayjs";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
-import { memo, useCallback, useMemo, useState } from "react";
+import { memo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { YearCalendar } from "@/components/ActivityCalendar";
+import { YearCalendar } from "@/components/ActivityCalendar/YearCalendar";
+import { SIDEBAR_ROW_BOX_CLASSES } from "@/components/AppSidebar/SidebarRow";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { addMonths, formatMonth, getMonthFromDate, getYearFromDate, setYearAndMonth } from "@/lib/calendar-utils";
+import { addMonths, formatMonthLabel } from "@/lib/calendar-utils";
+import { cn } from "@/lib/utils";
 import type { MonthNavigatorProps } from "@/types/statistics";
 
-export const MonthNavigator = memo(({ visibleMonth, onMonthChange, activityStats, timeBasis, onMonthClick }: MonthNavigatorProps) => {
-  const { i18n } = useTranslation();
+export const MonthNavigator = memo(({ visibleMonth, onMonthChange, activityStats = {}, timeBasis, onMonthClick }: MonthNavigatorProps) => {
+  const { i18n, t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
-
-  const { currentMonth, currentYear, currentMonthNum } = useMemo(
-    () => ({
-      currentMonth: dayjs(visibleMonth).toDate(),
-      currentYear: getYearFromDate(visibleMonth),
-      currentMonthNum: getMonthFromDate(visibleMonth),
-    }),
-    [visibleMonth],
-  );
-
-  const monthLabel = useMemo(
-    () => currentMonth.toLocaleString(i18n.language, { year: "numeric", month: "long" }),
-    [currentMonth, i18n.language],
-  );
-
-  const handlePrevMonth = useCallback(() => onMonthChange(addMonths(visibleMonth, -1)), [visibleMonth, onMonthChange]);
-  const handleNextMonth = useCallback(() => onMonthChange(addMonths(visibleMonth, 1)), [visibleMonth, onMonthChange]);
-
-  const handleDateClick = useCallback(
-    (date: string) => {
-      onMonthChange(formatMonth(date));
-      setIsOpen(false);
-    },
-    [onMonthChange],
-  );
-
-  const handleMonthClick = useCallback(
-    (month: string) => {
-      if (onMonthClick) {
-        onMonthClick(month);
-        setIsOpen(false);
-      }
-    },
-    [onMonthClick],
-  );
-
-  const handleYearChange = useCallback(
-    (year: number) => onMonthChange(setYearAndMonth(year, currentMonthNum)),
-    [currentMonthNum, onMonthChange],
-  );
+  const monthLabel = formatMonthLabel(visibleMonth, i18n.language);
+  const handlePrevMonth = () => onMonthChange(addMonths(visibleMonth, -1));
+  const handleNextMonth = () => onMonthChange(addMonths(visibleMonth, 1));
 
   return (
-    <header className="w-full mb-2 flex items-center justify-between gap-2">
+    <header className={cn(SIDEBAR_ROW_BOX_CLASSES, "mb-1.5 justify-between")}>
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogTrigger
-          render={
-            <button
-              type="button"
-              className="py-0.5 text-sm text-foreground font-medium transition-colors hover:text-foreground/80 select-none"
-            />
-          }
-        >
-          {monthLabel}
-        </DialogTrigger>
-        <DialogContent
-          className="p-0 border border-border/20 bg-background md:max-w-6xl w-[min(100vw-24px,1200px)] max-h-[85vh] overflow-y-auto rounded-xl shadow-xl"
-          size="2xl"
-          showCloseButton={false}
-        >
-          <DialogTitle className="sr-only">Select Month</DialogTitle>
+        <h2 className="min-w-0 truncate font-medium tracking-[-0.015em] text-foreground/90 select-none">
+          <DialogTrigger render={<button type="button" className="cursor-pointer hover:text-foreground" />}>{monthLabel}</DialogTrigger>
+        </h2>
+        <DialogContent size="2xl" className="p-0 md:max-w-6xl w-[min(100vw-24px,1200px)] max-h-[85vh]" showCloseButton={false}>
+          <DialogTitle className="sr-only">{t("common.month-navigation")}</DialogTitle>
           <YearCalendar
-            selectedYear={currentYear}
+            selectedYear={Number(visibleMonth.slice(0, 4))}
             data={activityStats}
-            onYearChange={handleYearChange}
-            onDateClick={handleDateClick}
-            onMonthClick={onMonthClick ? handleMonthClick : undefined}
+            onYearChange={(year) => onMonthChange(`${year}-${visibleMonth.slice(5, 7)}`)}
+            onDateClick={(date) => {
+              onMonthChange(date.slice(0, 7));
+              setIsOpen(false);
+            }}
+            onMonthClick={
+              onMonthClick
+                ? (month) => {
+                    onMonthChange(month);
+                    onMonthClick(month);
+                    setIsOpen(false);
+                  }
+                : undefined
+            }
             timeBasis={timeBasis}
           />
         </DialogContent>
       </Dialog>
 
-      <nav className="flex items-center shrink-0" aria-label="Month navigation">
-        <Button variant="ghost" size="icon-sm" onClick={handlePrevMonth} aria-label="Previous month">
-          <ChevronLeftIcon className="w-4 h-4" />
+      <nav className="flex shrink-0 items-center gap-0.5" aria-label={t("common.month-navigation")}>
+        <Button variant="quiet" size="icon-sm" onClick={handlePrevMonth} aria-label={t("common.previous-month")}>
+          <ChevronLeftIcon className="size-4 rtl:rotate-180" strokeWidth={1.75} />
         </Button>
-        <Button variant="ghost" size="icon-sm" onClick={handleNextMonth} aria-label="Next month">
-          <ChevronRightIcon className="w-4 h-4" />
+
+        <Button variant="quiet" size="icon-sm" onClick={handleNextMonth} aria-label={t("common.next-month")}>
+          <ChevronRightIcon className="size-4 rtl:rotate-180" strokeWidth={1.75} />
         </Button>
       </nav>
     </header>

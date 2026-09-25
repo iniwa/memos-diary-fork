@@ -5,7 +5,6 @@
   "bump-minor-pre-major": true,
   "versioning": "prerelease",
   "prerelease": false,
-  "prerelease-type": "rc.1",
   "packages": {
     ".": {
       "release-type": "go",

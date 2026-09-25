@@ -6,7 +6,7 @@ describes the fork.
 
 ## Current state
 
-- Base: Memos v0.30.0 (see `.upstream-version`)
+- Base: Memos v0.31.0 (source integration; deployment pending) (see `.upstream-version`)
 - Runtime: Raspberry Pi Docker, `linux/arm64`
 - Deployment: GHCR (`ghcr.io/iniwa/memos-diary-fork`) + Portainer Stack, manual redeploy
 - Operation: separate Diary Mode app (MVP complete, in daily use); runtime
@@ -54,28 +54,12 @@ and hardening are not a prerequisite. `AGENTS.md` defines the bounded routine
 deployment/restart allowance and the schema, data, publication, and other gates
 that remain protected.
 
-1. The primary Codex session owns requirements, material design, approval
-   boundaries, integration, and the final report. The runtime-selected primary
-   model is not overridden by project documentation.
-2. Small or conversation-dependent work stays in the primary session. For a
-   settled cohesive change with enough implementation work to justify transfer,
-   Codex delegates to one native `bounded_implementer`; other native roles are
-   used only when their distinct read-only, adaptive, or review purpose is
-   warranted.
-3. Ordinary delegation uses a compact inline task. A persisted handoff under
-   `docs/handoffs/` is reserved for cross-session, interruption-sensitive,
-   operationally risky, separately executed, or resume-dependent work.
-4. The writer self-reviews a stable diff and runs the relevant required checks
-   before any independent acceptance review. If that review must precede
-   deployment, runtime application and smoke remain unrun until it clears.
-   Review is added only for a concrete material risk; if implementation changes
-   after review begins, its
-   evidence is invalid and a fresh stable snapshot is required. The final
-   report records every acceptance criterion as `passed`, `blocked`, or `unmet`
-   (see `AGENTS.md`).
-5. Completed persisted handoffs move to `docs/handoffs/archive/`. Improvement
-   candidates live in `docs/improvements.md`; feature ideas and open issues in
-   `iniwa-issues.md`.
+The primary owns integration, verification and acceptance. Delegate only a
+useful independent outcome or a review of a named material risk; children do not
+redelegate. Complete authorized preparation and checks before asking about a
+protected operation. Current user instructions and `AGENTS.md` govern approval;
+prior successful operation is evidence, not new authority. Preserve schema/data,
+publication and deployment gates in the upstream procedure.
 
 ### Verification
 
@@ -87,7 +71,7 @@ report readiness or an unavailable smoke check as verified live operation.
 
 - Frontend: `cd web && pnpm lint && pnpm test` (vitest), build with `pnpm release`
 - Backend: Go toolchain available locally — `go build ./...`, `go vet ./...`,
-  `go test ./...`, and `golangci-lint run` (CI pins v2.11.3). Note that on
+  `go test ./...`, and `golangci-lint run` (CI pins v2.13.1). Note that on
   Windows some tests fail only in `t.TempDir()` cleanup because SQLite keeps the
   file open; Linux CI is the authority. Image verification still needs
   `docker build --platform linux/arm64 -f scripts/Dockerfile .` or CI.

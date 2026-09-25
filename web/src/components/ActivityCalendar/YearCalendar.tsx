@@ -4,10 +4,9 @@ import { Button } from "@/components/ui/button";
 import type { MemoTimeBasis } from "@/contexts/ViewContext";
 import { cn } from "@/lib/utils";
 import { useTranslate } from "@/utils/i18n";
-import { getMaxYear, MIN_YEAR } from "./constants";
 import { MonthCalendar } from "./MonthCalendar";
 import type { CalendarData, YearCalendarProps } from "./types";
-import { calculateMaxCount, filterDataByYear, generateMonthsForYear, getMonthLabel } from "./utils";
+import { filterDataByYear, generateMonthsForYear, getMonthLabel } from "./utils";
 
 interface YearNavigationProps {
   selectedYear: number;
@@ -72,13 +71,12 @@ YearNavigation.displayName = "YearNavigation";
 interface MonthCardProps {
   month: string;
   data: CalendarData;
-  maxCount: number;
   onDateClick: (date: string) => void;
   onMonthClick?: (month: string) => void;
   timeBasis?: MemoTimeBasis;
 }
 
-const MonthCard = memo(({ month, data, maxCount, onDateClick, onMonthClick, timeBasis }: MonthCardProps) => (
+const MonthCard = memo(({ month, data, onDateClick, onMonthClick, timeBasis }: MonthCardProps) => (
   <article className="flex flex-col gap-2 rounded-xl border border-border/20 bg-muted/5 p-3 transition-colors hover:bg-muted/10">
     <header className="text-[10px] font-medium text-muted-foreground/80 uppercase tracking-widest">
       {onMonthClick ? (
@@ -89,7 +87,7 @@ const MonthCard = memo(({ month, data, maxCount, onDateClick, onMonthClick, time
         getMonthLabel(month)
       )}
     </header>
-    <MonthCalendar month={month} data={data} maxCount={maxCount} size="small" onClick={onDateClick} disableTooltips timeBasis={timeBasis} />
+    <MonthCalendar month={month} data={data} onClick={onDateClick} timeBasis={timeBasis} />
   </article>
 ));
 MonthCard.displayName = "MonthCard";
@@ -99,10 +97,9 @@ export const YearCalendar = memo(
     const currentYear = useMemo(() => new Date().getFullYear(), []);
     const yearData = useMemo(() => filterDataByYear(data, selectedYear), [data, selectedYear]);
     const months = useMemo(() => generateMonthsForYear(selectedYear), [selectedYear]);
-    const yearMaxCount = useMemo(() => calculateMaxCount(yearData), [yearData]);
 
-    const canGoPrev = selectedYear > MIN_YEAR;
-    const canGoNext = selectedYear < getMaxYear();
+    const canGoPrev = selectedYear > 1970;
+    const canGoNext = selectedYear < currentYear + 1;
 
     return (
       <section className={cn("w-full flex flex-col gap-5 px-4 py-4 select-none", className)} aria-label={`Year ${selectedYear} calendar`}>
@@ -122,7 +119,6 @@ export const YearCalendar = memo(
               key={month}
               month={month}
               data={yearData}
-              maxCount={yearMaxCount}
               onDateClick={onDateClick}
               onMonthClick={onMonthClick}
               timeBasis={timeBasis}

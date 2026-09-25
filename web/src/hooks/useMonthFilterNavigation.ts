@@ -1,19 +1,24 @@
 import { useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { stringifyFilters } from "@/contexts/MemoFilterContext";
+import { replaceFiltersByFactor, stringifyFilters, useMemoFilterContext } from "@/contexts/MemoFilterContext";
 
 export const useMonthFilterNavigation = (targetPath?: string) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { filters, setFilters } = useMemoFilterContext();
 
-  const navigateToMonthFilter = useCallback(
+  return useCallback(
     (month: string) => {
-      const filterQuery = stringifyFilters([{ factor: "displayMonth", value: month }]);
-      const basePath = targetPath ?? location.pathname;
-      navigate(`${basePath}?filter=${filterQuery}`);
+      const nextFilters = replaceFiltersByFactor(
+        filters.filter((filter) => filter.factor !== "displayTime"),
+        "displayMonth",
+        [{ factor: "displayMonth", value: month }],
+      );
+      const nextSearchParams = new URLSearchParams(location.search);
+      nextSearchParams.set("filter", stringifyFilters(nextFilters));
+      setFilters(nextFilters);
+      navigate({ pathname: targetPath ?? location.pathname, search: nextSearchParams.toString() });
     },
-    [navigate, location.pathname, targetPath],
+    [filters, location.pathname, location.search, navigate, setFilters, targetPath],
   );
-
-  return navigateToMonthFilter;
 };

@@ -1,31 +1,34 @@
-> ✨ Featured Sponsor: [CodeRabbit](https://coderabbit.link/usememos) — Cut code review time & bugs in half, instantly.
+> ✨ Featured sponsor: [CodeRabbit — Industry-leading AI code reviews](https://coderabbit.link/usememos).
 
 # Memos
 
-<img align="right" height="96px" src="https://raw.githubusercontent.com/usememos/.github/refs/heads/main/assets/logo-rounded.png" alt="Memos" />
+<img src="./web/public/logo.webp" alt="" width="96" align="right">
 
-Memos is an open-source, self-hosted note-taking app built for quick capture. It is Markdown-native, lightweight, and keeps your data under your control.
+**Fast enough for every thought. Private enough for all of them.**
 
-[![Home](https://img.shields.io/badge/🏠-usememos.com-blue?style=flat-square)](https://usememos.com)
-[![Live Demo](https://img.shields.io/badge/✨-Try%20Demo-orange?style=flat-square)](https://demo.usememos.com/)
-[![Docs](https://img.shields.io/badge/📚-Documentation-green?style=flat-square)](https://usememos.com/docs)
-[![Discord](https://img.shields.io/badge/💬-Discord-5865f2?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/tfPJa4UmAv)
-[![Docker Pulls](https://img.shields.io/docker/pulls/neosmemo/memos?style=flat-square&logo=docker)](https://hub.docker.com/r/neosmemo/memos)
+Memos is an open-source, self-hosted home for short-form thinking. Daily notes, links, work logs, and snippets flow into a chronological Markdown timeline—on infrastructure you control, without the overhead of an all-in-one workspace.
+
+**[Run with Docker](#quick-start)** · **[Try the live demo](https://demo.usememos.com/)** · [Read the docs](https://usememos.com/docs)
+
+[![GitHub stars](https://img.shields.io/github/stars/usememos/memos?style=flat-square&logo=github&label=Stars)](https://github.com/usememos/memos)
+[![Latest release](https://img.shields.io/github/v/release/usememos/memos?style=flat-square&label=Release)](https://github.com/usememos/memos/releases)
+[![Docker pulls](https://img.shields.io/docker/pulls/neosmemo/memos?style=flat-square&logo=docker)](https://hub.docker.com/r/neosmemo/memos)
+[![MIT license](https://img.shields.io/github/license/usememos/memos?style=flat-square)](LICENSE)
 
 <img src="https://raw.githubusercontent.com/usememos/.github/refs/heads/main/assets/demo.png" alt="Memos Demo Screenshot" height="512" />
 
-## Features
+## Why Memos?
 
-- **Capture quickly** — A timeline-first interface keeps note-taking simple: open, write, and move on.
-- **Own your data** — Self-host Memos on your infrastructure with no telemetry.
-- **Deploy anywhere** — Run a single Go binary or Docker container with SQLite, MySQL, or PostgreSQL.
-- **Integrate freely** — Build on the REST and gRPC APIs or adapt the MIT-licensed source to your needs.
+- **Capture quickly** — Write in Markdown, attach media, and save without choosing a title, folder, or template.
+- **Organize lightly** — Revisit notes through the timeline, search, tags, and pins.
+- **Share selectively** — Keep memos private or publish only what you choose.
+- **Keep control** — Self-host Memos with [zero telemetry](https://usememos.com/features/data-ownership) and [MIT-licensed source](LICENSE).
+
+[Explore all features →](https://usememos.com/features)
 
 ## Quick Start
 
-Want to explore Memos first? Open the [live demo](https://demo.usememos.com/).
-
-### Docker (Recommended)
+Run Memos with Docker:
 
 ```bash
 docker run -d \
@@ -35,47 +38,34 @@ docker run -d \
   neosmemo/memos:stable
 ```
 
-Open `http://localhost:5230` and start writing.
-
-### Native Binary
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/usememos/memos/main/scripts/install.sh | sh
-```
-
-### Other Installation Methods
-
-- **Docker Compose** — Recommended for production deployments.
-- **Kubernetes** — Helm charts and manifests are available.
-- **Build from source** — Best for development and customization.
-
-See the [deployment guide](https://usememos.com/docs/deploy) for detailed instructions.
+Other install options are in the [deployment guide](https://usememos.com/docs/deploy).
 
 ## Web Clipper
 
-Save pages, selected text, and images directly to your Memos instance with the official [Memos Web Clipper](https://github.com/usememos/web-clipper). The extension is available for [Chrome](https://chromewebstore.google.com/detail/memos-web-clipper/nebaoebnljalfegiidibihhkebeiklbl) and [Firefox](https://addons.mozilla.org/en-US/firefox/addon/memos-web-clipper/), and lets you review each clip, choose its visibility, and customize its Markdown format before saving.
-
-## Contributing
-
-Contributions of all kinds are welcome, including bug reports, feature suggestions, pull requests, documentation, and translations.
-
-- [Report bugs](https://github.com/usememos/memos/issues/new?template=bug_report.md)
-- [Suggest features](https://github.com/usememos/memos/issues/new?template=feature_request.md)
-- [Submit pull requests](https://github.com/usememos/memos/pulls)
-- [Improve documentation](https://github.com/usememos/dotcom)
-- [Help with translations](https://github.com/usememos/memos/tree/main/web/src/locales)
+Save pages, selections, and images from your browser straight into Memos as source-linked Markdown. Get the [Memos Web Clipper](https://usememos.com/web-clipper) for [Chrome](https://chromewebstore.google.com/detail/memos-web-clipper/nebaoebnljalfegiidibihhkebeiklbl) or [Firefox](https://addons.mozilla.org/en-US/firefox/addon/memos-web-clipper/).
 
 ## Sponsors
 
-- [**CodeRabbit** — Cut code review time and bugs in half](https://coderabbit.link/usememos)
-- [**SSD Nodes** — Affordable VPS hosting for self-hosters](https://ssdnodes.com/?utm_source=memos&utm_medium=sponsor)
+<p>
+  <a href="https://coderabbit.link/usememos" target="_blank" rel="noopener"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/usememos/.github/refs/heads/main/assets/sponsors/coderabbit/white-typemark.svg" /><img src="https://raw.githubusercontent.com/usememos/.github/refs/heads/main/assets/sponsors/coderabbit/orange-typemark.svg" alt="CodeRabbit — Cut code review time and bugs in half" height="40" align="middle" /></picture></a>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <a href="https://ssdnodes.com/?utm_source=memos&utm_medium=sponsor" target="_blank" rel="noopener"><img src="https://raw.githubusercontent.com/usememos/.github/refs/heads/main/assets/sponsors/ssd-nodes.svg" alt="SSD Nodes — Affordable VPS hosting for self-hosters" height="72" align="middle" /></a>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <a href="https://www.testmuai.com/?utm_medium=sponsor&utm_source=memos" target="_blank" rel="noopener"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/usememos/.github/refs/heads/main/assets/sponsors/testmuai/white.png" /><img src="https://raw.githubusercontent.com/usememos/.github/refs/heads/main/assets/sponsors/testmuai/black.png" alt="TestMu AI — The world’s first full-stack Agentic AI Quality Engineering platform" height="30" align="middle" /></picture></a>
+</p>
 
-Love Memos? [Sponsor us on GitHub](https://github.com/sponsors/usememos) to help keep the project growing!
+Love Memos? [Sponsor the project on GitHub](https://github.com/sponsors/usememos).
 
-## License
+## Get Help
 
-Memos is open-source software licensed under the [MIT License](LICENSE). See our [Privacy Policy](https://usememos.com/privacy) for details on data handling.
+Read the [docs](https://usememos.com/docs), join [Discord](https://discord.gg/tfPJa4UmAv), or ask in [GitHub Discussions](https://github.com/usememos/memos/discussions). Found a bug or have an idea? [Open an issue](https://github.com/usememos/memos/issues/new/choose). To contribute, see the [contributing guide](https://usememos.com/docs/development/contributing).
 
----
+## Star History
 
-**[Website](https://usememos.com)** • **[Documentation](https://usememos.com/docs)** • **[Demo](https://demo.usememos.com/)** • **[Discord](https://discord.gg/tfPJa4UmAv)** • **[X/Twitter](https://x.com/usememos)**
+<a href="https://www.star-history.com/?repos=usememos%2Fmemos&amp;type=date&amp;legend=top-left">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=usememos/memos&amp;type=date&amp;theme=dark&amp;legend=top-left" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=usememos/memos&amp;type=date&amp;legend=top-left" />
+    <img alt="Memos star history chart" src="https://api.star-history.com/chart?repos=usememos/memos&amp;type=date&amp;legend=top-left" />
+  </picture>
+</a>

@@ -2,27 +2,30 @@ import { ArrowUpIcon, LoaderCircleIcon } from "lucide-react";
 import { type ReactElement, type ReactNode, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { MentionResolutionProvider } from "@/components/MemoContent/MentionResolutionContext";
 import { Button } from "@/components/ui/button";
+import { useAppSidebar } from "@/contexts/AppSidebarContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { useInstance } from "@/contexts/InstanceContext";
-import { useMemoFilterContext } from "@/contexts/MemoFilterContext";
+import { isSearchFilter, useMemoFilterContext } from "@/contexts/MemoFilterContext";
 import { useNewMemo } from "@/contexts/NewMemoContext";
 import { useView } from "@/contexts/ViewContext";
 import { useDelayedFlag } from "@/hooks/useDelayedFlag";
 import { useInfiniteMemos } from "@/hooks/useMemoQueries";
 import { hoistMemoToFront } from "@/hooks/useMemoSorting";
+import { combineCELFilters } from "@/lib/cel-filter";
 import { DEFAULT_LIST_MEMOS_PAGE_SIZE, LOADING_INDICATOR_DELAY_MS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { State } from "@/types/proto/api/v1/common_pb";
 import type { Memo } from "@/types/proto/api/v1/memo_service_pb";
 import { useTranslate } from "@/utils/i18n";
-import ColumnGrid, { columnCountForWidth, GRID_GAP } from "../ColumnGrid";
+import ColumnGrid, { ColumnGridUntrappedProvider, columnCountForWidth, GRID_GAP } from "../ColumnGrid";
 import MemoFilters from "../MemoFilters";
 import Placeholder from "../Placeholder";
+import MemoListError from "./MemoListError";
 import { estimateMemoCardHeight } from "./memoCardHeight";
 
 // Memo identity for React keys and grid planning. The pages use it for their renderer keys too,
-// so flow-list and grid identity can never drift apart.
-export const getMemoKey = (memo: Memo) => `${memo.name}-${memo.updateTime}`;
+// so flow-list and grid identity can never drift apart. Deliberately name-only: content updates
+// reconcile in place (updateTime is a protobuf Timestamp object, not usable in a template string).
+export const getMemoKey = (memo: Memo) => memo.name;
 
 // Columns never stretch past this, so 2 columns on a wide monitor stay readable and the
 // grid centers in the leftover space instead of filling it.
@@ -40,11 +43,16 @@ interface Props {
   state?: State;
   orderBy?: string;
   filter?: string;
+  contextFilter?: string;
   pageSize?: number;
   showCreator?: boolean;
   enabled?: boolean;
   /** Route-owned content rendered before the list and inside column one in grid mode. */
   renderLeading?: (options: { useGrid: boolean }) => ReactNode;
+  /** Route-owned content spanning the full list width above every column (e.g. a page identity block). */
+  renderHeader?: (options: { useGrid: boolean }) => ReactNode;
+  /** Replaces the generic empty-state message when the route knows why the list is empty. */
+  emptyMessage?: string;
 }
 
 function useAutoFetchWhenNotScrollable({
@@ -113,9 +121,9 @@ function useAutoFetchWhenNotScrollable({
 
 const PagedMemoList = (props: Props) => {
   const t = useTranslate();
-  const { isInitialized: authInitialized } = useAuth();
-  const { isInitialized: instanceInitialized } = useInstance();
-  const { filters } = useMemoFilterContext();
+  const { isUserSettingsInitialized } = useAuth();
+  const { filters, memoView, removeFilter } = useMemoFilterContext();
+  const { setQuickFindOpen } = useAppSidebar();
   const { maxColumns, compactMode } = useView();
   // maxColumns is a ceiling: 1 = single reading column, 0 = as many as fit. The single
   // column renders in normal document flow; anything wider becomes the packed grid.
@@ -143,20 +151,24 @@ const PagedMemoList = (props: Props) => {
   // pages don't each repeat the policy.
   const effectiveCompact = compactMode || useGrid;
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteMemos(
-    {
-      state: props.state || State.NORMAL,
-      orderBy: props.orderBy || "create_time desc",
-      filter: props.filter,
-      pageSize: props.pageSize || DEFAULT_LIST_MEMOS_PAGE_SIZE,
-    },
-    { enabled: props.enabled ?? true },
-  );
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError, error, isFetchNextPageError, refetch } =
+    useInfiniteMemos(
+      {
+        state: props.state || State.NORMAL,
+        orderBy: props.orderBy || "create_time desc",
+        filter: combineCELFilters(props.contextFilter, props.filter),
+        pageSize: props.pageSize || DEFAULT_LIST_MEMOS_PAGE_SIZE,
+      },
+      { enabled: props.enabled ?? true },
+    );
 
-  // Queries can start as soon as routing is unlocked, but memo content stays
-  // hidden until settings that control its presentation have settled.
-  const isDisplayPending = isLoading || !authInitialized || !instanceInitialized;
-  // Only show the spinner once loading exceeds the delay, so fast loads don't flash it.
+  // Tag settings decide whether sensitive memo content must be blurred. Keep that
+  // privacy boundary, but do not wait for unrelated memo views or instance settings.
+  const isDisplayPending = isLoading || !isUserSettingsInitialized;
+  // A failed first page leaves nothing to show; a failed later page keeps what already
+  // loaded. Either way, automatic pagination pauses until the user retries.
+  const isInitialError = isError && !isFetchNextPageError;
+  const canPaginate = !isDisplayPending && !isError;
   const showLoader = useDelayedFlag(isDisplayPending, LOADING_INDICATOR_DELAY_MS);
 
   // Flatten pages into a single array of memos
@@ -172,7 +184,7 @@ const PagedMemoList = (props: Props) => {
 
   // Auto-fetch hook: fetches more content when page isn't scrollable
   useAutoFetchWhenNotScrollable({
-    enabled: !isDisplayPending,
+    enabled: canPaginate,
     hasNextPage,
     isFetchingNextPage,
     memoCount: sortedMemoList.length,
@@ -181,7 +193,7 @@ const PagedMemoList = (props: Props) => {
 
   // Infinite scroll: fetch more when user scrolls near bottom
   useEffect(() => {
-    if (isDisplayPending || !hasNextPage) return;
+    if (!canPaginate || !hasNextPage) return;
 
     const handleScroll = () => {
       const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 300;
@@ -192,45 +204,64 @@ const PagedMemoList = (props: Props) => {
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [isDisplayPending, hasNextPage, isFetchingNextPage, fetchNextPage]);
+  }, [canPaginate, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const leadingContent = props.renderLeading?.({ useGrid });
+  const headerContent = props.renderHeader?.({ useGrid });
 
   // A freshly created memo is hoisted to the front; pin it to the top of column one so it
   // appears right under the composer instead of dropping into a random (shortest) column.
-  const firstMemo = sortedMemoList[0];
+  const displayMemoList = isDisplayPending || isInitialError ? [] : sortedMemoList;
+  const firstMemo = displayMemoList[0];
   const priorityKey = newMemoName && firstMemo?.name === newMemoName ? getMemoKey(firstMemo) : undefined;
 
   // Stable reference so MentionResolutionProvider's memo (keyed on the array) actually holds.
-  const contents = useMemo(() => sortedMemoList.map((memo) => memo.content), [sortedMemoList]);
+  const contents = useMemo(() => displayMemoList.map((memo) => memo.content), [displayMemoList]);
   const userNames = useMemo(
     () =>
       Array.from(
         new Set(
-          sortedMemoList.flatMap((memo) => [
+          displayMemoList.flatMap((memo) => [
             ...(props.showCreator ? [memo.creator] : []),
             ...(memo.reactions ?? []).map((reaction) => reaction.creator),
           ]),
         ),
       ),
-    [props.showCreator, sortedMemoList],
+    [props.showCreator, displayMemoList],
   );
 
   const emptyPlaceholder =
-    !isFetchingNextPage && !hasNextPage && sortedMemoList.length === 0 ? (
-      <Placeholder variant="empty" message={t("message.no-data")} className="w-full" />
+    !isDisplayPending && !isError && !isFetchingNextPage && !hasNextPage && displayMemoList.length === 0 ? (
+      <Placeholder variant="empty" message={props.emptyMessage ?? t("message.no-data")} className="w-full" />
     ) : null;
+  const initialLoader = isDisplayPending && showLoader ? <Loader /> : null;
+  // Only a query the user typed can be edited or cleared from the error; facet and scope
+  // filters are fixed by the route.
+  const hasSearch = filters.some(isSearchFilter);
+  const errorNotice =
+    !isDisplayPending && isError ? (
+      <MemoListError
+        error={error}
+        onRetry={isFetchNextPageError ? fetchNextPage : refetch}
+        onEditQuery={hasSearch ? () => setQuickFindOpen(true) : undefined}
+        onClearQuery={hasSearch ? () => removeFilter(isSearchFilter) : undefined}
+      />
+    ) : null;
+  const initialError = isInitialError ? errorNotice : null;
+  const pageError = isFetchNextPageError ? errorNotice : null;
 
   // Column one is the action column: the composer and any active filters head it, and the
   // empty state follows them. The newest memo also lands directly beneath them (priorityKey
   // above). Every vertical seam inside the stack uses GRID_GAP so y-spacing matches the
   // grid's x-spacing exactly.
-  const hasFilters = filters.length > 0;
+  const hasFilters = filters.length > 0 || memoView !== undefined;
   const gridLeading =
-    leadingContent || hasFilters || emptyPlaceholder ? (
+    leadingContent || hasFilters || initialLoader || emptyPlaceholder || initialError ? (
       <div className="flex w-full flex-col" style={{ gap: GRID_GAP }}>
         {leadingContent}
         <MemoFilters />
+        {initialLoader}
+        {initialError}
         {emptyPlaceholder}
       </div>
     ) : undefined;
@@ -238,12 +269,9 @@ const PagedMemoList = (props: Props) => {
   // Pagination controls are identical across both layouts.
   const footer = (
     <>
+      {pageError}
       {isFetchingNextPage && <Loader />}
-      {!isFetchingNextPage && (hasNextPage || sortedMemoList.length > 0) && (
-        <div className="w-full opacity-70 flex flex-row justify-center items-center my-4">
-          <BackToTop />
-        </div>
-      )}
+      {!isFetchingNextPage && (hasNextPage || displayMemoList.length > 0) && <BackToTop />}
     </>
   );
 
@@ -251,32 +279,33 @@ const PagedMemoList = (props: Props) => {
     <MentionResolutionProvider contents={contents} userNames={userNames}>
       <div ref={layoutMeasureRef} className="w-full">
         <div className={cn("flex flex-col justify-start w-full mx-auto", useGrid ? "max-w-none" : "max-w-2xl")}>
-          {/* During initial load, show the spinner only after the delay; render nothing before then to avoid a flash. */}
-          {isDisplayPending ? (
-            showLoader ? (
-              <Loader />
-            ) : null
-          ) : useGrid ? (
+          {useGrid ? (
             <>
-              <ColumnGrid
-                items={sortedMemoList}
-                getKey={getMemoKey}
-                renderItem={(memo) => props.renderer(memo, { compact: effectiveCompact })}
-                estimateHeight={estimateMemoCardHeight}
-                leading={gridLeading}
-                priorityKey={priorityKey}
-                maxColumns={maxColumns}
-                maxColumnWidth={MAX_COLUMN_WIDTH}
-              />
-              {footer}
+              <ColumnGridUntrappedProvider>
+                <ColumnGrid
+                  items={displayMemoList}
+                  getKey={getMemoKey}
+                  renderItem={(memo) => props.renderer(memo, { compact: effectiveCompact })}
+                  estimateHeight={estimateMemoCardHeight}
+                  header={headerContent}
+                  leading={gridLeading}
+                  priorityKey={priorityKey}
+                  maxColumns={maxColumns}
+                  maxColumnWidth={MAX_COLUMN_WIDTH}
+                />
+              </ColumnGridUntrappedProvider>
+              {!isDisplayPending && footer}
             </>
           ) : (
             <>
+              {headerContent}
               {leadingContent}
               <MemoFilters className="mb-2" />
-              {sortedMemoList.map((memo) => props.renderer(memo, { compact: effectiveCompact }))}
+              {initialLoader}
+              {initialError}
+              {displayMemoList.map((memo) => props.renderer(memo, { compact: effectiveCompact }))}
               {emptyPlaceholder}
-              {footer}
+              {!isDisplayPending && footer}
             </>
           )}
         </div>
@@ -308,16 +337,18 @@ const BackToTop = () => {
     });
   };
 
-  // Don't render if not visible
+  // Render nothing at all while hidden, so the list's end carries no phantom spacing.
   if (!isVisible) {
     return null;
   }
 
   return (
-    <Button variant="ghost" onClick={scrollToTop}>
-      {t("router.back-to-top")}
-      <ArrowUpIcon className="ml-1 w-4 h-auto" />
-    </Button>
+    <div className="my-4 flex w-full flex-row items-center justify-center opacity-70">
+      <Button variant="ghost" onClick={scrollToTop}>
+        {t("router.back-to-top")}
+        <ArrowUpIcon className="ml-1 w-4 h-auto" />
+      </Button>
+    </div>
   );
 };
 

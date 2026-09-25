@@ -1,13 +1,16 @@
 import { create } from "@bufbuild/protobuf";
 import { FieldMaskSchema } from "@bufbuild/protobuf/wkt";
-import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { shortcutServiceClient, userServiceClient } from "@/connect";
+import { type QueryClient, queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { userServiceClient } from "@/connect";
 import useCurrentUser from "@/hooks/useCurrentUser";
 import { buildUserSettingName, userNamePrefix } from "@/lib/resource-names";
+import { mergeTagCounts } from "@/lib/tag";
 import {
   type ListAllUserStatsRequest,
   ListAllUserStatsRequestSchema,
   User,
+  UserNotification,
+  UserNotification_Status,
   UserSetting,
   UserSetting_GeneralSetting,
   UserSetting_Key,
@@ -25,10 +28,11 @@ export const userKeys = {
   details: () => [...userKeys.all, "detail"] as const,
   detail: (name: string) => [...userKeys.details(), name] as const,
   stats: () => [...userKeys.all, "stats"] as const,
-  userStats: (name: string) => [...userKeys.stats(), name] as const,
+  userStats: (name: string, filter?: string) =>
+    filter ? ([...userKeys.stats(), name, filter] as const) : ([...userKeys.stats(), name] as const),
   allUserStats: (request: Partial<ListAllUserStatsQuery>) => [...userKeys.stats(), "all", request] as const,
   currentUser: () => [...userKeys.all, "current"] as const,
-  shortcuts: () => [...userKeys.all, "shortcuts"] as const,
+  memoViews: (parent?: string) => [...userKeys.all, "memoViews", parent] as const,
   notifications: () => [...userKeys.all, "notifications"] as const,
   byNames: (names: string[]) => [...userKeys.all, "byNames", ...[...names].sort()] as const,
   byUsernames: (usernames: string[]) => [...userKeys.all, "byUsernames", ...[...usernames].sort()] as const,
@@ -48,14 +52,14 @@ export function useUser(name: string, options?: { enabled?: boolean }) {
   });
 }
 
-export function useUserStats(username?: string, options?: { enabled?: boolean }) {
+export function useUserStats(username?: string, options?: { enabled?: boolean; filter?: string }) {
   return useQuery({
-    queryKey: username ? userKeys.userStats(username) : userKeys.stats(),
+    queryKey: username ? userKeys.userStats(username, options?.filter) : userKeys.stats(),
     queryFn: async () => {
       if (!username) {
         throw new Error("Username is required");
       }
-      const stats = await userServiceClient.getUserStats({ name: username });
+      const stats = await userServiceClient.getUserStats({ name: username, filter: options?.filter });
       return stats;
     },
     enabled: !!username && (options?.enabled ?? true),
@@ -73,13 +77,15 @@ export function useAllUserStats(request: Partial<ListAllUserStatsQuery> = {}, op
   });
 }
 
-export function useShortcuts() {
+export function useMemoViews(parent?: string) {
   return useQuery({
-    queryKey: userKeys.shortcuts(),
+    queryKey: userKeys.memoViews(parent),
     queryFn: async () => {
-      const { shortcuts } = await shortcutServiceClient.listShortcuts({});
-      return shortcuts;
+      if (!parent) return [];
+      const { memoViews } = await userServiceClient.listMemoViews({ parent });
+      return memoViews;
     },
+    enabled: !!parent,
   });
 }
 
@@ -97,6 +103,46 @@ export function useNotifications() {
     },
     enabled: !!currentUser?.name,
     staleTime: 1000 * 30, // 30 seconds - notifications should update frequently
+  });
+}
+
+const updateCachedNotifications = (queryClient: QueryClient, update: (notifications: UserNotification[]) => UserNotification[]) => {
+  const notifications = queryClient.getQueryData<UserNotification[]>(userKeys.notifications());
+  if (notifications !== undefined) {
+    queryClient.setQueryData<UserNotification[]>(userKeys.notifications(), update(notifications));
+  }
+};
+
+export function useArchiveNotification() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (name: string) =>
+      userServiceClient.updateUserNotification({
+        notification: { name, status: UserNotification_Status.ARCHIVED },
+        updateMask: create(FieldMaskSchema, { paths: ["status"] }),
+      }),
+    onSuccess: (updated) => {
+      updateCachedNotifications(queryClient, (notifications) =>
+        notifications.map((notification) => (notification.name === updated.name ? updated : notification)),
+      );
+      void queryClient.invalidateQueries({ queryKey: userKeys.notifications() });
+    },
+  });
+}
+
+export function useDeleteNotification() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (name: string) => {
+      await userServiceClient.deleteUserNotification({ name });
+      return name;
+    },
+    onSuccess: (name) => {
+      updateCachedNotifications(queryClient, (notifications) => notifications.filter((notification) => notification.name !== name));
+      void queryClient.invalidateQueries({ queryKey: userKeys.notifications() });
+    },
   });
 }
 
@@ -119,20 +165,12 @@ export function useTagCounts(forCurrentUser = false) {
         const { stats } = await userServiceClient.listAllUserStats({});
 
         // Aggregate tag counts from all users
-        const tagCount: Record<string, number> = {};
-        for (const userStats of stats) {
-          if (userStats.tagCount) {
-            for (const [tag, count] of Object.entries(userStats.tagCount)) {
-              tagCount[tag] = (tagCount[tag] || 0) + count;
-            }
-          }
-        }
-        return tagCount;
+        return mergeTagCounts(...stats.map((userStats) => userStats.tagCount));
       }
     },
     select: (data) => {
       if (forCurrentUser) {
-        return (data as UserStats).tagCount || {};
+        return mergeTagCounts((data as UserStats).tagCount);
       }
       return data as Record<string, number>;
     },
@@ -179,12 +217,9 @@ export function useUserSettings(parent?: string) {
   return useQuery({
     queryKey: [...userKeys.all, "settings", parent],
     queryFn: async () => {
-      if (!parent) return { settings: [], shortcuts: [] };
-      const [{ settings }, { shortcuts }] = await Promise.all([
-        userServiceClient.listUserSettings({ parent }),
-        shortcutServiceClient.listShortcuts({ parent }),
-      ]);
-      return { settings, shortcuts };
+      if (!parent) return { settings: [] };
+      const { settings } = await userServiceClient.listUserSettings({ parent });
+      return { settings };
     },
     enabled: !!parent,
   });

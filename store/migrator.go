@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
+	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/usememos/memos/internal/version"
 	storepb "github.com/usememos/memos/proto/gen/store"
@@ -121,6 +122,7 @@ func (s *Store) Migrate(ctx context.Context) error {
 	}
 	// Apply migrations if needed.
 	if isVersionEmpty(instanceBasicSetting.SchemaVersion) || version.IsVersionGreaterThan(currentSchemaVersion, instanceBasicSetting.SchemaVersion) {
+		s.prepareUniqueEmailMigration(ctx, instanceBasicSetting.SchemaVersion, currentSchemaVersion)
 		if err := s.applyMigrations(ctx, instanceBasicSetting.SchemaVersion, currentSchemaVersion); err != nil {
 			return errors.Wrap(err, "failed to apply migrations")
 		}
@@ -131,6 +133,31 @@ func (s *Store) Migrate(ctx context.Context) error {
 		if err := s.seed(ctx); err != nil {
 			return errors.Wrap(err, "failed to seed")
 		}
+	}
+	if err := s.initializeInstanceAccessSetting(ctx); err != nil {
+		return errors.Wrap(err, "failed to initialize instance access setting")
+	}
+	return nil
+}
+
+// initializeInstanceAccessSetting captures the pre-ACCESS behavior exactly once.
+// Existing installations that configured an external URL were public; all others
+// were private. Once persisted, later URL changes do not alter the access policy.
+func (s *Store) initializeInstanceAccessSetting(ctx context.Context) error {
+	accessMode := storepb.InstanceAccessMode_INSTANCE_ACCESS_MODE_PRIVATE
+	if strings.TrimSpace(s.profile.InstanceURL) != "" {
+		accessMode = storepb.InstanceAccessMode_INSTANCE_ACCESS_MODE_PUBLIC
+	}
+	value, err := protojson.Marshal(&storepb.InstanceAccessSetting{AccessMode: accessMode})
+	if err != nil {
+		return errors.Wrap(err, "failed to marshal initial instance access setting")
+	}
+	_, err = s.driver.CreateInstanceSettingIfNotExists(ctx, &InstanceSetting{
+		Name:  storepb.InstanceSettingKey_ACCESS.String(),
+		Value: string(value),
+	})
+	if err != nil {
+		return errors.Wrap(err, "failed to conditionally create initial instance access setting")
 	}
 	return nil
 }
@@ -296,10 +323,21 @@ func (s *Store) seed(ctx context.Context) error {
 }
 
 // GetCurrentSchemaVersion returns the latest schema version available for the configured database driver.
+//
+// A driver introduced after the last schema change ships only LATEST.sql and
+// no versioned migration files. LATEST.sql describes the same schema on every
+// driver, so such a driver reports the highest version any driver's migration
+// directory defines and picks up future migrations from there.
 func (s *Store) GetCurrentSchemaVersion() (string, error) {
 	filePaths, err := fs.Glob(migrationFS, fmt.Sprintf("%s*/*.sql", s.getMigrationBasePath()))
 	if err != nil {
 		return "", errors.Wrap(err, "failed to read migration files")
+	}
+	if len(filePaths) == 0 {
+		filePaths, err = fs.Glob(migrationFS, "migration/*/*/*.sql")
+		if err != nil {
+			return "", errors.Wrap(err, "failed to read migration files")
+		}
 	}
 	if len(filePaths) == 0 {
 		return defaultSchemaVersion, nil

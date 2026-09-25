@@ -1,10 +1,8 @@
 import { forwardRef } from "react";
 import Editor from "../Editor";
-import { useBlobUrls } from "../hooks";
 import { useEditorContext, useEditorSelector } from "../state";
 import type { EditorContentProps } from "../types";
 import type { EditorController } from "../types/editorController";
-import { createLocalFiles } from "../utils/localFile";
 
 // Imported eagerly (not React.lazy): the editor is the always-present compose
 // box on the home route, which is already code-split — so deferring the
@@ -16,26 +14,18 @@ import { createLocalFiles } from "../utils/localFile";
  * editor serializes into state.content on every change and exposes its
  * formatting capability for the focus-mode toolbar.
  */
-export const EditorContent = forwardRef<EditorController, EditorContentProps>(({ placeholder, onSubmit }, ref) => {
+export const EditorContent = forwardRef<EditorController, EditorContentProps>(({ placeholder, onSubmit, onFiles }, ref) => {
   const { actions, dispatch } = useEditorContext();
-  const { createBlobUrl } = useBlobUrls();
   const content = useEditorSelector((s) => s.content);
+  const contentSource = useEditorSelector((s) => s.contentSource);
   const isFocusMode = useEditorSelector((s) => s.ui.isFocusMode);
-
-  // Diary Mode: read the dropped/pasted files sequentially into snapshots
-  // before they reach the store, so bulk image uploads stay stable.
-  const handleFiles = (files: File[]) => {
-    void createLocalFiles(files, createBlobUrl)
-      .then((localFiles) => {
-        localFiles.forEach((localFile) => dispatch(actions.addLocalFile(localFile)));
-      })
-      .catch((error) => {
-        console.error("Failed to read files:", error);
-      });
-  };
 
   const handleContentChange = (content: string) => {
     dispatch(actions.updateContent(content));
+  };
+
+  const handleExternalContentApplied = (content: string) => {
+    dispatch(actions.setContent(content));
   };
 
   return (
@@ -44,10 +34,12 @@ export const EditorContent = forwardRef<EditorController, EditorContentProps>(({
         ref={ref}
         className="memo-editor-content"
         initialContent={content}
+        contentIsExternal={contentSource === "external"}
         placeholder={placeholder || ""}
         isFocusMode={isFocusMode}
         onContentChange={handleContentChange}
-        onFiles={handleFiles}
+        onExternalContentApplied={handleExternalContentApplied}
+        onFiles={onFiles}
         onSubmit={onSubmit}
       />
     </div>

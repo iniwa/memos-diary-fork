@@ -11,12 +11,15 @@ import {
   RequireGuestRoute,
   RequireInstanceInitializationRoute,
 } from "./guards";
-import { ROUTES } from "./routes";
+import { CALENDAR_ROUTE_PATTERN, ROUTES, SPACE_ROUTE_PATTERN } from "./routes";
+import { SpaceRoute } from "./SpaceRoute";
 
 const AdminSignIn = lazyWithReload(() => import("@/pages/AdminSignIn"));
 const About = lazyWithReload(() => import("@/pages/About"));
 const Archived = lazyWithReload(() => import("@/pages/Archived"));
 const AuthCallback = lazyWithReload(() => import("@/pages/AuthCallback"));
+const MemoMap = lazyWithReload(() => import("@/pages/Map"));
+const Calendar = lazyWithReload(() => import("@/pages/Calendar"));
 const Explore = lazyWithReload(() => import("@/pages/Explore"));
 const Home = lazyWithReload(() => import("@/pages/Home"));
 const Inboxes = lazyWithReload(() => import("@/pages/Inboxes"));
@@ -25,7 +28,7 @@ const NotFound = lazyWithReload(() => import("@/pages/NotFound"));
 const PermissionDenied = lazyWithReload(() => import("@/pages/PermissionDenied"));
 const Attachments = lazyWithReload(() => import("@/pages/Attachments"));
 const Setting = lazyWithReload(() => import("@/pages/Setting"));
-const Shortcuts = lazyWithReload(() => import("@/pages/Shortcuts"));
+const MemoViews = lazyWithReload(() => import("@/pages/MemoViews"));
 const SignIn = lazyWithReload(() => import("@/pages/SignIn"));
 const SignUp = lazyWithReload(() => import("@/pages/SignUp"));
 const UserProfile = lazyWithReload(() => import("@/pages/UserProfile"));
@@ -84,14 +87,15 @@ export const routeConfig: RouteObject[] = [
                 children: [{ path: Routes.ABOUT, element: <About /> }],
               },
               { path: Routes.EXPLORE, element: <Explore /> },
-              { path: "u/:username", element: <UserProfile /> },
+              { path: Routes.USER_PROFILE, element: <UserProfile /> },
               {
                 element: <RequireAuthRoute />,
                 children: [
                   { path: Routes.ARCHIVED, element: <Archived /> },
+                  { path: CALENDAR_ROUTE_PATTERN, element: <Calendar /> },
                   {
                     element: <RequireFullInitializationRoute />,
-                    children: [{ path: Routes.SHORTCUTS, element: <Shortcuts /> }],
+                    children: [{ path: Routes.VIEWS, element: <MemoViews /> }],
                   },
                 ],
               },
@@ -105,7 +109,29 @@ export const routeConfig: RouteObject[] = [
               {
                 element: <RequireFullInitializationRoute />,
                 children: [
+                  {
+                    path: SPACE_ROUTE_PATTERN,
+                    children: [
+                      {
+                        element: <SpaceRoute />,
+                        children: [
+                          {
+                            element: <MainLayout />,
+                            children: [
+                              { index: true, element: <Home /> },
+                              { path: "explore", element: <Explore /> },
+                              { path: "calendar/:year?/:month?/:day?", element: <Calendar /> },
+                            ],
+                          },
+                          { path: "attachments", element: <Attachments /> },
+                          { path: "map", element: <MemoMap /> },
+                        ],
+                      },
+                      { path: "*", element: <NotFound /> },
+                    ],
+                  },
                   { path: Routes.ATTACHMENTS, element: <Attachments /> },
+                  { path: Routes.MAP, element: <MemoMap /> },
                   { path: Routes.INBOX, element: <Inboxes /> },
                   { path: Routes.SETTING, element: <Setting /> },
                 ],

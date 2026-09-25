@@ -1,7 +1,7 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { pairAppleLivePhotoFiles } from "@/components/MemoEditor/hooks/useFileUpload";
-import { MotionMediaFamily, MotionMediaRole } from "@/types/proto/api/v1/attachment_service_pb";
 import type { LocalFile } from "@/components/MemoEditor/types/attachment";
+import { MotionMediaFamily, MotionMediaRole } from "@/types/proto/api/v1/attachment_service_pb";
 
 const localFile = (name: string, type: string, previewUrl: string): LocalFile => ({
   file: new File(["content"], name, { type }),
@@ -12,8 +12,6 @@ const localFile = (name: string, type: string, previewUrl: string): LocalFile =>
 
 describe("Apple Live Photo local file pairing", () => {
   it("pairs image and video files with the same filename stem", () => {
-    vi.spyOn(crypto, "randomUUID").mockReturnValue("uuid" as `${string}-${string}-${string}-${string}-${string}`);
-
     const [still, video] = pairAppleLivePhotoFiles([
       localFile("IMG_0001.HEIC", "image/heic", "blob:still"),
       localFile("IMG_0001.MOV", "video/quicktime", "blob:video"),
@@ -22,12 +20,12 @@ describe("Apple Live Photo local file pairing", () => {
     expect(still.motionMedia).toMatchObject({
       family: MotionMediaFamily.APPLE_LIVE_PHOTO,
       role: MotionMediaRole.STILL,
-      groupId: "img_0001-uuid",
+      groupId: expect.stringMatching(/^img_0001-/),
     });
     expect(video.motionMedia).toMatchObject({
       family: MotionMediaFamily.APPLE_LIVE_PHOTO,
       role: MotionMediaRole.VIDEO,
-      groupId: "img_0001-uuid",
+      groupId: still.motionMedia?.groupId,
     });
   });
 

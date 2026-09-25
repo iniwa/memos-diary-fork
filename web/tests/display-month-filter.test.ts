@@ -3,14 +3,14 @@ import { describe, expect, it, vi } from "vitest";
 
 // Mock the hook's context dependencies BEFORE importing it.
 const mockFilters = vi.fn();
-vi.mock("@/contexts/AuthContext", () => ({
-  useAuth: () => ({ shortcuts: [] }),
-}));
+vi.mock("@/hooks/useCurrentUser", () => ({ default: () => ({ name: "users/test" }) }));
+vi.mock("@/hooks/useUserQueries", () => ({ useMemoViews: () => ({ data: [] }) }));
+vi.mock("@/contexts/ViewContext", () => ({ useView: () => ({ timeBasis: "update_time" }) }));
 vi.mock("@/contexts/MemoFilterContext", async () => {
   const actual = await vi.importActual<typeof import("@/contexts/MemoFilterContext")>("@/contexts/MemoFilterContext");
   return {
     ...actual,
-    useMemoFilterContext: () => ({ filters: mockFilters(), shortcut: undefined }),
+    useMemoFilterContext: () => ({ filters: mockFilters(), memoView: undefined }),
   };
 });
 
@@ -82,7 +82,7 @@ describe("useMemoFilters with a displayMonth filter", () => {
     const { result } = renderHook(() => useMemoFilters());
 
     const range = parseMonthFilterRange("2026-05")!;
-    expect(result.current).toBe(`created_ts >= timestamp(${range.start}) && created_ts < timestamp(${range.end})`);
+    expect(result.current).toBe(`(created_ts >= timestamp(${range.start}) && created_ts < timestamp(${range.end}))`);
   });
 
   it("wraps the epoch seconds in timestamp() — bare integers no longer type-check under CEL", () => {
@@ -99,6 +99,12 @@ describe("useMemoFilters with a displayMonth filter", () => {
     expect(result.current).toBeUndefined();
   });
 
+  it("retains image attachment filtering", () => {
+    mockFilters.mockReturnValue([{ factor: "attachment.hasImage", value: "true" }]);
+    const { result } = renderHook(() => useMemoFilters());
+    expect(result.current).toBe("(has_image_attachment)");
+  });
+
   it("combines with other filters", () => {
     mockFilters.mockReturnValue([
       { factor: "tagSearch", value: "diary" },
@@ -107,6 +113,6 @@ describe("useMemoFilters with a displayMonth filter", () => {
     const { result } = renderHook(() => useMemoFilters());
 
     const range = parseMonthFilterRange("2026-05")!;
-    expect(result.current).toBe(`tag in ["diary"] && created_ts >= timestamp(${range.start}) && created_ts < timestamp(${range.end})`);
+    expect(result.current).toBe(`(tag in ["diary"]) && (created_ts >= timestamp(${range.start}) && created_ts < timestamp(${range.end}))`);
   });
 });

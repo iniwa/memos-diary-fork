@@ -14,6 +14,7 @@ import {
 interface PreviewMediaItemBase {
   id: string;
   filename: string;
+  attachments?: Attachment[];
 }
 
 export interface ImagePreviewMediaItem extends PreviewMediaItemBase {
@@ -158,6 +159,7 @@ function buildSingleAttachmentItem(attachment: Attachment): AttachmentVisualItem
       sourceUrl,
       posterUrl,
       filename: attachment.filename,
+      attachments: [attachment],
     },
     mimeType: attachment.type,
   };
@@ -181,6 +183,7 @@ function buildAppleMotionItem(still: Attachment, video: Attachment): AttachmentV
       posterUrl,
       motionUrl: sourceUrl,
       filename: still.filename,
+      attachments: [still, video],
     },
     mimeType: still.type,
   };
@@ -202,6 +205,7 @@ function buildAndroidMotionItem(attachment: Attachment): AttachmentVisualItem {
       posterUrl: getAttachmentThumbnailUrl(attachment),
       filename: attachment.filename,
       presentationTimestampUs: attachment.motionMedia?.presentationTimestampUs,
+      attachments: [attachment],
     },
     mimeType: attachment.type,
   };

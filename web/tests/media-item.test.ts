@@ -1,15 +1,9 @@
-import { create } from "@bufbuild/protobuf";
+import { create, type MessageInitShape } from "@bufbuild/protobuf";
 import { describe, expect, it } from "vitest";
+import { AttachmentSchema, MotionMediaFamily, MotionMediaRole, MotionMediaSchema } from "@/types/proto/api/v1/attachment_service_pb";
 import { buildAttachmentVisualItems, countLogicalAttachmentItems, splitVisualAttachments } from "@/utils/media-item";
-import {
-  AttachmentSchema,
-  type Attachment,
-  MotionMediaFamily,
-  MotionMediaRole,
-  MotionMediaSchema,
-} from "@/types/proto/api/v1/attachment_service_pb";
 
-const attachment = (overrides: Partial<Attachment>) =>
+const attachment = (overrides: MessageInitShape<typeof AttachmentSchema>) =>
   create(AttachmentSchema, {
     name: "attachments/default",
     filename: "default.bin",

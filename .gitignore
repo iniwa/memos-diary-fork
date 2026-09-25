@@ -1,41 +1,31 @@
-# temp folder
-tmp
-
-# Frontend asset
-web/dist
-
-# Build artifacts
-build/
-bin/
+# Generated output
+/build/
+/bin/
+/tmp/
 /memos
+/memos.exe
+coverage.out
+# Frontend bundles: web/dist from `pnpm build`, and
+# server/frontend/dist from `pnpm release`, which go:embed bakes
+# into the binary.
+dist/
 
+# Local development files
+.env
+.env.*
+!.env.example
 .DS_Store
+.idea/
+.vscode/
+/.worktrees/
+# Project-scoped pnpm store, created under whichever directory pnpm runs in
+# when --config.store-dir is set without an existing store; it contains a
+# symlink back to the workspace.
+.pnpm-store/
 
-# Jetbrains
-.idea
-
-# Claude Code / AI tool configs — local only, not for version control
+# Fork local metadata and coverage
 AGENTS.md
 CLAUDE.md
 .serena/
-
-# Docker Compose Environment File
-.env
-
-dist
-
-# VSCode settings
-.vscode
-
-# Git worktrees
-.worktrees/
-
-# Local pnpm store (project-scoped, created when --config.store-dir is set
-# without an existing store; contains a symlink back to the workspace).
-.pnpm-store/
-
-# Frontend test coverage output (Vitest + @vitest/coverage-v8).
-web/coverage/
-
-# Local agent metadata
 .codex/
+web/coverage/

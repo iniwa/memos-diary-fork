@@ -7,8 +7,8 @@ export interface StatisticsViewProps {
 export interface MonthNavigatorProps {
   visibleMonth: string;
   onMonthChange: (month: string) => void;
-  activityStats: Record<string, number>;
-  timeBasis: MemoTimeBasis;
+  activityStats?: Record<string, number>;
+  timeBasis?: MemoTimeBasis;
   onMonthClick?: (month: string) => void;
 }
 

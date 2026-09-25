@@ -7,38 +7,43 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"sync"
 	"time"
+	"uuid"
 
-	"github.com/google/uuid"
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
 	"github.com/pkg/errors"
 
+	"github.com/usememos/memos/internal/clientip"
 	"github.com/usememos/memos/internal/profile"
 	storepb "github.com/usememos/memos/proto/gen/store"
-	apiv1 "github.com/usememos/memos/server/router/api/v1"
-	"github.com/usememos/memos/server/router/fileserver"
-	"github.com/usememos/memos/server/router/frontend"
-	"github.com/usememos/memos/server/router/mcp"
-	"github.com/usememos/memos/server/router/rss"
-	"github.com/usememos/memos/server/runner/s3presign"
+	apiv1 "github.com/usememos/memos/server/api/v1"
+	"github.com/usememos/memos/server/fileserver"
+	"github.com/usememos/memos/server/frontend"
+	"github.com/usememos/memos/server/mcp"
 	"github.com/usememos/memos/store"
 )
 
-const shutdownTimeout = 10 * time.Second
+const (
+	shutdownTimeout = 10 * time.Second
+
+	// readHeaderTimeout bounds how long a client may take to send request
+	// headers, so idle or slow connections cannot pin a worker forever. Bodies
+	// and responses are not bounded here: uploads and SSE streams are
+	// legitimately long, and the request context still ends on disconnect.
+	readHeaderTimeout = 15 * time.Second
+	// idleTimeout closes keep-alive connections that send nothing.
+	idleTimeout = 2 * time.Minute
+)
 
 type Server struct {
 	Secret  string
 	Profile *profile.Profile
 	Store   *store.Store
 
-	echoServer *echo.Echo
-	httpServer *http.Server
-	sseHub     *apiv1.SSEHub
-
-	backgroundRunnerCancels []context.CancelFunc
-	backgroundRunnerWG      sync.WaitGroup
+	echoServer   *echo.Echo
+	httpServer   *http.Server
+	apiV1Service *apiv1.APIV1Service
 }
 
 func NewServer(ctx context.Context, profile *profile.Profile, store *store.Store) (*Server, error) {
@@ -50,6 +55,13 @@ func NewServer(ctx context.Context, profile *profile.Profile, store *store.Store
 	echoServer := echo.New()
 	echoServer.Use(middleware.Recover())
 	echoServer.Use(newCORSMiddleware(profile))
+	// Resolve the client address once per request, before anything that keys
+	// on it: rate limits, session records, and the file server.
+	clientIPResolver, err := clientip.ParseTrustedProxies(profile.TrustedProxies)
+	if err != nil {
+		return nil, errors.Wrap(err, "invalid trusted proxies")
+	}
+	echoServer.Use(clientip.Middleware(clientIPResolver))
 	s.echoServer = echoServer
 
 	instanceBasicSetting, err := s.getOrUpsertInstanceBasicSetting(ctx)
@@ -71,18 +83,13 @@ func NewServer(ctx context.Context, profile *profile.Profile, store *store.Store
 	// Serve frontend static files.
 	frontend.NewFrontendService(profile, store).Serve(ctx, echoServer)
 
-	rootGroup := echoServer.Group("")
-
 	apiV1Service := apiv1.NewAPIV1Service(s.Secret, profile, store)
-	s.sseHub = apiV1Service.SSEHub
+	s.apiV1Service = apiV1Service
 
 	// Register HTTP file server routes BEFORE gRPC-Gateway to ensure proper range request handling for Safari.
 	// This uses native HTTP serving (http.ServeContent) instead of gRPC for video/audio files.
 	fileServerService := fileserver.NewFileServerService(s.Profile, s.Store, s.Secret)
 	fileServerService.RegisterRoutes(echoServer)
-
-	// Create and register RSS routes (needs markdown service from apiV1Service).
-	rss.NewRSSService(s.Profile, s.Store, apiV1Service.MarkdownService).RegisterRoutes(rootGroup)
 
 	// Register gRPC gateway as api v1 (includes SSE endpoint on CORS-enabled group).
 	if err := apiV1Service.RegisterGateway(ctx, echoServer); err != nil {
@@ -98,7 +105,7 @@ func NewServer(ctx context.Context, profile *profile.Profile, store *store.Store
 	return s, nil
 }
 
-func (s *Server) Start(ctx context.Context) error {
+func (s *Server) Start() error {
 	var address, network string
 	if len(s.Profile.UNIXSock) == 0 {
 		address = fmt.Sprintf("%s:%d", s.Profile.Addr, s.Profile.Port)
@@ -120,13 +127,16 @@ func (s *Server) Start(ctx context.Context) error {
 	}
 
 	// Start Echo server directly (no cmux needed - all traffic is HTTP).
-	s.httpServer = &http.Server{Handler: s.echoServer}
+	s.httpServer = &http.Server{
+		Handler:           s.echoServer,
+		ReadHeaderTimeout: readHeaderTimeout,
+		IdleTimeout:       idleTimeout,
+	}
 	go func() {
 		if err := s.httpServer.Serve(listener); err != nil && err != http.ErrServerClosed {
 			slog.Error("failed to start echo server", "error", err)
 		}
 	}()
-	s.startBackgroundRunners(ctx)
 
 	return nil
 }
@@ -137,10 +147,9 @@ func (s *Server) Shutdown(ctx context.Context) {
 
 	slog.Info("server shutting down")
 
-	s.stopBackgroundRunners()
 	s.closeLongLivedConnections()
 	s.shutdownHTTPServer(ctx)
-	s.waitBackgroundRunners(ctx)
+	s.apiV1Service.CloseUploads()
 
 	// Close database connection.
 	if err := s.Store.Close(); err != nil {
@@ -150,61 +159,9 @@ func (s *Server) Shutdown(ctx context.Context) {
 	slog.Info("memos stopped properly")
 }
 
-func (s *Server) startBackgroundRunners(ctx context.Context) {
-	// Create a separate context for each background runner
-	// This allows us to control cancellation for each runner independently
-	s3Context, s3Cancel := context.WithCancel(ctx)
-
-	// Store the cancel function so we can properly shut down runners
-	s.backgroundRunnerCancels = append(s.backgroundRunnerCancels, s3Cancel)
-
-	// Create and start S3 presign runner
-	s3presignRunner := s3presign.NewRunner(s.Store)
-	s3presignRunner.RunOnce(ctx)
-
-	// Start continuous S3 presign runner
-	s.backgroundRunnerWG.Add(1)
-	go func() {
-		defer s.backgroundRunnerWG.Done()
-		s3presignRunner.Run(s3Context)
-		slog.Info("s3presign runner stopped")
-	}()
-
-	slog.Info("background runners started")
-}
-
-func (s *Server) stopBackgroundRunners() {
-	for _, cancelFunc := range s.backgroundRunnerCancels {
-		if cancelFunc != nil {
-			cancelFunc()
-		}
-	}
-}
-
-func (s *Server) waitBackgroundRunners(ctx context.Context) {
-	done := make(chan struct{})
-	go func() {
-		s.backgroundRunnerWG.Wait()
-		close(done)
-	}()
-
-	select {
-	case <-done:
-	case <-ctx.Done():
-		select {
-		case <-done:
-			return
-		default:
-		}
-		slog.Error("failed to stop background runners", slog.String("error", ctx.Err().Error()))
-	}
-}
-
 func (s *Server) closeLongLivedConnections() {
 	// Long-lived SSE requests do not finish on their own during http.Server.Shutdown.
-	if s.sseHub != nil {
-		s.sseHub.Close()
-	}
+	s.apiV1Service.SSEHub.Close()
 }
 
 func (s *Server) shutdownHTTPServer(ctx context.Context) {
@@ -226,7 +183,7 @@ func (s *Server) getOrUpsertInstanceBasicSetting(ctx context.Context) (*storepb.
 	}
 	modified := false
 	if instanceBasicSetting.SecretKey == "" {
-		instanceBasicSetting.SecretKey = uuid.NewString()
+		instanceBasicSetting.SecretKey = uuid.NewV4().String()
 		modified = true
 	}
 	if modified {

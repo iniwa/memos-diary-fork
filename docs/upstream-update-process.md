@@ -57,7 +57,7 @@ git diff --name-only --diff-filter=U  # any remaining unresolved conflicts
 Checklist:
 - All overlapping files (reported by the script) preserve fork-specific changes.
 - `imageOptimizerConcurrencyFromEnv()` still present in
-  `server/router/api/v1/v1.go`.
+  `server/api/v1/v1.go`.
 - Fork-added hooks exports still in `web/src/hooks/index.ts`.
 - No intentionally removed upstream workflows reintroduced under
   `.github/workflows/`.
@@ -87,7 +87,7 @@ pnpm test
 pnpm release
 ```
 
-`pnpm release` writes assets to `server/router/frontend/dist/`.
+`pnpm release` writes assets to `server/frontend/dist/`.
 
 ### Backend
 
@@ -98,13 +98,14 @@ before pushing:
 go build ./...
 go vet ./...
 go test ./...
-golangci-lint run --timeout=3m   # CI pins v2.11.3
+golangci-lint run --timeout=3m   # CI pins v2.13.1
 ```
 
-On Windows, `server/router/frontend` and `store/test` report failures that come
-only from `t.TempDir()` cleanup — SQLite still holds `memos_prod.db` open, so
-`RemoveAll` fails after the test body has already passed. Linux CI is the
-authority for those packages.
+On Windows, SQLite-backed tests can fail at `t.TempDir()` cleanup because
+`memos_prod.db` remains open. Symlink tests may lack the required Windows privilege,
+and entrypoint tests require POSIX shell behavior. Use Linux evidence for those
+checks; do not classify an unrelated assertion failure as a platform limitation.
+Keep generated frontend assets stable while Go compiles/tests the embedded files.
 
 Image verification still requires Docker:
 

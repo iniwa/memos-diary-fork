@@ -31,7 +31,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  GO_VERSION: "1.26.2"
+  GO_VERSION: "1.27.0"
 
 jobs:
   static-checks:
@@ -56,7 +56,7 @@ jobs:
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v9
         with:
-          version: v2.11.3
+          version: v2.13.1
           args: --timeout=3m
 
   tests:
@@ -82,7 +82,7 @@ jobs:
           case "${{ matrix.test-group }}" in
             store)
               # Run store tests for all drivers (sqlite, mysql, postgres)
-              go test -v -coverprofile=coverage.out -covermode=atomic ./store/...
+              DRIVER= go test -v -coverprofile=coverage.out -covermode=atomic ./store/...
               ;;
             server)
               # Includes ./server/test, which boots the real server via
@@ -94,11 +94,11 @@ jobs:
               ;;
             other)
               go test -v -race -coverprofile=coverage.out -covermode=atomic \
-                ./cmd/... ./internal/... ./proto/...
+                ./cmd/... ./core/... ./markdown/... ./filter/... ./provider/... ./proto/...
               ;;
           esac
         env:
-          DRIVER: ${{ matrix.test-group == 'store' && '' || 'sqlite' }}
+          DRIVER: sqlite
 
       - name: Upload coverage
         if: github.event_name == 'push' && github.ref == 'refs/heads/diary-mode'

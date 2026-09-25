@@ -1,6 +1,7 @@
 import { create } from "@bufbuild/protobuf";
 import { FieldMaskSchema, timestampDate, timestampFromDate } from "@bufbuild/protobuf/wkt";
 import { isEqual } from "lodash-es";
+import { getEditorReferenceRelations } from "@/components/MemoMetadata/Relation/relationHelpers";
 import { memoServiceClient } from "@/connect";
 import { extractBoundaryTagLines, serializeTagContent } from "@/lib/tagLine";
 import type { Attachment } from "@/types/proto/api/v1/attachment_service_pb";
@@ -41,9 +42,11 @@ function buildUpdateMask(
     mask.add("attachments");
     patch.attachments = toAttachmentReferences(allAttachments);
   }
-  if (!isEqual(state.metadata.relations, prevMemo.relations)) {
+  const previousReferenceRelations = getEditorReferenceRelations(prevMemo.relations, prevMemo.name);
+  const nextReferenceRelations = getEditorReferenceRelations(state.metadata.relations, prevMemo.name);
+  if (!isEqual(nextReferenceRelations, previousReferenceRelations)) {
     mask.add("relations");
-    patch.relations = state.metadata.relations;
+    patch.relations = nextReferenceRelations;
   }
   if (!isEqual(state.metadata.location, prevMemo.location)) {
     mask.add("location");
@@ -80,6 +83,7 @@ export const memoService = {
     options: {
       memoName?: string;
       parentMemoName?: string;
+      space?: string;
     },
   ): Promise<{ memoName: string; hasChanges: boolean }> {
     const finalContent = serializeTagContent(state.content, state.tags);
@@ -113,6 +117,7 @@ export const memoService = {
       location: state.metadata.location,
       createTime: state.timestamps.createTime ? timestampFromDate(state.timestamps.createTime) : undefined,
       updateTime: state.timestamps.updateTime ? timestampFromDate(state.timestamps.updateTime) : undefined,
+      space: options.parentMemoName ? undefined : options.space,
     });
 
     const memo = options.parentMemoName

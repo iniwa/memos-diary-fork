@@ -1,26 +1,13 @@
 import { useMemo } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import { useMemoFilterContext } from "@/contexts/MemoFilterContext";
-import { buildMemoCreatorFilter } from "@/lib/resource-names";
+import { type MemoFilter, useMemoFilterContext } from "@/contexts/MemoFilterContext";
+import { type MemoTimeBasis, useView } from "@/contexts/ViewContext";
+import useCurrentUser from "@/hooks/useCurrentUser";
+import { useMemoViews } from "@/hooks/useUserQueries";
+import { buildTimestampRangeFilter, getLocalDayTimestampRange, getTimeBasisField } from "@/lib/calendar-utils";
+import { combineCELFilters } from "@/lib/cel-filter";
+import { BUILTIN_TASKS_VIEW_FILTER, BUILTIN_TASKS_VIEW_ID, getMemoViewId } from "@/lib/memo-views";
+import { buildMemoCreatorFilter, getVisibilityName } from "@/lib/resource-names";
 import { Visibility } from "@/types/proto/api/v1/memo_service_pb";
-
-const getVisibilityName = (visibility: Visibility): string => {
-  switch (visibility) {
-    case Visibility.PUBLIC:
-      return "PUBLIC";
-    case Visibility.PROTECTED:
-      return "PROTECTED";
-    case Visibility.PRIVATE:
-      return "PRIVATE";
-    default:
-      return "PRIVATE";
-  }
-};
-
-const getShortcutId = (name: string): string => {
-  const parts = name.split("/");
-  return parts.length === 4 ? parts[3] : "";
-};
 
 const escapeFilterValue = (value: string): string => JSON.stringify(value);
 
@@ -46,79 +33,114 @@ export function parseMonthFilterRange(value: string): { start: number; end: numb
 
 export interface UseMemoFiltersOptions {
   creatorName?: string;
-  includeShortcuts?: boolean;
+  includeMemoViews?: boolean;
   includePinned?: boolean;
   visibilities?: Visibility[];
 }
 
+interface BuildMemoFilterOptions {
+  creatorName?: string;
+  currentMemoView?: string;
+  filters: MemoFilter[];
+  includePinned: boolean;
+  selectedMemoViewFilter?: string;
+  visibilities?: Visibility[];
+  /** Which timestamp a `displayTime` day filter selects on; defaults to creation time. */
+  timeBasis?: MemoTimeBasis;
+}
+
+export const buildMemoFilter = ({
+  creatorName,
+  currentMemoView,
+  filters,
+  includePinned,
+  selectedMemoViewFilter,
+  visibilities,
+  timeBasis = "create_time",
+}: BuildMemoFilterOptions): string | undefined => {
+  const conditions: string[] = [];
+
+  if (creatorName) {
+    const creatorFilter = buildMemoCreatorFilter(creatorName);
+    if (creatorFilter) {
+      conditions.push(creatorFilter);
+    }
+  }
+
+  if (currentMemoView === BUILTIN_TASKS_VIEW_ID) {
+    conditions.push(BUILTIN_TASKS_VIEW_FILTER);
+  } else if (selectedMemoViewFilter) {
+    conditions.push(selectedMemoViewFilter);
+  }
+
+  for (const filter of filters) {
+    if (filter.factor === "contentSearch") {
+      conditions.push(`content.contains(${escapeFilterValue(filter.value)})`);
+    } else if (filter.factor === "celSearch") {
+      conditions.push(filter.value);
+    } else if (filter.factor === "tagSearch") {
+      conditions.push(`tag in [${escapeFilterValue(filter.value)}]`);
+    } else if (filter.factor === "pinned") {
+      if (includePinned) {
+        conditions.push(`pinned`);
+      }
+    } else if (filter.factor === "property.hasLink") {
+      conditions.push(`has_link`);
+    } else if (filter.factor === "property.hasTaskList") {
+      conditions.push(`has_task_list`);
+    } else if (filter.factor === "property.hasCode") {
+      conditions.push(`has_code`);
+    } else if (filter.factor === "property.hasLocation") {
+      conditions.push(`has_location`);
+    } else if (filter.factor === "attachment.hasImage") {
+      conditions.push("has_image_attachment");
+    } else if (filter.factor === "displayMonth") {
+      const range = parseMonthFilterRange(filter.value);
+      if (range) {
+        conditions.push(`created_ts >= timestamp(${range.start}) && created_ts < timestamp(${range.end})`);
+      }
+    } else if (filter.factor === "displayTime") {
+      const range = getLocalDayTimestampRange(filter.value);
+      if (range) {
+        conditions.push(buildTimestampRangeFilter(getTimeBasisField(timeBasis), range));
+      }
+    }
+  }
+
+  if (visibilities && visibilities.length > 0) {
+    const visibilityValues = visibilities.map((visibility) => `"${getVisibilityName(visibility)}"`).join(", ");
+    conditions.push(`visibility in [${visibilityValues}]`);
+  }
+
+  return combineCELFilters(...conditions);
+};
+
 export const useMemoFilters = (options: UseMemoFiltersOptions = {}): string | undefined => {
-  const { creatorName, includeShortcuts = false, includePinned = false, visibilities } = options;
+  const { creatorName, includeMemoViews = false, includePinned = false, visibilities } = options;
 
-  const { shortcuts } = useAuth();
-  const { filters, shortcut: currentShortcut } = useMemoFilterContext();
+  const currentUser = useCurrentUser();
+  const { data: memoViews = [] } = useMemoViews(includeMemoViews ? currentUser?.name : undefined);
+  const { filters, memoView: currentMemoView } = useMemoFilterContext();
+  // The sidebar calendar buckets days by this basis, so a picked day must select on it too.
+  const { timeBasis } = useView();
 
-  // Get selected shortcut if needed
-  const selectedShortcut = useMemo(() => {
-    if (!includeShortcuts) return undefined;
-    return shortcuts.find((shortcut) => getShortcutId(shortcut.name) === currentShortcut);
-  }, [includeShortcuts, currentShortcut, shortcuts]);
+  // Get the selected memo view if needed.
+  const selectedMemoViewFilter = useMemo(() => {
+    if (!includeMemoViews || currentMemoView === BUILTIN_TASKS_VIEW_ID) return undefined;
+    return memoViews.find((memoView) => getMemoViewId(memoView.name) === currentMemoView)?.filter;
+  }, [includeMemoViews, currentMemoView, memoViews]);
 
-  // Build filter
-  return useMemo(() => {
-    const conditions: string[] = [];
-
-    // Add creator filter if provided
-    if (creatorName) {
-      const creatorFilter = buildMemoCreatorFilter(creatorName);
-      if (creatorFilter) {
-        conditions.push(creatorFilter);
-      }
-    }
-
-    // Add shortcut filter if enabled and selected
-    if (includeShortcuts && selectedShortcut?.filter) {
-      conditions.push(selectedShortcut.filter);
-    }
-
-    // Add active filters from context
-    for (const filter of filters) {
-      if (filter.factor === "contentSearch") {
-        conditions.push(`content.contains(${escapeFilterValue(filter.value)})`);
-      } else if (filter.factor === "tagSearch") {
-        conditions.push(`tag in [${escapeFilterValue(filter.value)}]`);
-      } else if (filter.factor === "pinned") {
-        if (includePinned) {
-          conditions.push(`pinned`);
-        }
-      } else if (filter.factor === "property.hasLink") {
-        conditions.push(`has_link`);
-      } else if (filter.factor === "property.hasTaskList") {
-        conditions.push(`has_task_list`);
-      } else if (filter.factor === "property.hasCode") {
-        conditions.push(`has_code`);
-      } else if (filter.factor === "attachment.hasImage") {
-        conditions.push(`has_image_attachment`);
-      } else if (filter.factor === "displayTime") {
-        const filterDate = new Date(filter.value);
-        const filterUtcTimestamp = filterDate.getTime() + filterDate.getTimezoneOffset() * 60 * 1000;
-        const startTimestamp = Math.floor(filterUtcTimestamp / 1000);
-        const endTimestamp = startTimestamp + 60 * 60 * 24;
-
-        conditions.push(`created_ts >= timestamp(${startTimestamp}) && created_ts < timestamp(${endTimestamp})`);
-      } else if (filter.factor === "displayMonth") {
-        const range = parseMonthFilterRange(filter.value);
-        if (range) {
-          conditions.push(`created_ts >= timestamp(${range.start}) && created_ts < timestamp(${range.end})`);
-        }
-      }
-    }
-
-    // Add visibility filter if specified
-    if (visibilities && visibilities.length > 0) {
-      const visibilityValues = visibilities.map((v) => `"${getVisibilityName(v)}"`).join(", ");
-      conditions.push(`visibility in [${visibilityValues}]`);
-    }
-
-    return conditions.length > 0 ? conditions.join(" && ") : undefined;
-  }, [creatorName, includeShortcuts, includePinned, visibilities, selectedShortcut, filters]);
+  return useMemo(
+    () =>
+      buildMemoFilter({
+        creatorName,
+        currentMemoView: includeMemoViews ? currentMemoView : undefined,
+        filters,
+        includePinned,
+        selectedMemoViewFilter,
+        visibilities,
+        timeBasis,
+      }),
+    [creatorName, currentMemoView, filters, includePinned, includeMemoViews, selectedMemoViewFilter, visibilities, timeBasis],
+  );
 };
