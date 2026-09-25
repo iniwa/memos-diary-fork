@@ -2,7 +2,7 @@
 
 ## 1. System Overview
 
-Diary Mode is a fork of [usememos/memos](https://github.com/usememos/memos) (source baseline v0.31.0, see `.upstream-version`; deployment pending) with the following additions:
+Diary Mode is a fork of [usememos/memos](https://github.com/usememos/memos) (source baseline v0.31.0, see `.upstream-version`; deployed 2026-09-25) with the following additions:
 
 - Dedicated tag UI with boundary tag parsing and serialization
 - Twitter/X-style inline image grid (1+ images, expandable `+N` overlay)
@@ -114,7 +114,10 @@ Expected: `INFO` and `OK` lines only. No `WARN`, `ERROR`, or `panic`.
 
 ## 4. Post-Deploy Smoke Checklist
 
-Run after every redeploy:
+Run after every redeploy. The checked items below are historical acceptance,
+not a claim that every item was rerun for the latest release. For v0.31.0,
+see the dated deployment evidence in
+[`2026-09-25-upstream-v0.31.0-integration.md`](plans/2026-09-25-upstream-v0.31.0-integration.md).
 
 - [x] App opens at `http://192.168.1.205:5231`
 - [x] `docker logs --tail 80 memos-diary` shows no `WARN` / `ERROR` / `panic`
@@ -249,6 +252,9 @@ final dry-run:   scanned=176 changed=0 unchanged=176 failed=0
 After both `--execute` runs, always confirm the final dry-run reports `changed=0 failed=0`. If it does not, stop and investigate before running again.
 
 ## 7. Rollback Guidance
+
+For v0.31.0, restore the matching pre-upgrade data backup when reverting to
+v0.30.x. An image-only downgrade is unsafe after the schema migration.
 
 ### Frontend / backend regression
 

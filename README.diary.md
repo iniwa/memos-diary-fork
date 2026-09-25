@@ -6,7 +6,7 @@ describes the fork.
 
 ## Current state
 
-- Base: Memos v0.31.0 (source integration; deployment pending) (see `.upstream-version`)
+- Base: Memos v0.31.0 (deployed 2026-09-25) (see `.upstream-version`)
 - Runtime: Raspberry Pi Docker, `linux/arm64`
 - Deployment: GHCR (`ghcr.io/iniwa/memos-diary-fork`) + Portainer Stack, manual redeploy
 - Operation: separate Diary Mode app (MVP complete, in daily use); runtime
