@@ -9,7 +9,12 @@ import { getVisibleDiaryTags } from "@/lib/diaryTags";
 import { extractBoundaryTagLines } from "@/lib/tagLine";
 import { cn } from "@/lib/utils";
 import { useTranslate } from "@/utils/i18n";
-import { filterInlineManagedAttachments } from "@/utils/managed-attachment";
+import {
+  canInlineAttachment,
+  extractAttachmentUIDFromName,
+  filterInlineManagedAttachments,
+  removeManagedAttachmentReferences,
+} from "@/utils/managed-attachment";
 import { splitVisualAttachments } from "@/utils/media-item";
 import MemoContent from "../../MemoContent";
 import { Tag } from "../../MemoContent/Tag";
@@ -38,13 +43,22 @@ const MemoBody: React.FC<MemoBodyProps> = ({ compact }) => {
 
   const { body, tags } = useMemo(() => extractBoundaryTagLines(memo.content), [memo.content]);
   const visibleTags = useMemo(() => getVisibleDiaryTags(tags), [tags]);
+  // Diary presentation only: retain stored Markdown and attachment order, but
+  // collect locally managed images in the existing grid instead of repeating
+  // them in the body. External and unresolved images keep their placement.
+  const displayBody = useMemo(() => {
+    const gridUIDs = new Set(
+      memo.attachments.filter(canInlineAttachment).flatMap((attachment) => {
+        const uid = extractAttachmentUIDFromName(attachment.name);
+        return uid ? [uid] : [];
+      }),
+    );
+    return removeManagedAttachmentReferences(body, gridUIDs);
+  }, [body, memo.attachments]);
 
   const referencedMemos = memo.relations.filter(isReferenceRelation);
   // Memoized so AttachmentListView's own useMemo chain keeps its cache across body renders.
-  const attachmentOnlyItems = useMemo(
-    () => filterInlineManagedAttachments(memo.content, memo.attachments),
-    [memo.content, memo.attachments],
-  );
+  const attachmentOnlyItems = useMemo(() => filterInlineManagedAttachments(displayBody, memo.attachments), [displayBody, memo.attachments]);
   const { inlineVisualItems, remainingAttachments } = useMemo(() => splitVisualAttachments(attachmentOnlyItems), [attachmentOnlyItems]);
   const { visual, audio, docs } = useMemo(() => separateAttachments(remainingAttachments), [remainingAttachments]);
 
@@ -63,7 +77,7 @@ const MemoBody: React.FC<MemoBodyProps> = ({ compact }) => {
             <MemoContent
               memoName={memo.name}
               parentPage={parentPage}
-              content={body}
+              content={displayBody}
               attachments={memo.attachments}
               onClick={handleMemoContentClick}
               onDoubleClick={handleMemoContentDoubleClick}
