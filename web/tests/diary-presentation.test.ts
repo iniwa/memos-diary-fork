@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { applyDisplayedTaskChanges } from "@/lib/diaryPresentation";
+
 describe("diary presentation task updates", () => {
   it("retains stored image references and boundary tags", () => {
     const stored = "- [ ] Buy milk\n\n![local](/file/attachments/photo/a.jpg)\n\n#diary";

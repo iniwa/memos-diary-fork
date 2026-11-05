@@ -94,7 +94,13 @@ describe("useAutoSave (store-subscribed)", () => {
     );
     act(() => api.dispatch(api.actions.updateContent("Diary body")));
     act(() => api.dispatch(api.actions.setTags(["photo", "diary"])));
-    expect(saveSpy).toHaveBeenLastCalledWith(cacheService.key("users/steven", "tags"), { content: "Diary body\n#photo #diary", attachments: [], location: null, space: undefined, visibility: Visibility.PRIVATE });
+    expect(saveSpy).toHaveBeenLastCalledWith(cacheService.key("users/steven", "tags"), {
+      content: "Diary body\n#photo #diary",
+      attachments: [],
+      location: null,
+      space: undefined,
+      visibility: Visibility.PRIVATE,
+    });
   });
 
   it("persists uploaded attachments when editor metadata changes", () => {
