@@ -25,12 +25,18 @@ vi.mock("@/utils/i18n", () => ({
   findNearestMatchedLanguage: (language: string) => language,
 }));
 
-vi.mock("@/components/MemoContent/MentionResolutionContext", () => ({
+vi.mock("@/components/MemoEditor/view/useTagNavigation", () => ({ useTagNavigation: () => vi.fn() }));
+
+vi.mock("@/contexts/MentionResolutionContext", () => ({
   useResolvedMentionUsernames: () => new Set<string>(),
 }));
 
-vi.mock("@/components/MemoContent/MemoMarkdownRenderer", () => ({
-  MemoMarkdownRenderer: ({ content }: { content: string }) => <div>{content}</div>,
+vi.mock("@/components/MemoEditor/MemoEditor", () => ({
+  MemoEditor: ({ name }: { name: string }) => <div>{mockState.memo.content ?? name}</div>,
+}));
+
+vi.mock("@/hooks/useMemoQueries", () => ({
+  useUpdateMemo: () => ({ mutate: vi.fn() }),
 }));
 
 vi.mock("@/components/MemoMetadata", () => ({

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"slices"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -264,8 +265,8 @@ func firstNonEmptyLine(lines []string) int {
 }
 
 func lastNonEmptyLine(lines []string) int {
-	for i := len(lines) - 1; i >= 0; i-- {
-		if strings.TrimSpace(lines[i]) != "" {
+	for i, line := range slices.Backward(lines) {
+		if strings.TrimSpace(line) != "" {
 			return i
 		}
 	}

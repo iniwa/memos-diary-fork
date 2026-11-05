@@ -1,0 +1,1430 @@
+{
+  "checked_at": "2026-11-05T04:24:16.4756460Z",
+  "baseline": "v0.31.0",
+  "target": "26.11.0",
+  "target_commit": "b40d8a7b573774c52b022c8d6537d6baf2129dc0",
+  "files": [
+    {
+      "status": "M",
+      "path": "proto/README.md",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/README.md",
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/README.md"
+    },
+    {
+      "status": "A",
+      "path": "proto/api/CHANGELOG.md",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/api/CHANGELOG.md"
+    },
+    {
+      "status": "A",
+      "path": "proto/api/README.md",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/api/README.md"
+    },
+    {
+      "status": "A",
+      "path": "proto/api/ai_service.proto",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/api/ai_service.proto"
+    },
+    {
+      "status": "A",
+      "path": "proto/api/attachment_service.proto",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/api/attachment_service.proto"
+    },
+    {
+      "status": "A",
+      "path": "proto/api/auth_service.proto",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/api/auth_service.proto"
+    },
+    {
+      "status": "A",
+      "path": "proto/api/common.proto",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/api/common.proto"
+    },
+    {
+      "status": "A",
+      "path": "proto/api/configuration.proto",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/api/configuration.proto"
+    },
+    {
+      "status": "A",
+      "path": "proto/api/idp_service.proto",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/api/idp_service.proto"
+    },
+    {
+      "status": "A",
+      "path": "proto/api/instance_service.proto",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/api/instance_service.proto"
+    },
+    {
+      "status": "A",
+      "path": "proto/api/memo_service.proto",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/api/memo_service.proto"
+    },
+    {
+      "status": "A",
+      "path": "proto/api/space_service.proto",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/api/space_service.proto"
+    },
+    {
+      "status": "A",
+      "path": "proto/api/user_service.proto",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/api/user_service.proto"
+    },
+    {
+      "status": "D",
+      "path": "proto/api/v1/README.md",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/api/v1/README.md",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/api/v1/ai_service.proto",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/api/v1/ai_service.proto",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/api/v1/attachment_service.proto",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/api/v1/attachment_service.proto",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/api/v1/auth_service.proto",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/api/v1/auth_service.proto",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/api/v1/common.proto",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/api/v1/common.proto",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/api/v1/idp_service.proto",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/api/v1/idp_service.proto",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/api/v1/instance_service.proto",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/api/v1/instance_service.proto",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/api/v1/memo_service.proto",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/api/v1/memo_service.proto",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/api/v1/space_service.proto",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/api/v1/space_service.proto",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/api/v1/user_service.proto",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/api/v1/user_service.proto",
+      "new_url": null
+    },
+    {
+      "status": "M",
+      "path": "proto/buf.gen.yaml",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/buf.gen.yaml",
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/buf.gen.yaml"
+    },
+    {
+      "status": "A",
+      "path": "proto/gen/api/ai_service.pb.go",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/api/ai_service.pb.go"
+    },
+    {
+      "status": "A",
+      "path": "proto/gen/api/ai_service.pb.gw.go",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/api/ai_service.pb.gw.go"
+    },
+    {
+      "status": "A",
+      "path": "proto/gen/api/ai_service_grpc.pb.go",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/api/ai_service_grpc.pb.go"
+    },
+    {
+      "status": "A",
+      "path": "proto/gen/api/apiconnect/ai_service.connect.go",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/api/apiconnect/ai_service.connect.go"
+    },
+    {
+      "status": "A",
+      "path": "proto/gen/api/apiconnect/attachment_service.connect.go",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/api/apiconnect/attachment_service.connect.go"
+    },
+    {
+      "status": "A",
+      "path": "proto/gen/api/apiconnect/auth_service.connect.go",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/api/apiconnect/auth_service.connect.go"
+    },
+    {
+      "status": "A",
+      "path": "proto/gen/api/apiconnect/idp_service.connect.go",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/api/apiconnect/idp_service.connect.go"
+    },
+    {
+      "status": "A",
+      "path": "proto/gen/api/apiconnect/instance_service.connect.go",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/api/apiconnect/instance_service.connect.go"
+    },
+    {
+      "status": "A",
+      "path": "proto/gen/api/apiconnect/memo_service.connect.go",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/api/apiconnect/memo_service.connect.go"
+    },
+    {
+      "status": "A",
+      "path": "proto/gen/api/apiconnect/space_service.connect.go",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/api/apiconnect/space_service.connect.go"
+    },
+    {
+      "status": "A",
+      "path": "proto/gen/api/apiconnect/user_service.connect.go",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/api/apiconnect/user_service.connect.go"
+    },
+    {
+      "status": "A",
+      "path": "proto/gen/api/attachment_service.pb.go",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/api/attachment_service.pb.go"
+    },
+    {
+      "status": "A",
+      "path": "proto/gen/api/attachment_service.pb.gw.go",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/api/attachment_service.pb.gw.go"
+    },
+    {
+      "status": "A",
+      "path": "proto/gen/api/attachment_service_grpc.pb.go",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/api/attachment_service_grpc.pb.go"
+    },
+    {
+      "status": "A",
+      "path": "proto/gen/api/auth_service.pb.go",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/api/auth_service.pb.go"
+    },
+    {
+      "status": "A",
+      "path": "proto/gen/api/auth_service.pb.gw.go",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/api/auth_service.pb.gw.go"
+    },
+    {
+      "status": "A",
+      "path": "proto/gen/api/auth_service_grpc.pb.go",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/api/auth_service_grpc.pb.go"
+    },
+    {
+      "status": "A",
+      "path": "proto/gen/api/common.pb.go",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/api/common.pb.go"
+    },
+    {
+      "status": "A",
+      "path": "proto/gen/api/configuration.pb.go",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/api/configuration.pb.go"
+    },
+    {
+      "status": "A",
+      "path": "proto/gen/api/idp_service.pb.go",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/api/idp_service.pb.go"
+    },
+    {
+      "status": "A",
+      "path": "proto/gen/api/idp_service.pb.gw.go",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/api/idp_service.pb.gw.go"
+    },
+    {
+      "status": "A",
+      "path": "proto/gen/api/idp_service_grpc.pb.go",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/api/idp_service_grpc.pb.go"
+    },
+    {
+      "status": "A",
+      "path": "proto/gen/api/instance_service.pb.go",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/api/instance_service.pb.go"
+    },
+    {
+      "status": "A",
+      "path": "proto/gen/api/instance_service.pb.gw.go",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/api/instance_service.pb.gw.go"
+    },
+    {
+      "status": "A",
+      "path": "proto/gen/api/instance_service_grpc.pb.go",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/api/instance_service_grpc.pb.go"
+    },
+    {
+      "status": "A",
+      "path": "proto/gen/api/memo_service.pb.go",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/api/memo_service.pb.go"
+    },
+    {
+      "status": "A",
+      "path": "proto/gen/api/memo_service.pb.gw.go",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/api/memo_service.pb.gw.go"
+    },
+    {
+      "status": "A",
+      "path": "proto/gen/api/memo_service_grpc.pb.go",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/api/memo_service_grpc.pb.go"
+    },
+    {
+      "status": "A",
+      "path": "proto/gen/api/space_service.pb.go",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/api/space_service.pb.go"
+    },
+    {
+      "status": "A",
+      "path": "proto/gen/api/space_service.pb.gw.go",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/api/space_service.pb.gw.go"
+    },
+    {
+      "status": "A",
+      "path": "proto/gen/api/space_service_grpc.pb.go",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/api/space_service_grpc.pb.go"
+    },
+    {
+      "status": "A",
+      "path": "proto/gen/api/user_service.pb.go",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/api/user_service.pb.go"
+    },
+    {
+      "status": "A",
+      "path": "proto/gen/api/user_service.pb.gw.go",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/api/user_service.pb.gw.go"
+    },
+    {
+      "status": "A",
+      "path": "proto/gen/api/user_service_grpc.pb.go",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/api/user_service_grpc.pb.go"
+    },
+    {
+      "status": "D",
+      "path": "proto/gen/api/v1/ai_service.pb.go",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/api/v1/ai_service.pb.go",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/gen/api/v1/ai_service.pb.gw.go",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/api/v1/ai_service.pb.gw.go",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/gen/api/v1/ai_service_grpc.pb.go",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/api/v1/ai_service_grpc.pb.go",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/gen/api/v1/apiv1connect/ai_service.connect.go",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/api/v1/apiv1connect/ai_service.connect.go",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/gen/api/v1/apiv1connect/attachment_service.connect.go",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/api/v1/apiv1connect/attachment_service.connect.go",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/gen/api/v1/apiv1connect/auth_service.connect.go",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/api/v1/apiv1connect/auth_service.connect.go",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/gen/api/v1/apiv1connect/idp_service.connect.go",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/api/v1/apiv1connect/idp_service.connect.go",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/gen/api/v1/apiv1connect/instance_service.connect.go",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/api/v1/apiv1connect/instance_service.connect.go",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/gen/api/v1/apiv1connect/memo_service.connect.go",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/api/v1/apiv1connect/memo_service.connect.go",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/gen/api/v1/apiv1connect/space_service.connect.go",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/api/v1/apiv1connect/space_service.connect.go",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/gen/api/v1/apiv1connect/user_service.connect.go",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/api/v1/apiv1connect/user_service.connect.go",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/gen/api/v1/attachment_service.pb.go",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/api/v1/attachment_service.pb.go",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/gen/api/v1/attachment_service.pb.gw.go",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/api/v1/attachment_service.pb.gw.go",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/gen/api/v1/attachment_service_grpc.pb.go",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/api/v1/attachment_service_grpc.pb.go",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/gen/api/v1/auth_service.pb.go",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/api/v1/auth_service.pb.go",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/gen/api/v1/auth_service.pb.gw.go",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/api/v1/auth_service.pb.gw.go",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/gen/api/v1/auth_service_grpc.pb.go",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/api/v1/auth_service_grpc.pb.go",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/gen/api/v1/common.pb.go",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/api/v1/common.pb.go",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/gen/api/v1/idp_service.pb.go",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/api/v1/idp_service.pb.go",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/gen/api/v1/idp_service.pb.gw.go",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/api/v1/idp_service.pb.gw.go",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/gen/api/v1/idp_service_grpc.pb.go",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/api/v1/idp_service_grpc.pb.go",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/gen/api/v1/instance_service.pb.go",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/api/v1/instance_service.pb.go",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/gen/api/v1/instance_service.pb.gw.go",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/api/v1/instance_service.pb.gw.go",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/gen/api/v1/instance_service_grpc.pb.go",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/api/v1/instance_service_grpc.pb.go",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/gen/api/v1/memo_service.pb.go",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/api/v1/memo_service.pb.go",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/gen/api/v1/memo_service.pb.gw.go",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/api/v1/memo_service.pb.gw.go",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/gen/api/v1/memo_service_grpc.pb.go",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/api/v1/memo_service_grpc.pb.go",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/gen/api/v1/space_service.pb.go",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/api/v1/space_service.pb.go",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/gen/api/v1/space_service.pb.gw.go",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/api/v1/space_service.pb.gw.go",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/gen/api/v1/space_service_grpc.pb.go",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/api/v1/space_service_grpc.pb.go",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/gen/api/v1/user_service.pb.go",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/api/v1/user_service.pb.go",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/gen/api/v1/user_service.pb.gw.go",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/api/v1/user_service.pb.gw.go",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "proto/gen/api/v1/user_service_grpc.pb.go",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/api/v1/user_service_grpc.pb.go",
+      "new_url": null
+    },
+    {
+      "status": "M",
+      "path": "proto/gen/openapi.yaml",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/openapi.yaml",
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/openapi.yaml"
+    },
+    {
+      "status": "M",
+      "path": "proto/gen/store/attachment.pb.go",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/store/attachment.pb.go",
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/store/attachment.pb.go"
+    },
+    {
+      "status": "M",
+      "path": "proto/gen/store/instance_setting.pb.go",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/store/instance_setting.pb.go",
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/store/instance_setting.pb.go"
+    },
+    {
+      "status": "M",
+      "path": "proto/gen/store/memo.pb.go",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/store/memo.pb.go",
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/store/memo.pb.go"
+    },
+    {
+      "status": "M",
+      "path": "proto/gen/store/user_setting.pb.go",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/gen/store/user_setting.pb.go",
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/gen/store/user_setting.pb.go"
+    },
+    {
+      "status": "M",
+      "path": "proto/store/attachment.proto",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/store/attachment.proto",
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/store/attachment.proto"
+    },
+    {
+      "status": "M",
+      "path": "proto/store/instance_setting.proto",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/store/instance_setting.proto",
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/store/instance_setting.proto"
+    },
+    {
+      "status": "M",
+      "path": "proto/store/memo.proto",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/store/memo.proto",
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/store/memo.proto"
+    },
+    {
+      "status": "M",
+      "path": "proto/store/user_setting.proto",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/proto/store/user_setting.proto",
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/proto/store/user_setting.proto"
+    },
+    {
+      "status": "A",
+      "path": "store/migration/README.md",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/store/migration/README.md"
+    },
+    {
+      "status": "D",
+      "path": "store/migration/mysql/0.17/00__inbox.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/mysql/0.17/00__inbox.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/mysql/0.17/01__delete_activity.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/mysql/0.17/01__delete_activity.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/mysql/0.18/00__extend_text.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/mysql/0.18/00__extend_text.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/mysql/0.18/01__webhook.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/mysql/0.18/01__webhook.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/mysql/0.18/02__user_setting.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/mysql/0.18/02__user_setting.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/mysql/0.19/00__add_resource_name.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/mysql/0.19/00__add_resource_name.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/mysql/0.20/00__reaction.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/mysql/0.20/00__reaction.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/mysql/0.21/00__user_description.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/mysql/0.21/00__user_description.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/mysql/0.21/01__rename_uid.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/mysql/0.21/01__rename_uid.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/mysql/0.22/00__resource_storage_type.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/mysql/0.22/00__resource_storage_type.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/mysql/0.22/01__memo_tags.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/mysql/0.22/01__memo_tags.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/mysql/0.22/02__memo_payload.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/mysql/0.22/02__memo_payload.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/mysql/0.22/03__drop_tag.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/mysql/0.22/03__drop_tag.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/mysql/0.23/00__reactions.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/mysql/0.23/00__reactions.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/mysql/0.24/00__memo.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/mysql/0.24/00__memo.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/mysql/0.24/01__memo_pinned.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/mysql/0.24/01__memo_pinned.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/mysql/0.24/02__s3_reference_length.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/mysql/0.24/02__s3_reference_length.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/mysql/0.25/00__remove_webhook.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/mysql/0.25/00__remove_webhook.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/mysql/0.26/00__rename_resource_to_attachment.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/mysql/0.26/00__rename_resource_to_attachment.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/mysql/0.26/01__drop_memo_organizer.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/mysql/0.26/01__drop_memo_organizer.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/mysql/0.26/02__migrate_host_to_admin.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/mysql/0.26/02__migrate_host_to_admin.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/mysql/0.27/00__migrate_storage_setting.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/mysql/0.27/00__migrate_storage_setting.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/mysql/0.27/01__add_idp_uid.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/mysql/0.27/01__add_idp_uid.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/mysql/0.27/02__migrate_inbox_message_payload.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/mysql/0.27/02__migrate_inbox_message_payload.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/mysql/0.27/03__drop_activity.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/mysql/0.27/03__drop_activity.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/mysql/0.27/04__memo_share.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/mysql/0.27/04__memo_share.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/mysql/0.28/00__user_identity.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/mysql/0.28/00__user_identity.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/mysql/0.30/00__user_tag_setting.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/mysql/0.30/00__user_tag_setting.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/mysql/0.31/00__rename_shortcuts_to_memo_views.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/mysql/0.31/00__rename_shortcuts_to_memo_views.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/mysql/0.31/01__migrate_storage_setting.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/mysql/0.31/01__migrate_storage_setting.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/mysql/0.31/02__reaction_memo_id.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/mysql/0.31/02__reaction_memo_id.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/mysql/0.31/03__multi_spaces.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/mysql/0.31/03__multi_spaces.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/mysql/0.31/04__space_member_status.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/mysql/0.31/04__space_member_status.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/mysql/0.31/05__case_sensitive_username.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/mysql/0.31/05__case_sensitive_username.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/mysql/0.31/06__space_payload.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/mysql/0.31/06__space_payload.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/mysql/0.31/07__unique_email.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/mysql/0.31/07__unique_email.sql",
+      "new_url": null
+    },
+    {
+      "status": "A",
+      "path": "store/migration/mysql/26.10/00__add_creator_indexes.sql",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/store/migration/mysql/26.10/00__add_creator_indexes.sql"
+    },
+    {
+      "status": "M",
+      "path": "store/migration/mysql/LATEST.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/mysql/LATEST.sql",
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/store/migration/mysql/LATEST.sql"
+    },
+    {
+      "status": "D",
+      "path": "store/migration/postgres/0.19/00__add_resource_name.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/postgres/0.19/00__add_resource_name.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/postgres/0.20/00__reaction.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/postgres/0.20/00__reaction.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/postgres/0.21/00__user_description.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/postgres/0.21/00__user_description.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/postgres/0.21/01__rename_uid.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/postgres/0.21/01__rename_uid.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/postgres/0.22/00__resource_storage_type.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/postgres/0.22/00__resource_storage_type.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/postgres/0.22/01__memo_tags.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/postgres/0.22/01__memo_tags.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/postgres/0.22/02__memo_payload.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/postgres/0.22/02__memo_payload.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/postgres/0.22/03__drop_tag.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/postgres/0.22/03__drop_tag.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/postgres/0.23/00__reactions.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/postgres/0.23/00__reactions.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/postgres/0.24/00__memo.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/postgres/0.24/00__memo.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/postgres/0.24/01__memo_pinned.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/postgres/0.24/01__memo_pinned.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/postgres/0.25/00__remove_webhook.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/postgres/0.25/00__remove_webhook.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/postgres/0.26/00__rename_resource_to_attachment.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/postgres/0.26/00__rename_resource_to_attachment.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/postgres/0.26/01__drop_memo_organizer.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/postgres/0.26/01__drop_memo_organizer.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/postgres/0.26/02__migrate_host_to_admin.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/postgres/0.26/02__migrate_host_to_admin.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/postgres/0.27/00__migrate_storage_setting.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/postgres/0.27/00__migrate_storage_setting.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/postgres/0.27/01__add_idp_uid.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/postgres/0.27/01__add_idp_uid.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/postgres/0.27/02__migrate_inbox_message_payload.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/postgres/0.27/02__migrate_inbox_message_payload.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/postgres/0.27/03__drop_activity.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/postgres/0.27/03__drop_activity.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/postgres/0.27/04__memo_share.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/postgres/0.27/04__memo_share.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/postgres/0.28/00__user_identity.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/postgres/0.28/00__user_identity.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/postgres/0.30/00__user_tag_setting.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/postgres/0.30/00__user_tag_setting.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/postgres/0.31/00__rename_shortcuts_to_memo_views.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/postgres/0.31/00__rename_shortcuts_to_memo_views.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/postgres/0.31/01__migrate_storage_setting.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/postgres/0.31/01__migrate_storage_setting.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/postgres/0.31/02__reaction_memo_id.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/postgres/0.31/02__reaction_memo_id.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/postgres/0.31/03__multi_spaces.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/postgres/0.31/03__multi_spaces.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/postgres/0.31/04__space_member_status.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/postgres/0.31/04__space_member_status.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/postgres/0.31/05__case_sensitive_username.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/postgres/0.31/05__case_sensitive_username.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/postgres/0.31/06__space_payload.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/postgres/0.31/06__space_payload.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/postgres/0.31/07__unique_email.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/postgres/0.31/07__unique_email.sql",
+      "new_url": null
+    },
+    {
+      "status": "A",
+      "path": "store/migration/postgres/26.10/00__add_creator_indexes.sql",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/store/migration/postgres/26.10/00__add_creator_indexes.sql"
+    },
+    {
+      "status": "M",
+      "path": "store/migration/postgres/LATEST.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/postgres/LATEST.sql",
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/store/migration/postgres/LATEST.sql"
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.10/00__activity.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.10/00__activity.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.11/00__user_avatar.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.11/00__user_avatar.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.11/01__idp.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.11/01__idp.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.11/02__storage.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.11/02__storage.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.12/00__user_setting.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.12/00__user_setting.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.12/01__system_setting.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.12/01__system_setting.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.12/03__resource_internal_path.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.12/03__resource_internal_path.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.12/04__resource_public_id.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.12/04__resource_public_id.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.13/00__memo_relation.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.13/00__memo_relation.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.13/01__remove_memo_organizer_id.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.13/01__remove_memo_organizer_id.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.14/00__drop_resource_public_id.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.14/00__drop_resource_public_id.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.14/01__create_indexes.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.14/01__create_indexes.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.15/00__drop_user_open_id.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.15/00__drop_user_open_id.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.16/00__add_memo_id_to_resource.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.16/00__add_memo_id_to_resource.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.16/01__drop_shortcut_table.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.16/01__drop_shortcut_table.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.17/00__inbox.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.17/00__inbox.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.17/01__delete_activities.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.17/01__delete_activities.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.18/00__webhook.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.18/00__webhook.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.18/01__user_setting.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.18/01__user_setting.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.19/00__add_resource_name.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.19/00__add_resource_name.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.2/00__user_role.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.2/00__user_role.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.2/01__memo_visibility.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.2/01__memo_visibility.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.20/00__reaction.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.20/00__reaction.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.21/00__user_description.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.21/00__user_description.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.21/01__rename_uid.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.21/01__rename_uid.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.22/00__resource_storage_type.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.22/00__resource_storage_type.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.22/01__memo_tags.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.22/01__memo_tags.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.22/02__memo_payload.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.22/02__memo_payload.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.22/03__drop_tag.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.22/03__drop_tag.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.23/00__reactions.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.23/00__reactions.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.24/00__memo.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.24/00__memo.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.24/01__memo_pinned.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.24/01__memo_pinned.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.25/00__remove_webhook.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.25/00__remove_webhook.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.26/00__rename_resource_to_attachment.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.26/00__rename_resource_to_attachment.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.26/01__drop_memo_organizer.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.26/01__drop_memo_organizer.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.26/02__drop_indexes.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.26/02__drop_indexes.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.26/03__alter_user_role.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.26/03__alter_user_role.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.26/04__migrate_host_to_admin.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.26/04__migrate_host_to_admin.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.27/00__migrate_storage_setting.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.27/00__migrate_storage_setting.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.27/01__add_idp_uid.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.27/01__add_idp_uid.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.27/02__migrate_inbox_message_payload.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.27/02__migrate_inbox_message_payload.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.27/03__drop_activity.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.27/03__drop_activity.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.27/04__memo_share.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.27/04__memo_share.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.28/00__user_identity.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.28/00__user_identity.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.3/00__memo_visibility_protected.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.3/00__memo_visibility_protected.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.30/00__user_tag_setting.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.30/00__user_tag_setting.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.31/00__rename_shortcuts_to_memo_views.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.31/00__rename_shortcuts_to_memo_views.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.31/01__migrate_storage_setting.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.31/01__migrate_storage_setting.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.31/02__reaction_memo_id.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.31/02__reaction_memo_id.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.31/03__multi_spaces.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.31/03__multi_spaces.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.31/04__space_member_status.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.31/04__space_member_status.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.31/06__space_payload.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.31/06__space_payload.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.31/07__unique_email.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.31/07__unique_email.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.4/00__user_setting.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.4/00__user_setting.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.5/00__regenerate_foreign_keys.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.5/00__regenerate_foreign_keys.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.5/01__memo_resource.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.5/01__memo_resource.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.5/02__system_setting.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.5/02__system_setting.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.5/03__resource_extermal_link.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.5/03__resource_extermal_link.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.6/00__recreate_triggers.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.6/00__recreate_triggers.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.7/00__remove_fk.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.7/00__remove_fk.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.7/01__remove_triggers.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.7/01__remove_triggers.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.8/00__migration_history.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.8/00__migration_history.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.8/01__user_username.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.8/01__user_username.sql",
+      "new_url": null
+    },
+    {
+      "status": "D",
+      "path": "store/migration/sqlite/0.9/00__tag.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/0.9/00__tag.sql",
+      "new_url": null
+    },
+    {
+      "status": "A",
+      "path": "store/migration/sqlite/26.10/00__add_creator_indexes.sql",
+      "old_url": null,
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/store/migration/sqlite/26.10/00__add_creator_indexes.sql"
+    },
+    {
+      "status": "M",
+      "path": "store/migration/sqlite/LATEST.sql",
+      "old_url": "https://github.com/usememos/memos/blob/v0.31.0/store/migration/sqlite/LATEST.sql",
+      "new_url": "https://github.com/usememos/memos/blob/26.11.0/store/migration/sqlite/LATEST.sql"
+    }
+  ]
+}

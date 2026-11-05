@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createLocalFiles, snapshotFile } from "@/components/MemoEditor/utils/localFile";
+import { createLocalFiles, snapshotFile } from "@/components/MemoEditor/edit/utils/localFile";
 
 describe("memo editor local file snapshots", () => {
   it("copies file contents into a new File with the original metadata", async () => {

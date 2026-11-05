@@ -18,12 +18,12 @@ To trigger manually: **Actions → Upstream Release Check → Run workflow**.
 ## Preparation (local, Windows dev machine)
 
 ```powershell
-.\scripts\prepare-upstream-update.ps1 -Tag vX.Y.Z
+.\scripts\prepare-upstream-update.ps1 -Tag 26.11.0
 ```
 
 The script:
 1. Requires a clean `diary-mode` working tree and correct branch.
-2. Validates the tag format (`vX.Y.Z` stable only).
+2. Validates the tag format (`vX.Y.Z` or `YY.MM.patch` stable releases only).
 3. Fetches both the target tag and the current baseline tag directly from the
    canonical upstream URL (`https://github.com/usememos/memos.git`).
    No persistent remote is added.
@@ -32,7 +32,7 @@ The script:
 5. Reports files changed by upstream (`$current..$Tag`), files changed by the
    fork since the current baseline (`$current..HEAD`), and their intersection
    (overlapping files that need close review).
-6. Saves `AGENTS.md` and `CLAUDE.md` as raw bytes and restores them on all
+6. Saves existing local instruction files as raw bytes and restores them on all
    exit paths — including real merge conflicts and unexpected errors — so they
    are never lost or left in an upstream-modified state.
 7. Performs a `git merge --no-commit` and resolves metadata-only conflicts
@@ -42,7 +42,10 @@ The script:
    `git merge --abort` to cancel it.
 9. Updates `.upstream-version` to the new tag.
 
-The script never commits, pushes, or deploys.
+The script never commits, pushes, or deploys. `AGENTS.md` is the active instruction
+entry. The retired `CLAUDE.md` has been removed; the script retains compatibility
+handling for that optional filename and skips saving it when absent. Do not
+recreate it for this workflow.
 
 ## Review
 
@@ -57,7 +60,7 @@ git diff --name-only --diff-filter=U  # any remaining unresolved conflicts
 Checklist:
 - All overlapping files (reported by the script) preserve fork-specific changes.
 - `imageOptimizerConcurrencyFromEnv()` still present in
-  `server/api/v1/v1.go`.
+  `server/api/image_optimizer.go`.
 - Fork-added hooks exports still in `web/src/hooks/index.ts`.
 - No intentionally removed upstream workflows reintroduced under
   `.github/workflows/`.
@@ -98,7 +101,7 @@ before pushing:
 go build ./...
 go vet ./...
 go test ./...
-golangci-lint run --timeout=3m   # CI pins v2.13.1
+golangci-lint run --timeout=3m   # CI pins v2.14.0
 ```
 
 On Windows, SQLite-backed tests can fail at `t.TempDir()` cleanup because
@@ -110,7 +113,9 @@ Keep generated frontend assets stable while Go compiles/tests the embedded files
 Image verification still requires Docker:
 
 ```powershell
-docker build --platform linux/arm64 -f scripts/Dockerfile .
+$version = (Get-Content .upstream-version -Raw).Trim()
+$commit = git rev-parse HEAD
+docker build --platform linux/arm64 --build-arg VERSION=$version --build-arg COMMIT=$commit -f scripts/Dockerfile .
 ```
 
 ## Commit
@@ -118,7 +123,7 @@ docker build --platform linux/arm64 -f scripts/Dockerfile .
 Only after review and verification pass:
 
 ```powershell
-git commit -m "chore: merge upstream vX.Y.Z"
+git commit -m "chore: merge upstream 26.11.0"
 ```
 
 Use a merge commit (not squash) to preserve upstream history.
@@ -153,7 +158,13 @@ If the deployed image has regressions:
 
 ### Revert in Portainer
 
-In Portainer, select the previous image tag (`sha-<previous-sha>`) and redeploy.
+Ask the user before reverting an accepted runtime candidate. For updates with
+schema changes, an image-only downgrade is unsafe: stop the new container, restore
+the matching verified pre-upgrade database and asset backup, and deploy its
+matching previous image (`sha-<previous-sha>`). Confirm that the restored schema,
+attachments, configuration, and access scope match before reopening access.
+Preserve any post-upgrade writes separately; never overwrite them silently.
+For 26.11.0, the 0.31.8 to 26.10.1 schema change requires this data-aware procedure.
 
 ### Revert in Git (if not yet pushed)
 
@@ -173,4 +184,7 @@ git push
 ```
 
 This creates a new revert commit, re-triggers CI, and re-pushes to GHCR.
-Then redeploy from Portainer using the new image.
+Before redeployment, apply the same user-confirmation and matching database/assets
+restore gate described under Revert in Portainer above. A source revert and newly
+built image do not reverse a database migration. Never run that image against an
+incompatible upgraded database. Preserve post-upgrade writes before any restore.

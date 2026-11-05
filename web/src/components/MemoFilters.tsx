@@ -11,8 +11,8 @@ import {
   LinkIcon,
   type LucideIcon,
   MapPinIcon,
+  PaperclipIcon,
   SearchIcon,
-  SquareCheckIcon,
   XIcon,
 } from "lucide-react";
 import type { ReactNode } from "react";
@@ -23,7 +23,7 @@ import { useAppSidebar } from "@/contexts/AppSidebarContext";
 import { type FilterFactor, getMemoFilterKey, type MemoFilter, useMemoFilterContext } from "@/contexts/MemoFilterContext";
 import useCurrentUser from "@/hooks/useCurrentUser";
 import { useMemoViews } from "@/hooks/useUserQueries";
-import { BUILTIN_TASKS_VIEW_ID, getMemoViewId, isMemoCollectionRoute } from "@/lib/memo-views";
+import { getMemoViewId, isMemoCollectionRoute } from "@/lib/memo-views";
 import { cn } from "@/lib/utils";
 import { useTranslate } from "@/utils/i18n";
 
@@ -88,6 +88,14 @@ const FILTER_CONFIGS: Record<FilterFactor, FilterConfig> = {
   "property.hasLocation": {
     icon: MapPinIcon,
     getLabel: (_, t) => t("memo.filters.has-location"),
+  },
+  "property.hasAttachments": {
+    icon: PaperclipIcon,
+    getLabel: (_, t) => t("memo.filters.has-attachments"),
+  },
+  "property.hasImage": {
+    icon: ImageIcon,
+    getLabel: (_, t) => t("memo.filters.has-image"),
   },
 };
 
@@ -161,7 +169,6 @@ const MemoFilters = ({ className }: { className?: string }) => {
 
   const viewChip = (() => {
     if (!viewApplies) return null;
-    if (memoView === BUILTIN_TASKS_VIEW_ID) return { icon: SquareCheckIcon, label: t("common.tasks") };
     const view = memoViews.find((item) => getMemoViewId(item.name) === memoView);
     return view?.title
       ? {
@@ -177,9 +184,7 @@ const MemoFilters = ({ className }: { className?: string }) => {
 
   return (
     <div className={cn("w-full flex flex-row justify-start items-center flex-wrap gap-2", className)}>
-      {viewChip && (
-        <FilterChip icon={viewChip.icon} customIcon={viewChip.customIcon} label={viewChip.label} onRemove={() => setMemoView(undefined)} />
-      )}
+      {viewChip && <FilterChip customIcon={viewChip.customIcon} label={viewChip.label} onRemove={() => setMemoView(undefined)} />}
       {filters.map((filter) => (
         <FilterChip
           key={getMemoFilterKey(filter)}

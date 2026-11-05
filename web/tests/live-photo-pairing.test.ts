@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { pairAppleLivePhotoFiles } from "@/components/MemoEditor/hooks/useFileUpload";
-import type { LocalFile } from "@/components/MemoEditor/types/attachment";
-import { MotionMediaFamily, MotionMediaRole } from "@/types/proto/api/v1/attachment_service_pb";
+import { pairAppleLivePhotoFiles } from "@/components/MemoEditor/edit/hooks/useFileUpload";
+import type { LocalFile } from "@/components/MemoEditor/edit/types/attachment";
+import { MotionMediaFamily, MotionMediaRole } from "@/types/proto/api/attachment_service_pb";
 
 const localFile = (name: string, type: string, previewUrl: string): LocalFile => ({
   file: new File(["content"], name, { type }),

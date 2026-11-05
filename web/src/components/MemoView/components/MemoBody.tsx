@@ -1,6 +1,7 @@
 import { EyeIcon } from "lucide-react";
 import { useMemo } from "react";
 import ClampedSection from "@/components/ClampedSection";
+import { MemoEditor } from "@/components/MemoEditor/MemoEditor";
 import { AttachmentGallery, MemoMetadataRows } from "@/components/MemoMetadata";
 import { separateAttachments } from "@/components/MemoMetadata/Attachment/attachmentHelpers";
 import { isReferenceRelation } from "@/components/MemoMetadata/Relation/relationHelpers";
@@ -16,8 +17,7 @@ import {
   removeManagedAttachmentReferences,
 } from "@/utils/managed-attachment";
 import { splitVisualAttachments } from "@/utils/media-item";
-import MemoContent from "../../MemoContent";
-import { Tag } from "../../MemoContent/Tag";
+import { useTagNavigation } from "../../MemoEditor/view/useTagNavigation";
 import { MemoReactionListView } from "../../MemoReactionListView";
 import { useMemoHandlers } from "../hooks";
 import { useMemoViewContext } from "../MemoViewContext";
@@ -37,15 +37,27 @@ const BlurOverlay: React.FC<{ onClick?: () => void }> = ({ onClick }) => {
 };
 
 const MemoBody: React.FC<MemoBodyProps> = ({ compact }) => {
-  const { memo, parentPage, showBlurredContent, blurred, readonly, openEditor, openPreview, toggleBlurVisibility } = useMemoViewContext();
+  const {
+    memo,
+    parentPage,
+    showBlurredContent,
+    blurred,
+    readonly,
+    isEditing,
+    openEditor,
+    closeEditor,
+    onEditorFocusModeChange,
+    openPreview,
+    toggleBlurVisibility,
+  } = useMemoViewContext();
 
   const { handleMemoContentClick, handleMemoContentDoubleClick } = useMemoHandlers({ readonly, openEditor, openPreview });
 
   const { body, tags } = useMemo(() => extractBoundaryTagLines(memo.content), [memo.content]);
+  const navigateTag = useTagNavigation(parentPage);
   const visibleTags = useMemo(() => getVisibleDiaryTags(tags), [tags]);
-  // Diary presentation only: retain stored Markdown and attachment order, but
-  // collect locally managed images in the existing grid instead of repeating
-  // them in the body. External and unresolved images keep their placement.
+
+  // Keep stored Markdown intact while grouping locally managed images in the diary grid.
   const displayBody = useMemo(() => {
     const gridUIDs = new Set(
       memo.attachments.filter(canInlineAttachment).flatMap((attachment) => {
@@ -62,6 +74,24 @@ const MemoBody: React.FC<MemoBodyProps> = ({ compact }) => {
   const { inlineVisualItems, remainingAttachments } = useMemo(() => splitVisualAttachments(attachmentOnlyItems), [attachmentOnlyItems]);
   const { visual, audio, docs } = useMemo(() => separateAttachments(remainingAttachments), [remainingAttachments]);
 
+  // Editing takes the body's place inside the card's own frame: the session brings its
+  // attachments, metadata and toolbar, so the read-only rows and reactions step aside.
+  if (isEditing) {
+    return (
+      <div data-slot="memo-body" className="w-full">
+        <MemoEditor
+          mode="edit"
+          name={memo.name}
+          frameless
+          autoFocus
+          onConfirm={closeEditor}
+          onCancel={closeEditor}
+          onFocusModeChange={onEditorFocusModeChange}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="w-full flex flex-col justify-start items-start gap-2">
       <div data-slot="memo-body" className="relative w-full">
@@ -74,21 +104,26 @@ const MemoBody: React.FC<MemoBodyProps> = ({ compact }) => {
           {/* Compact bounds the whole body — attachments included — behind one Show more.
               Reactions stay outside so they never hide under the fade. */}
           <ClampedSection enabled={Boolean(compact)}>
-            <MemoContent
-              memoName={memo.name}
+            <MemoEditor
+              name={memo.name}
               parentPage={parentPage}
-              content={displayBody}
-              attachments={memo.attachments}
+              displayContent={displayBody}
+              compact={Boolean(compact)}
               onClick={handleMemoContentClick}
               onDoubleClick={handleMemoContentDoubleClick}
-              compact={Boolean(compact)}
             />
             {visibleTags.length > 0 && (
               <div className="flex flex-row flex-wrap gap-1">
                 {visibleTags.map((tag) => (
-                  <Tag key={tag} data-tag={tag}>
+                  <button
+                    type="button"
+                    key={tag}
+                    data-tag={tag}
+                    onClick={() => navigateTag(tag)}
+                    className="rounded bg-muted px-1.5 py-0.5 text-sm text-muted-foreground hover:text-foreground"
+                  >
                     #{tag}
-                  </Tag>
+                  </button>
                 ))}
               </div>
             )}

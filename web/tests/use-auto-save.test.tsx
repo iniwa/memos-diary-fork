@@ -1,10 +1,11 @@
 import { create } from "@bufbuild/protobuf";
 import { act, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { useAutoSave } from "@/components/MemoEditor/hooks/useAutoSave";
-import { cacheService } from "@/components/MemoEditor/services/cacheService";
-import { EditorProvider, useEditorContext } from "@/components/MemoEditor/state";
-import { AttachmentSchema } from "@/types/proto/api/v1/attachment_service_pb";
+import { useAutoSave } from "@/components/MemoEditor/edit/hooks/useAutoSave";
+import { cacheService } from "@/components/MemoEditor/edit/services/cacheService";
+import { EditorProvider, useEditorContext } from "@/components/MemoEditor/edit/state";
+import { AttachmentSchema } from "@/types/proto/api/attachment_service_pb";
+import { Visibility } from "@/types/proto/api/memo_service_pb";
 
 // Probe surfaces the store's dispatch/actions plus the autosave API so tests can
 // drive content changes the way the editor does and assert on cache writes.
@@ -16,7 +17,7 @@ let api: {
 
 function Probe({ username, cacheKey, enabled }: { username: string; cacheKey?: string; enabled?: boolean }) {
   const { dispatch, actions } = useEditorContext();
-  const { discardDraft } = useAutoSave(username, cacheKey, enabled);
+  const { discardDraft } = useAutoSave(cacheService.key(username, cacheKey), enabled);
   api = { dispatch, actions, discardDraft };
   return null;
 }
@@ -47,7 +48,42 @@ describe("useAutoSave (store-subscribed)", () => {
     act(() => {
       api.dispatch(api.actions.updateContent("hello world"));
     });
-    expect(saveSpy).toHaveBeenCalledWith(key, "hello world", [], null);
+    expect(saveSpy).toHaveBeenCalledWith(key, {
+      content: "hello world",
+      attachments: [],
+      location: null,
+      space: undefined,
+      visibility: Visibility.PRIVATE,
+    });
+  });
+
+  it("persists destination and audience changes even when content stays the same", () => {
+    render(
+      <EditorProvider>
+        <Probe username="users/steven" cacheKey="settings" enabled />
+      </EditorProvider>,
+    );
+    saveSpy.mockClear();
+    act(() => {
+      api.dispatch(api.actions.setMetadata({ space: "spaces/work", visibility: Visibility.SPACE }));
+    });
+    expect(saveSpy).toHaveBeenLastCalledWith(cacheService.key("users/steven", "settings"), {
+      content: "",
+      attachments: [],
+      location: null,
+      space: "spaces/work",
+      visibility: Visibility.SPACE,
+    });
+    act(() => {
+      api.dispatch(api.actions.setMetadata({ space: undefined, visibility: Visibility.PRIVATE }));
+    });
+    expect(saveSpy).toHaveBeenLastCalledWith(cacheService.key("users/steven", "settings"), {
+      content: "",
+      attachments: [],
+      location: null,
+      space: undefined,
+      visibility: Visibility.PRIVATE,
+    });
   });
 
   it("persists tag-only changes and preserves hidden legacy tags", () => {
@@ -58,7 +94,7 @@ describe("useAutoSave (store-subscribed)", () => {
     );
     act(() => api.dispatch(api.actions.updateContent("Diary body")));
     act(() => api.dispatch(api.actions.setTags(["photo", "diary"])));
-    expect(saveSpy).toHaveBeenLastCalledWith(cacheService.key("users/steven", "tags"), "Diary body\n#photo #diary", [], null);
+    expect(saveSpy).toHaveBeenLastCalledWith(cacheService.key("users/steven", "tags"), { content: "Diary body\n#photo #diary", attachments: [], location: null, space: undefined, visibility: Visibility.PRIVATE });
   });
 
   it("persists uploaded attachments when editor metadata changes", () => {
@@ -79,7 +115,13 @@ describe("useAutoSave (store-subscribed)", () => {
       api.dispatch(api.actions.setMetadata({ attachments: [image] }));
     });
 
-    expect(saveSpy).toHaveBeenCalledWith(key, "", [image], null);
+    expect(saveSpy).toHaveBeenCalledWith(key, {
+      content: "",
+      attachments: [image],
+      location: null,
+      space: undefined,
+      visibility: Visibility.PRIVATE,
+    });
   });
 
   it("persists metadata changes for an attachment with the same name", () => {
@@ -109,7 +151,13 @@ describe("useAutoSave (store-subscribed)", () => {
       api.dispatch(api.actions.setMetadata({ attachments: [updated] }));
     });
 
-    expect(saveSpy).toHaveBeenCalledWith(key, "", [updated], null);
+    expect(saveSpy).toHaveBeenCalledWith(key, {
+      content: "",
+      attachments: [updated],
+      location: null,
+      space: undefined,
+      visibility: Visibility.PRIVATE,
+    });
   });
 
   it("does not persist when disabled", () => {

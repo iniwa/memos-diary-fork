@@ -2,18 +2,18 @@ import { create } from "@bufbuild/protobuf";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import MemoBody from "@/components/MemoView/components/MemoBody";
-import { AttachmentSchema, MotionMediaFamily, MotionMediaRole, MotionMediaSchema } from "@/types/proto/api/v1/attachment_service_pb";
-import { MemoSchema } from "@/types/proto/api/v1/memo_service_pb";
+import { AttachmentSchema, MotionMediaFamily, MotionMediaRole, MotionMediaSchema } from "@/types/proto/api/attachment_service_pb";
+import { MemoSchema } from "@/types/proto/api/memo_service_pb";
 
 const state = vi.hoisted(() => ({ memo: {} as unknown, openPreview: vi.fn() }));
 vi.mock("@/components/MemoView/MemoViewContext", () => ({
   useMemoViewContext: () => ({ memo: state.memo, openPreview: state.openPreview, parentPage: "" }),
 }));
 vi.mock("@/utils/i18n", () => ({ useTranslate: () => (key: string) => key }));
-vi.mock("@/components/MemoContent", () => ({
-  default: ({ content }: { content: string }) => <div data-testid="body">{content}</div>,
+vi.mock("@/components/MemoEditor/MemoEditor", () => ({
+  MemoEditor: ({ displayContent }: { displayContent: string }) => <div data-testid="body">{displayContent}</div>,
 }));
-vi.mock("@/components/MemoContent/Tag", () => ({ Tag: () => null }));
+vi.mock("@/components/MemoEditor/view/useTagNavigation", () => ({ useTagNavigation: () => vi.fn() }));
 vi.mock("@/components/MemoMetadata", () => ({ AttachmentGallery: () => null, MemoMetadataRows: () => null }));
 vi.mock("@/components/MemoReactionListView", () => ({ MemoReactionListView: () => null }));
 vi.mock("@/components/MemoView/hooks", () => ({ useMemoHandlers: () => ({}) }));

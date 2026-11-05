@@ -16,7 +16,7 @@ import (
 	"github.com/usememos/memos/internal/profile"
 	"github.com/usememos/memos/internal/version"
 	storepb "github.com/usememos/memos/proto/gen/store"
-	apiv1 "github.com/usememos/memos/server/api/v1"
+	apiv1 "github.com/usememos/memos/server/api"
 	"github.com/usememos/memos/store"
 	"github.com/usememos/memos/store/db"
 )

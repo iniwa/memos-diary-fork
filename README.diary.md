@@ -36,7 +36,6 @@ describes the fork.
 - `docs/improvements.md` — improvement checklist from code surveys
 - `iniwa-issues.md` — remaining issues / feature ideas
 - `AGENTS.md` — active Codex project policy
-- `CLAUDE.md` — retired local compatibility stub retained for upstream-update safety
 
 Document authority: `AGENTS.md` is current project policy; `.upstream-version`
 and manifests provide machine facts; active decisions and explicit amendments

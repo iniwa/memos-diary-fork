@@ -253,6 +253,13 @@ After both `--execute` runs, always confirm the final dry-run reports `changed=0
 
 ## 7. Rollback Guidance
 
+Ask the user before reverting an accepted runtime candidate. For the 26.11.0
+upgrade from 0.31.8 to schema 26.10.1, all image/source-revert procedures below
+also require restoration of the matching verified pre-upgrade database, assets,
+and configuration. An old image alone is not compatible. Preserve post-upgrade
+writes separately before restoring and confirm access/visibility afterward.
+Historical image-only examples are not authority for a schema downgrade.
+
 For v0.31.0, restore the matching pre-upgrade data backup when reverting to
 v0.30.x. An image-only downgrade is unsafe after the schema migration.
 
