@@ -48,6 +48,18 @@ recovery state.
   as a retired ignored compatibility stub because the upstream-update workflow
   preserves the local metadata path.
 
+## Current clarification
+
+The compatibility-stub statement above records the decision at the time.
+`CLAUDE.md` has since been removed; the [upstream preparation procedure](../upstream-update-process.md#preparation-local-windows-dev-machine)
+retains only optional filename compatibility. Do not recreate the file.
+
+The primary reassesses actual acceptance, authority, and environment blockers
+alongside the [existing contract reset conditions](#2026-08-11-correction-churn-follow-up).
+Those triggers require a contract reset, not a conclusion that the outcome has
+succeeded or failed. The stable writer gate and conditional independent review
+below remain in force.
+
 ## Preserved Project Policy
 
 This decision changes execution and delegation policy only. It does not change

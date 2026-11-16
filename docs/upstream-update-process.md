@@ -23,7 +23,9 @@ To trigger manually: **Actions → Upstream Release Check → Run workflow**.
 
 The script:
 1. Requires a clean `diary-mode` working tree and correct branch.
-2. Validates the tag format (`vX.Y.Z` or `YY.MM.patch` stable releases only).
+2. Validates stable tag syntax: legacy `vX.Y.Z` or calendar `YY.M.P`
+   (month 1–12, optionally zero-padded). Confirm the target is an official
+   stable release; syntax validation alone does not verify release status.
 3. Fetches both the target tag and the current baseline tag directly from the
    canonical upstream URL (`https://github.com/usememos/memos.git`).
    No persistent remote is added.
@@ -60,7 +62,8 @@ git diff --name-only --diff-filter=U  # any remaining unresolved conflicts
 Checklist:
 - All overlapping files (reported by the script) preserve fork-specific changes.
 - `imageOptimizerConcurrencyFromEnv()` still present in
-  `server/api/image_optimizer.go`.
+  `server/api/image_optimizer.go`, used by `server/api/api.go` after the
+  26.11.0 API package rename.
 - Fork-added hooks exports still in `web/src/hooks/index.ts`.
 - No intentionally removed upstream workflows reintroduced under
   `.github/workflows/`.
@@ -73,6 +76,14 @@ Checklist:
   narrowly approves the upstream v0.30.0 database migration; it does not
   approve all v0.30.0 schema or contract changes, nor future changes. Do not
   assume an image-only rollback is safe after a schema change.
+  [Decision 0006](decisions/0006-upstream-v0.31.0-integration.md) narrowly
+  approves the v0.31.0 migrations and API changes in its
+  [integration inventory](plans/2026-09-25-upstream-v0.31.0-integration.md#complete-schema-and-api-diff-inventory),
+  subject to its review, CI/image, consistent-backup and data-restoration
+  rollback conditions. It does not approve future releases or unrelated changes.
+  [Decision 0007](decisions/0007-upstream-26.11.0-source-integration.md) approves
+  the enumerated 26.11.0 source/schema/API integration only; production operations
+  and publication remain separately gated.
 - Preserve Decision 0003's prohibition on fork-local migration additions,
   modifications, or reordering; accepting the upstream migration does not lift it.
 - `AGENTS.md` and `CLAUDE.md` are not staged (`git status --short`).

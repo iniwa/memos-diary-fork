@@ -7,6 +7,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       return {
         ...state,
         content: action.payload.content,
+        tags: action.payload.tags ?? [],
         metadata: action.payload.metadata,
         timestamps: action.payload.timestamps,
       };

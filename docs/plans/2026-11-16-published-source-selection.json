@@ -1,0 +1,580 @@
+{
+  "baseline": "bebaadbe1380b852126510578d264aa78d493afc",
+  "old_candidate_manifest_sha256": "ca43c02c6447f94300464837aaa6596e740b5d417677b18620d79cb47e993388",
+  "old_published_differences": [
+    {
+      "path": ".dockerignore",
+      "status": "different",
+      "decision": "Merge runtime/recovery exclusions; preserve published exclusions.",
+      "published_sha256": "99155e782c92566918868f44decf169d49a56ba5ff010d0bfefbb71fa0760ba8",
+      "current_sha256": "b7e94a1e6058f6b8493332d4d52d9ca3c210d55ba259f4bfab1faf6144f8aeca"
+    },
+    {
+      "path": ".github/workflows/build-diary-image.yml",
+      "status": "different",
+      "decision": "Keep published upstream-version VERSION/COMMIT provenance unchanged.",
+      "published_sha256": "e581fc3d8c5e5b1ffa34a22ad0cd7a49f6095e28a08814e9030ac80bfd9bfb9a",
+      "current_sha256": "e581fc3d8c5e5b1ffa34a22ad0cd7a49f6095e28a08814e9030ac80bfd9bfb9a"
+    },
+    {
+      "path": ".gitignore",
+      "status": "different",
+      "decision": "Merge runtime/recovery exclusions; keep artifacts private.",
+      "published_sha256": "54116a4bccc7f115d8eaeaa859528064c2e2c84439a3a891605e7d2f3d0dff8e",
+      "current_sha256": "28faf1443b00b3441d02831c7eb277e6b130b95d5c827cafa92ccab2bb6f7075"
+    },
+    {
+      "path": "AGENTS.md",
+      "status": "different",
+      "decision": "Keep already accepted effective policy prefix and target managed runtime; no edit.",
+      "published_sha256": "9a686bf5088c65170bccfb6367fca515d888e3b5589e8e8e3278ea89a160dda0",
+      "current_sha256": "0805e850f76e5b9af7873f60f7b83fe41f334aab0a81f59fec1817ece0e5f2aa"
+    },
+    {
+      "path": "README.diary.md",
+      "status": "different",
+      "decision": "Use verified source baseline and distinguish observed Pi version from exact unverified revision.",
+      "published_sha256": "86dcb9015e81945f64ad093d488ea211d2480d1ef19e7db0e47f892e6bfd526a",
+      "current_sha256": "23ef8cbb2b78484bbb3c078e323a3c97b2ee2e4133cfd08fe3b15258a71a2c6a"
+    },
+    {
+      "path": "cmd/memos/remove_photo_tag.go",
+      "status": "different",
+      "decision": "Keep published modern Go loop; old delta is equivalent style only.",
+      "published_sha256": "7e75596d00e34de8f1663673f48dbd262f123c8048d0e79236eb2ffc0f9decd0",
+      "current_sha256": "7e75596d00e34de8f1663673f48dbd262f123c8048d0e79236eb2ffc0f9decd0"
+    },
+    {
+      "path": "docs/decisions/0004-codex-native-delegation-policy.md",
+      "status": "different",
+      "decision": "Transfer accepted current-policy clarification.",
+      "published_sha256": "9029a03ebb717866750b7c49e658194b11ad93619848d66a4ae45d4cbdedc202",
+      "current_sha256": "40942da9dd82bbe567ed89cfa5e4cecf6ddd4ca8a904af2148a329eb2c5f5b13"
+    },
+    {
+      "path": "docs/decisions/0004-upstream-26.11.0-integration.md",
+      "status": "published-only",
+      "decision": "Protect published November 5 evidence unchanged.",
+      "published_sha256": "fc9b50f3d7e4b338ffab8ca48cf9a42dfbc6fdd5c05ba539fbdc24686846a83f",
+      "current_sha256": "fc9b50f3d7e4b338ffab8ca48cf9a42dfbc6fdd5c05ba539fbdc24686846a83f"
+    },
+    {
+      "path": "docs/diary-mode-operations.md",
+      "status": "different",
+      "decision": "Correct version orientation; preserve published data-aware rollback conditions.",
+      "published_sha256": "663a4e50ce75a60604de63a1d938d6f6c9e6c1d14dd5e4723e3438e839bf8640",
+      "current_sha256": "b9e839a7ae1d72dd54a81f17cbafc9e0c52f1a5f5ecaf2525c24be263e80ca43"
+    },
+    {
+      "path": "docs/plans/2026-11-05-upstream-26.11.0-schema-inventory.json",
+      "status": "published-only",
+      "decision": "Protect published November 5 evidence unchanged.",
+      "published_sha256": "8cfc4336f189537c73f7d170965bf5b051bbea6301a82fa9e0e313e54200cb29",
+      "current_sha256": "8cfc4336f189537c73f7d170965bf5b051bbea6301a82fa9e0e313e54200cb29"
+    },
+    {
+      "path": "docs/upstream-update-process.md",
+      "status": "different",
+      "decision": "Merge accepted approval/tool guidance; keep published explicit build provenance and rollback gates.",
+      "published_sha256": "ab6eb8d72ea99bdd0ef3b1f3488b2b38aebaeaa9e738a7dcb1f887bfa2bd7319",
+      "current_sha256": "cbd5f88d2b4b2eab1b4349a6b4ae5dea6c509e9b129eabab279824abd733d301"
+    },
+    {
+      "path": "scripts/Dockerfile",
+      "status": "different",
+      "decision": "Restore local VERSION=dev default; retain published linker provenance and guard; omit obsolete BUILD_ID.",
+      "published_sha256": "096ba9df666f97a58f6fad553b5f8a8ec051af52a3ec46fc4d64b106367542c2",
+      "current_sha256": "9a21b4f77591a8888c591735e2083febec8a8109ed77357477ee8480b6686526"
+    },
+    {
+      "path": "scripts/prepare-upstream-update.ps1",
+      "status": "different",
+      "decision": "Transfer accepted NIWA-145 ASCII digit and optionally padded month validation only.",
+      "published_sha256": "12915e2a5ce442790e518bd7749fecab3be04cc8973e363ba14f084e5e1c7773",
+      "current_sha256": "d1c7a88d023698a2f5ecf1cbc76215cd92ebece166fac958a49a1653f35b8e2c"
+    },
+    {
+      "path": "server/api/image_optimizer_test.go",
+      "status": "different",
+      "decision": "Keep published modern loops; equivalent old style adds no behavior.",
+      "published_sha256": "5397b8e6c17c6376c533235cdf2ed67fd2fbffaa4c4aacf10432a99e42510413",
+      "current_sha256": "5397b8e6c17c6376c533235cdf2ed67fd2fbffaa4c4aacf10432a99e42510413"
+    },
+    {
+      "path": "server/frontend/dist/index.html",
+      "status": "different",
+      "decision": "Regenerate from selected source using pnpm release; do not overlay old bytes.",
+      "published_sha256": "502a0d487093dc7e2570fe1bbf11a66c93d30076ea39bb69118828c1ad3212a8",
+      "current_sha256": "978e0124ec986d211638056e31f7e571a8cac9735c721d82eedb990438bafe85"
+    },
+    {
+      "path": "store/cache/cache.go",
+      "status": "different",
+      "decision": "Transfer reproduced equal-expiry sequence tie breaker, retaining reservations and pointer identity.",
+      "published_sha256": "29a1298f73489155898f2f7a8fb88c4c50794104cf27dd010c44a107b2592a65",
+      "current_sha256": "abba5682f266636ce2fc1d6541b95867e2c426c66c405baf0d6744c862d9f594"
+    },
+    {
+      "path": "web/src/components/MemoEditor/MemoEditor.tsx",
+      "status": "different",
+      "decision": "Keep published displayContent API and mismatch/no-op guards; three payload regressions pass.",
+      "published_sha256": "01ab21832692e5126552a40e0a5b9add299497eece20a676c8b98a5bf7e1aa6d",
+      "current_sha256": "01ab21832692e5126552a40e0a5b9add299497eece20a676c8b98a5bf7e1aa6d"
+    },
+    {
+      "path": "web/src/components/MemoEditor/edit/EditSession.tsx",
+      "status": "different",
+      "decision": "Transfer dated-new/focus timestamp display without duplicate diary date control.",
+      "published_sha256": "23b5dd1ed688ccd031e0e4fc5b198d3b5dae7d68e186065ce9c6e12e2f3f566a",
+      "current_sha256": "af6308d31a59bb6bcf89ba1627e038678ef5a89080eaa227c51a8c39cdf7398d"
+    },
+    {
+      "path": "web/src/components/MemoEditor/edit/services/uploadService.ts",
+      "status": "different",
+      "decision": "Keep published equivalent sequential callback behavior; reject comment-only churn.",
+      "published_sha256": "4c18fe176f63f2d41ec0c925c8e64935e150d3ded219e380882c8f823947c31b",
+      "current_sha256": "4c18fe176f63f2d41ec0c925c8e64935e150d3ded219e380882c8f823947c31b"
+    },
+    {
+      "path": "web/src/components/MemoEditor/edit/state/actions.ts",
+      "status": "different",
+      "decision": "Transfer tags through INIT_MEMO action/reducer; verified regression red then green.",
+      "published_sha256": "fa9e422355ccd24bd016d1309ac52680755a561553f25f367875ca794870763e",
+      "current_sha256": "8d86943db31fd8a7ccfe9e409c7ac51080dece0c08d8c1f57fc4de6bf4142319"
+    },
+    {
+      "path": "web/src/components/MemoEditor/edit/state/reducer.ts",
+      "status": "different",
+      "decision": "Transfer tags through INIT_MEMO action/reducer; verified regression red then green.",
+      "published_sha256": "a3725af21530b9e751059b409497aae25d8fb04ba8299d98d53765c06e55df99",
+      "current_sha256": "e7282eef644d3bf0488e3d99b2d7d19a76b24d14673fdc956a1085058cb3d6d9"
+    },
+    {
+      "path": "web/src/components/MemoEditor/edit/state/types.ts",
+      "status": "different",
+      "decision": "Transfer tags through INIT_MEMO action/reducer; verified regression red then green.",
+      "published_sha256": "3759a841364605adb6c06d924780eb2a38aa16a53a24d0f282f14d90a9b62898",
+      "current_sha256": "f8c74f26f3dafebd0ace05d70592136124e98e5ad7311ea9b19fe0e6e8e99b1e"
+    },
+    {
+      "path": "web/src/components/MemoView/components/MemoBody.tsx",
+      "status": "different",
+      "decision": "Keep published equivalent grid selection, external references and tag styling unchanged.",
+      "published_sha256": "87062f7d27c3ed826828432ebf345a6d2cca4c0879b7c7d827dbb3f79f185288",
+      "current_sha256": "87062f7d27c3ed826828432ebf345a6d2cca4c0879b7c7d827dbb3f79f185288"
+    },
+    {
+      "path": "web/src/lib/diaryPresentation.ts",
+      "status": "different",
+      "decision": "Share parseTaskItems, retain published API, guards and reverse single-character edits.",
+      "published_sha256": "858853ef3fc07af60e410fdce7fb33adfc25de43c228466a294ef251de07240e",
+      "current_sha256": "c35b8ac6e98d5126548a8a8c26cf9af7631ca72476713bb46a1885cce636010e"
+    },
+    {
+      "path": "web/src/locales/ar.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "e48bbf7a1ba63cc4fe5592aa963e0c8a09eddd05b7a5a01f435d5e2ce5807213",
+      "current_sha256": "e48bbf7a1ba63cc4fe5592aa963e0c8a09eddd05b7a5a01f435d5e2ce5807213"
+    },
+    {
+      "path": "web/src/locales/az.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "e5a0766c5e69267a3f014719a589cf2124aa5cec403fb77225c0f91f3262efdf",
+      "current_sha256": "e5a0766c5e69267a3f014719a589cf2124aa5cec403fb77225c0f91f3262efdf"
+    },
+    {
+      "path": "web/src/locales/bg.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "e76786a295d8deb6e05609b615a70373c034c0b6537e527c99cffa39f3bec9d6",
+      "current_sha256": "e76786a295d8deb6e05609b615a70373c034c0b6537e527c99cffa39f3bec9d6"
+    },
+    {
+      "path": "web/src/locales/ca.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "a42a48d476b32b60a07ab3dc005f12e257d08354de66e23c58e62cdae0b2a4ac",
+      "current_sha256": "a42a48d476b32b60a07ab3dc005f12e257d08354de66e23c58e62cdae0b2a4ac"
+    },
+    {
+      "path": "web/src/locales/cs.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "9a15400d5e284540de09733ffd95cab3c13f671beef8c1949796838ad57512de",
+      "current_sha256": "9a15400d5e284540de09733ffd95cab3c13f671beef8c1949796838ad57512de"
+    },
+    {
+      "path": "web/src/locales/da.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "cbb97d63dbfbb3f399d8517f8a2928808016740162cc3ba1bc6ccee9c76b092e",
+      "current_sha256": "cbb97d63dbfbb3f399d8517f8a2928808016740162cc3ba1bc6ccee9c76b092e"
+    },
+    {
+      "path": "web/src/locales/de.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "456db5cdcf8f1f9df7a8d7a52b176316133e15c2b53752ae141207d96caacd4b",
+      "current_sha256": "456db5cdcf8f1f9df7a8d7a52b176316133e15c2b53752ae141207d96caacd4b"
+    },
+    {
+      "path": "web/src/locales/el.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "ec055635adccab7fbe87d200ece9a7b75f43afd895cbb63b6b30d67193b47a0b",
+      "current_sha256": "ec055635adccab7fbe87d200ece9a7b75f43afd895cbb63b6b30d67193b47a0b"
+    },
+    {
+      "path": "web/src/locales/en-GB.json",
+      "status": "different",
+      "decision": "Apply Has image value only; preserve published ordering and remaining values.",
+      "published_sha256": "6aeaaf02899ed53fae745427b6dfc4e744e9d0e4d786e5a21896d22cf37667dd",
+      "current_sha256": "65c670bd2b341dddbdcd2f8dd8de85a21694784cd6c8551f7daf96a4198682cf"
+    },
+    {
+      "path": "web/src/locales/en.json",
+      "status": "different",
+      "decision": "Apply Has image value only; preserve published ordering and remaining values.",
+      "published_sha256": "435908f832db6b8b9b49f5358027c083abb5fa177176f81f386fa44812bc39c6",
+      "current_sha256": "cf6c8e888a1746791f8ff239ecf0ee571ca956e7b84c8c3637fe2931506915bf"
+    },
+    {
+      "path": "web/src/locales/es.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "9ebe813d564a7a15af9d103c55e0795dbb6d4bff8bd3e1586151e15785501b8b",
+      "current_sha256": "9ebe813d564a7a15af9d103c55e0795dbb6d4bff8bd3e1586151e15785501b8b"
+    },
+    {
+      "path": "web/src/locales/et.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "72f40129603537abc9d14d18e222f72cfeb836b0fc94eb10afd88c9f37c82208",
+      "current_sha256": "72f40129603537abc9d14d18e222f72cfeb836b0fc94eb10afd88c9f37c82208"
+    },
+    {
+      "path": "web/src/locales/fa.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "9d69218e64a26ac3209601eca105a468d822ef3da363181144692630d8f571a6",
+      "current_sha256": "9d69218e64a26ac3209601eca105a468d822ef3da363181144692630d8f571a6"
+    },
+    {
+      "path": "web/src/locales/fi.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "a6808d03da0ae558f11bc1801a36acad4ce35a9b7c894b64a9e84c7f7ce82246",
+      "current_sha256": "a6808d03da0ae558f11bc1801a36acad4ce35a9b7c894b64a9e84c7f7ce82246"
+    },
+    {
+      "path": "web/src/locales/fr.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "967d1a0e00eed77bcecca3e731b8c38d6a98decbaffc2e3aff657e1fec897e54",
+      "current_sha256": "967d1a0e00eed77bcecca3e731b8c38d6a98decbaffc2e3aff657e1fec897e54"
+    },
+    {
+      "path": "web/src/locales/gl.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "a69df07bf84fa517928c37fdb27d54eada1a034fb0976f89ab0db55a9bfe692b",
+      "current_sha256": "a69df07bf84fa517928c37fdb27d54eada1a034fb0976f89ab0db55a9bfe692b"
+    },
+    {
+      "path": "web/src/locales/he.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "0f2aa605c39142808210132639d8a8db78fd60cb8a9b9f3d75009f9899e70737",
+      "current_sha256": "0f2aa605c39142808210132639d8a8db78fd60cb8a9b9f3d75009f9899e70737"
+    },
+    {
+      "path": "web/src/locales/hi.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "21a44e099f1c18e587ee570bb16be0f81f2da8592f9461bc4e51a5da8b7e8ffc",
+      "current_sha256": "21a44e099f1c18e587ee570bb16be0f81f2da8592f9461bc4e51a5da8b7e8ffc"
+    },
+    {
+      "path": "web/src/locales/hr.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "7313ee524557c0756f1675fca70a232b2eec773d9d7d7218b22e86562bb696dd",
+      "current_sha256": "7313ee524557c0756f1675fca70a232b2eec773d9d7d7218b22e86562bb696dd"
+    },
+    {
+      "path": "web/src/locales/hu.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "179d524786a02f318b2d3c1e209773dc85c629a0bcc5a39c21108947e988fb5c",
+      "current_sha256": "179d524786a02f318b2d3c1e209773dc85c629a0bcc5a39c21108947e988fb5c"
+    },
+    {
+      "path": "web/src/locales/id.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "6d5a21c7739109394a4c6cac2976884c2460a270453239b9a21a82f3ec9f7a04",
+      "current_sha256": "6d5a21c7739109394a4c6cac2976884c2460a270453239b9a21a82f3ec9f7a04"
+    },
+    {
+      "path": "web/src/locales/it.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "e6f8f396a285af0a435a5e12eef2b4ee0d392db476ac7a172ccee654a85f5bc8",
+      "current_sha256": "e6f8f396a285af0a435a5e12eef2b4ee0d392db476ac7a172ccee654a85f5bc8"
+    },
+    {
+      "path": "web/src/locales/ja.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "aacaa0ae7c8831f51d28e8d0aedbee18c88b12d5571e0b52382d85418f3c6d99",
+      "current_sha256": "aacaa0ae7c8831f51d28e8d0aedbee18c88b12d5571e0b52382d85418f3c6d99"
+    },
+    {
+      "path": "web/src/locales/ka-GE.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "be670c7b9521d793033d4ed906de9e751448b647ab86d9a8cdb527a022ae84ae",
+      "current_sha256": "be670c7b9521d793033d4ed906de9e751448b647ab86d9a8cdb527a022ae84ae"
+    },
+    {
+      "path": "web/src/locales/ko.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "549071079638b297488e7a87c57274c7c28e7e415702f8d04bfc402c419f29d4",
+      "current_sha256": "549071079638b297488e7a87c57274c7c28e7e415702f8d04bfc402c419f29d4"
+    },
+    {
+      "path": "web/src/locales/lt.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "a27548737233ebb8959338aa2c384a02683fc3cbb9e00a3d3dce370310b9d0a5",
+      "current_sha256": "a27548737233ebb8959338aa2c384a02683fc3cbb9e00a3d3dce370310b9d0a5"
+    },
+    {
+      "path": "web/src/locales/lv.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "8e55da69e4e519450f5c919e232bdbff888d4e106728b0661dbedc523c6d831a",
+      "current_sha256": "8e55da69e4e519450f5c919e232bdbff888d4e106728b0661dbedc523c6d831a"
+    },
+    {
+      "path": "web/src/locales/mr.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "1f782687a6ad1299ab244a15b436fce79442c625e0a585f3ac7197db0e5c55ce",
+      "current_sha256": "1f782687a6ad1299ab244a15b436fce79442c625e0a585f3ac7197db0e5c55ce"
+    },
+    {
+      "path": "web/src/locales/nb.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "46c09e2721753106864137097c89951a95f0ecd541b48391afd9ea25915233b2",
+      "current_sha256": "46c09e2721753106864137097c89951a95f0ecd541b48391afd9ea25915233b2"
+    },
+    {
+      "path": "web/src/locales/nl.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "be2ef698357c496da2ac0f430595bea1ee63a42860b17f698c3213711c377af9",
+      "current_sha256": "be2ef698357c496da2ac0f430595bea1ee63a42860b17f698c3213711c377af9"
+    },
+    {
+      "path": "web/src/locales/nn.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "e12d889288a7a6595be6fb9ef99979d7908e1e27a599da5fdb41843dd8085a5c",
+      "current_sha256": "e12d889288a7a6595be6fb9ef99979d7908e1e27a599da5fdb41843dd8085a5c"
+    },
+    {
+      "path": "web/src/locales/pl.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "fca7756daa5a91e38540c38498fb9dce26e8df88265d9211e2a2aa826cb59297",
+      "current_sha256": "fca7756daa5a91e38540c38498fb9dce26e8df88265d9211e2a2aa826cb59297"
+    },
+    {
+      "path": "web/src/locales/pt-BR.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "e7b7b043db0315a27727ffbad3223874fa0da8c4db52b4448ddee4bc5bf4a3d4",
+      "current_sha256": "e7b7b043db0315a27727ffbad3223874fa0da8c4db52b4448ddee4bc5bf4a3d4"
+    },
+    {
+      "path": "web/src/locales/pt-PT.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "3702c834b10ecf0111c7494234eea25c64e974f8ad2aa95844c4b8dc4a597404",
+      "current_sha256": "3702c834b10ecf0111c7494234eea25c64e974f8ad2aa95844c4b8dc4a597404"
+    },
+    {
+      "path": "web/src/locales/ro.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "1dda5eae010aa502afae082502a1607e80263c7b15828e632e0aeb9d5e10b99c",
+      "current_sha256": "1dda5eae010aa502afae082502a1607e80263c7b15828e632e0aeb9d5e10b99c"
+    },
+    {
+      "path": "web/src/locales/ru.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "e276b38aed0ce1c2bdb7cc637c7d64d65237613cc537583d863c3a42edddb713",
+      "current_sha256": "e276b38aed0ce1c2bdb7cc637c7d64d65237613cc537583d863c3a42edddb713"
+    },
+    {
+      "path": "web/src/locales/sk.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "763f56ce4889b2a8e45c89dc1e3750dd436d44bb38486cd63820b9d01fbd8c45",
+      "current_sha256": "763f56ce4889b2a8e45c89dc1e3750dd436d44bb38486cd63820b9d01fbd8c45"
+    },
+    {
+      "path": "web/src/locales/sl.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "5ab0ac70ac09308bcfbdc5116795d390563547b0e484fbcf7e993085fdb3e859",
+      "current_sha256": "5ab0ac70ac09308bcfbdc5116795d390563547b0e484fbcf7e993085fdb3e859"
+    },
+    {
+      "path": "web/src/locales/sr.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "12fbd3c3f2d7a3041a462efbd1adb8c3c01da24209d7414efa3c817036f6b772",
+      "current_sha256": "12fbd3c3f2d7a3041a462efbd1adb8c3c01da24209d7414efa3c817036f6b772"
+    },
+    {
+      "path": "web/src/locales/sv.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "8bcb4bf6555006500184a33ff1d4a98f6b4ac77f8fb58a5d39f2669f4064720e",
+      "current_sha256": "8bcb4bf6555006500184a33ff1d4a98f6b4ac77f8fb58a5d39f2669f4064720e"
+    },
+    {
+      "path": "web/src/locales/th.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "f2b60be049a86e9d3b806b4fa0ca50564a5f46f27308b0d92a1f395c28ff206c",
+      "current_sha256": "f2b60be049a86e9d3b806b4fa0ca50564a5f46f27308b0d92a1f395c28ff206c"
+    },
+    {
+      "path": "web/src/locales/tr.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "dec880b59730c5039f020e3503a793bafd8d7bb13b404048f80fce5bc778bed2",
+      "current_sha256": "dec880b59730c5039f020e3503a793bafd8d7bb13b404048f80fce5bc778bed2"
+    },
+    {
+      "path": "web/src/locales/uk.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "bfd9129b2248bfdd105048c402380456e4f840b9bc1c060b44aa93f1fbcb3021",
+      "current_sha256": "bfd9129b2248bfdd105048c402380456e4f840b9bc1c060b44aa93f1fbcb3021"
+    },
+    {
+      "path": "web/src/locales/vi.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "cc01dcfab9ab1263cf98905b15e4d0c05bb9ca6a2eb5dc79dc691a6ed2b497a4",
+      "current_sha256": "cc01dcfab9ab1263cf98905b15e4d0c05bb9ca6a2eb5dc79dc691a6ed2b497a4"
+    },
+    {
+      "path": "web/src/locales/zh-Hans.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "89db9c4c163cdb084eedb8830d5c69d2efa958f52e86355182ebcd1c07c305e7",
+      "current_sha256": "89db9c4c163cdb084eedb8830d5c69d2efa958f52e86355182ebcd1c07c305e7"
+    },
+    {
+      "path": "web/src/locales/zh-Hant.json",
+      "status": "different",
+      "decision": "Retain published semantic values/key set; old delta is ordering only. Nynorsk fork messages already present.",
+      "published_sha256": "0ee000b9f9f116f4b5bee06a61c1a4bb36af8ab51034c2a6a06c53a4c74f57c9",
+      "current_sha256": "0ee000b9f9f116f4b5bee06a61c1a4bb36af8ab51034c2a6a06c53a4c74f57c9"
+    },
+    {
+      "path": "web/src/utils/markdown-task-actions.ts",
+      "status": "different",
+      "decision": "Export existing parser without changing parser semantics.",
+      "published_sha256": "fb1170c713400d2bd4a8c35937978503279aca4a8f0cb676ffe6e4558bdc773e",
+      "current_sha256": "54858fe56f77259e2e99329580afb58f109855cc243a8180b6d83b21d1f46f2d"
+    },
+    {
+      "path": "web/tests/diary-presentation.test.ts",
+      "status": "different",
+      "decision": "Keep published edge cases and add draft/date plus INIT_MEMO-tag regression.",
+      "published_sha256": "106954aa62a23e29601e04506c242060457590a8d3fedb7861807117cc5fd877",
+      "current_sha256": "10816e4c570606d2d20160adc8fc4da22e9e5111e07decf4cd6953f993a6965b"
+    },
+    {
+      "path": "web/tests/memo-body-compact.test.tsx",
+      "status": "different",
+      "decision": "Keep equivalent published mock placement.",
+      "published_sha256": "b68cd7aa7279b4c88bf56cb9f65bbc7d7491d8577ce0562e7cc83838055fb75f",
+      "current_sha256": "b68cd7aa7279b4c88bf56cb9f65bbc7d7491d8577ce0562e7cc83838055fb75f"
+    },
+    {
+      "path": "web/tests/memo-body-image-grid.test.tsx",
+      "status": "different",
+      "decision": "Keep published grid regressions aligned to unchanged published displayContent API.",
+      "published_sha256": "e918eb196c3b37b2e4e205c331a184a6d60ca1c93b2f122b552f124698711ab0",
+      "current_sha256": "e918eb196c3b37b2e4e205c331a184a6d60ca1c93b2f122b552f124698711ab0"
+    },
+    {
+      "path": "web/tests/memo-editor-view.test.tsx",
+      "status": "different",
+      "decision": "Adapt/import three view-to-API/cache regressions to published displayContent API.",
+      "published_sha256": "6cd19195099494d09823bae7942b50330a131d3a07e0b00e7420bb2ac8ee27c4",
+      "current_sha256": "d3459fd367fe74e3110e7d305839c2de43a72c7e0da4da1b4c24da253808bfa0"
+    },
+    {
+      "path": "web/tests/use-memo-init.test.tsx",
+      "status": "different",
+      "decision": "Keep published mounted-session tag/body/attachment regression; do not remove it.",
+      "published_sha256": "d0222eafc98612b26c3b001894f998aad65f61786a1cee9e948f3ba82b3cb264",
+      "current_sha256": "d0222eafc98612b26c3b001894f998aad65f61786a1cee9e948f3ba82b3cb264"
+    }
+  ],
+  "old_only_non_asset_evidence": [
+    "docs/decisions/0007-upstream-26.11.0-source-integration.md",
+    "docs/handoffs/2026-11-16-upstream-26.11.0-candidate.md",
+    "docs/plans/2026-11-16-upstream-26.11.0-integration.md",
+    "docs/plans/2026-11-16-upstream-26.11.0-inventory.md",
+    "docs/plans/2026-11-16-upstream-26.11.0-tree-diff.json"
+  ],
+  "additional_evidence": [
+    "docs/decisions/0008-pi-runtime-validation.md"
+  ],
+  "historical_handoff_destination": "docs/handoffs/archive/2026-11-16-upstream-26.11.0-candidate.md",
+  "release_assets": "Regenerated; all current assets included in source manifest.",
+  "locale_duplicate_keys": [],
+  "changed_tracked_paths": [
+    ".dockerignore",
+    ".gitignore",
+    "AGENTS.md",
+    "README.diary.md",
+    "docs/decisions/0004-codex-native-delegation-policy.md",
+    "docs/diary-mode-operations.md",
+    "docs/handoffs/README.md",
+    "docs/upstream-update-process.md",
+    "scripts/Dockerfile",
+    "scripts/prepare-upstream-update.ps1",
+    "server/frontend/dist/index.html",
+    "store/cache/cache.go",
+    "web/src/components/MemoEditor/edit/EditSession.tsx",
+    "web/src/components/MemoEditor/edit/state/actions.ts",
+    "web/src/components/MemoEditor/edit/state/reducer.ts",
+    "web/src/components/MemoEditor/edit/state/types.ts",
+    "web/src/lib/diaryPresentation.ts",
+    "web/src/locales/en-GB.json",
+    "web/src/locales/en.json",
+    "web/src/utils/markdown-task-actions.ts",
+    "web/tests/diary-presentation.test.ts",
+    "web/tests/memo-editor-view.test.tsx"
+  ],
+  "initial_changes": [
+    "AGENTS.md",
+    "docs/handoffs/2026-11-16-upstream-26.11.0-verification.md",
+    ".multica/"
+  ]
+}

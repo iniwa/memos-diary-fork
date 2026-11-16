@@ -401,7 +401,7 @@
     "filters": {
       "has-attachments": "hasAttachments",
       "has-code": "hasCode",
-      "has-image": "hasImage",
+      "has-image": "Has image",
       "has-link": "hasLink",
       "has-location": "hasLocation",
       "has-task-list": "hasTaskList"

@@ -19,7 +19,7 @@ interface ParsedTaskItem {
 // start with another list's marker), its own marker, then the box.
 const TASK_LINE_REGEXP = /^((?:[ \t]*>)*(?:[ \t]*(?:[-*+]|\d{1,9}[.)])[ \t]+)+)\[([ xX])\]/;
 
-function parseTaskItems(markdown: string): ParsedTaskItem[] {
+export function parseTaskItems(markdown: string): ParsedTaskItem[] {
   const lines = lineTable(markdown);
   const tasks: ParsedTaskItem[] = [];
 

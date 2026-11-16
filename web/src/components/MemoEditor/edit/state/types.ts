@@ -44,7 +44,10 @@ export interface EditorState {
 }
 
 export type EditorAction =
-  | { type: "INIT_MEMO"; payload: { content: string; metadata: EditorState["metadata"]; timestamps: EditorState["timestamps"] } }
+  | {
+      type: "INIT_MEMO";
+      payload: { content: string; tags?: string[]; metadata: EditorState["metadata"]; timestamps: EditorState["timestamps"] };
+    }
   | { type: "UPDATE_CONTENT"; payload: { content: string } }
   | { type: "SET_METADATA"; payload: Partial<EditorState["metadata"]> }
   | { type: "ADD_LOCAL_FILE"; payload: LocalFile }

@@ -1,6 +1,7 @@
 # Active Handoffs
 
-No active handoff at the moment.
+Active: [26.11.0 verification](2026-11-16-upstream-26.11.0-verification.md),
+NIWA-143. Its current amendment supersedes the historical owner-only Git steps.
 
 Completed handoffs are archived under:
 

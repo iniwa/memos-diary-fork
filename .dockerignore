@@ -24,4 +24,9 @@ coverage.out
 /.idea/
 /.vscode/
 /.claude/
+/.codex/
+/.serena/
+/.multica/
+/.niwa143-*
+/.niwa155-*
 **/.DS_Store

@@ -2,7 +2,11 @@
 
 ## 1. System Overview
 
-Diary Mode is a fork of [usememos/memos](https://github.com/usememos/memos) (source baseline v0.31.0, see `.upstream-version`; deployed 2026-09-25) with the following additions:
+Diary Mode is a fork of [usememos/memos](https://github.com/usememos/memos)
+(source baseline 26.11.0, see `.upstream-version`). The Pi runtime was observed
+reporting 26.11.0 on 2026-11-16; its exact source revision remains unverified
+(see [Decision 0008](decisions/0008-pi-runtime-validation.md)). Local source
+improvements still require verification and acceptance. Its additions include:
 
 - Dedicated tag UI with boundary tag parsing and serialization
 - Twitter/X-style inline image grid (1+ images, expandable `+N` overlay)

@@ -35,7 +35,8 @@ type Interface interface {
 type item struct {
 	value      any
 	expiration time.Time
-	size       int // Approximate size in bytes
+	size       int    // Approximate size in bytes
+	sequence   uint64 // Break equal-expiry ties without relying on sync.Map iteration order.
 }
 
 // Config contains options for configuring a cache.
@@ -66,7 +67,8 @@ func DefaultConfig() Config {
 // Cache is a thread-safe in-memory cache with TTL and memory management.
 type Cache struct {
 	itemCount  atomic.Int64 // Use atomic operations to track item count
-	data       sync.Map     // stores *item; pointer identity guards removals
+	sequence   atomic.Uint64
+	data       sync.Map // stores *item; pointer identity guards removals
 	config     Config
 	stopChan   chan struct{}
 	closedChan chan struct{}
@@ -104,6 +106,7 @@ func (c *Cache) SetWithTTL(_ context.Context, key string, value any, ttl time.Du
 		value:      value,
 		expiration: time.Now().Add(ttl),
 		size:       size,
+		sequence:   c.sequence.Add(1),
 	}
 
 	for {
@@ -300,13 +303,15 @@ func (c *Cache) cleanupOldest() {
 		// Find the newest item in candidates
 		newestIdx := 0
 		for i := 1; i < len(candidates); i++ {
-			if candidates[i].expiration.After(candidates[newestIdx].expiration) {
+			if candidates[i].expiration.After(candidates[newestIdx].expiration) ||
+				(candidates[i].expiration.Equal(candidates[newestIdx].expiration) && candidates[i].entry.sequence > candidates[newestIdx].entry.sequence) {
 				newestIdx = i
 			}
 		}
 
 		// Replace it if this item is older
-		if itm.expiration.Before(candidates[newestIdx].expiration) {
+		if itm.expiration.Before(candidates[newestIdx].expiration) ||
+			(itm.expiration.Equal(candidates[newestIdx].expiration) && itm.sequence < candidates[newestIdx].entry.sequence) {
 			candidates[newestIdx] = keyExpPair{key.(string), itm, itm.expiration}
 		}
 

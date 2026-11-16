@@ -6,7 +6,8 @@ describes the fork.
 
 ## Current state
 
-- Base: Memos v0.31.0 (deployed 2026-09-25) (see `.upstream-version`)
+- Source baseline: Memos 26.11.0 (see `.upstream-version`); local improvements under verification
+- Observed Pi runtime: 26.11.0 on 2026-11-16; exact source revision unverified (Decision 0008)
 - Runtime: Raspberry Pi Docker, `linux/arm64`
 - Deployment: GHCR (`ghcr.io/iniwa/memos-diary-fork`) + Portainer Stack, manual redeploy
 - Operation: separate Diary Mode app (MVP complete, in daily use); runtime
@@ -70,7 +71,7 @@ report readiness or an unavailable smoke check as verified live operation.
 
 - Frontend: `cd web && pnpm lint && pnpm test` (vitest), build with `pnpm release`
 - Backend: Go toolchain available locally — `go build ./...`, `go vet ./...`,
-  `go test ./...`, and `golangci-lint run` (CI pins v2.13.1). Note that on
+  `go test ./...`, and `golangci-lint run` (CI pins v2.14.0). Note that on
   Windows some tests fail only in `t.TempDir()` cleanup because SQLite keeps the
   file open; Linux CI is the authority. Image verification still needs
   `docker build --platform linux/arm64 -f scripts/Dockerfile .` or CI.

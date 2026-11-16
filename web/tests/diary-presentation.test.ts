@@ -1,5 +1,12 @@
+import { create } from "@bufbuild/protobuf";
 import { describe, expect, it } from "vitest";
+import { initialEditorState } from "@/components/MemoEditor/edit/initialState";
+import { cacheService } from "@/components/MemoEditor/edit/services/cacheService";
+import { memoService } from "@/components/MemoEditor/edit/services/memoService";
+import { editorActions } from "@/components/MemoEditor/edit/state/actions";
+import { editorReducer } from "@/components/MemoEditor/edit/state/reducer";
 import { applyDisplayedTaskChanges } from "@/lib/diaryPresentation";
+import { MemoSchema } from "@/types/proto/api/memo_service_pb";
 
 describe("diary presentation task updates", () => {
   it("retains stored image references and boundary tags", () => {
@@ -33,5 +40,29 @@ describe("diary presentation task updates", () => {
   });
   it("rejects a structural mismatch", () => {
     expect(applyDisplayedTaskChanges("- [ ] First\n- [ ] Second", "- [x] First")).toBe("- [ ] First\n- [ ] Second");
+  });
+});
+
+describe("Diary session initialization", () => {
+  it("restores draft tags and seeds both diary timestamps", () => {
+    const draftKey = "niwa155-draft";
+    cacheService.saveNow(draftKey, { content: "Draft\n\n#diary #photo", attachments: [] });
+    try {
+      const date = new Date("2026-11-01T00:00:00+09:00");
+      const state = initialEditorState({ draftKey, defaultCreateTime: date });
+      expect(state.content).toBe("Draft");
+      expect(state.tags).toEqual(["diary", "photo"]);
+      expect(state.timestamps).toEqual({ createTime: date, updateTime: date });
+    } finally {
+      cacheService.clear(draftKey);
+    }
+  });
+  it("retains boundary tags through INIT_MEMO", () => {
+    const state = initialEditorState({ draftKey: "niwa155-init" });
+    const next = editorReducer(
+      state,
+      editorActions.initMemo(memoService.fromMemo(create(MemoSchema, { content: "Diary body\n\n#diary" }))),
+    );
+    expect(next.tags).toEqual(["diary"]);
   });
 });

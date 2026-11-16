@@ -5,7 +5,10 @@ import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoEditor } from "@/components/MemoEditor/MemoEditor";
 import { memoKeys } from "@/hooks/useMemoQueries";
+import { extractBoundaryTagLines } from "@/lib/tagLine";
+import { AttachmentSchema } from "@/types/proto/api/attachment_service_pb";
 import { ListMemosResponseSchema, type Memo, MemoSchema } from "@/types/proto/api/memo_service_pb";
+import { removeManagedAttachmentReferences } from "@/utils/managed-attachment";
 
 const state = vi.hoisted(() => ({ currentUser: undefined as { name: string; role?: string } | undefined }));
 const api = vi.hoisted(() => ({ getMemo: vi.fn(), updateMemo: vi.fn() }));
@@ -23,11 +26,11 @@ vi.mock("@/hooks/useNavigateTo", () => ({ default: () => vi.fn() }));
 
 const setup = () => {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
-  const renderMemo = (name: string) =>
+  const renderMemo = (name: string, displayContent?: string) =>
     render(
       <QueryClientProvider client={client}>
         <MemoryRouter>
-          <MemoEditor name={name} />
+          <MemoEditor name={name} displayContent={displayContent} />
         </MemoryRouter>
       </QueryClientProvider>,
     );
@@ -84,6 +87,39 @@ describe("MemoEditor in view mode", () => {
     await waitFor(() =>
       expect(client.getQueryData<{ memos: Memo[] }>(memoKeys.list({}))?.memos[0].content).toBe("- [x] First\n- [x] Second"),
     );
+  });
+
+  it.each([
+    { tasks: "> - [ ] Quoted", target: "> - [ ] Quoted", checkbox: 0 },
+    { tasks: "> - [ ] Parent\n>   - [ ] Nested", target: ">   - [ ] Nested", checkbox: 1 },
+    { tasks: "- - [ ] inner", target: "- - [ ] inner", checkbox: 0 },
+  ])("saves a diary task ($target) without removing hidden images, tags or code", async ({ tasks, target, checkbox }) => {
+    const { client, renderMemo } = setup();
+    state.currentUser = { name: "users/owner" };
+    const content = `#photo\n\n${tasks}\n\n![photo](/file/attachments/photo)\n\n\`\`\`md\n- [ ] Not a task\n\`\`\`\n\n#diary`;
+    const expected = content.replace(target, target.replace("[ ]", "[x]"));
+    const stored = create(MemoSchema, {
+      ...memo(content),
+      attachments: [create(AttachmentSchema, { name: "attachments/photo", filename: "photo.jpg", type: "image/jpeg" })],
+    });
+    client.setQueryData(memoKeys.list({}), create(ListMemosResponseSchema, { memos: [stored] }));
+    api.updateMemo.mockImplementation(async ({ memo: update }: { memo: Memo }) => ({ ...stored, content: update.content }));
+
+    const { container } = renderMemo(
+      stored.name,
+      removeManagedAttachmentReferences(extractBoundaryTagLines(content).body, new Set(["photo"])),
+    );
+    expect(container.querySelector(".memo-content-root")).not.toHaveTextContent("#photo");
+    expect(container.querySelector(".memo-content-root img")).toBeNull();
+    await act(async () => {
+      fireEvent.mouseDown(container.querySelectorAll<HTMLInputElement>("input.mbe-checkbox")[checkbox]!);
+    });
+
+    await waitFor(() => expect(api.updateMemo).toHaveBeenCalledOnce());
+    const [{ memo: sent, updateMask }] = api.updateMemo.mock.calls[0];
+    expect(sent.content).toBe(expected);
+    expect(updateMask.paths).toEqual(["content", "update_time"]);
+    await waitFor(() => expect(client.getQueryData<{ memos: Memo[] }>(memoKeys.list({}))?.memos[0].content).toBe(expected));
   });
 
   it("keeps tasks locked for a reader", () => {

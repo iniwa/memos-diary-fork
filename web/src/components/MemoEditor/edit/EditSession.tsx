@@ -90,6 +90,8 @@ export const EditSession: React.FC<EditSessionProps> = ({
   const inlineImageUpload = useInlineImageUpload(editorRef);
 
   const memoName = memo?.name;
+  const hasTimestamp = useEditorSelector((s) => Boolean(s.timestamps.createTime));
+  const showTimestamp = Boolean(memoName || (!memo && hasTimestamp));
   // Replies are never placed independently: a comment's Space is its parent's.
   // An edited top-level memo can change its Space; a new one can unless its
   // host fixes the target (e.g. composing inside a Space).
@@ -376,11 +378,11 @@ export const EditSession: React.FC<EditSessionProps> = ({
         )}
         {/* Formatting is the editor's own: its toolbar appears over selected
             text, and the slash menu and Markdown shortcuts change block types.
-            Focus mode always shows the memo's time ("Now" before it has one) and adds
+            Focus mode keeps the diary date action for a new top-level memo and adds
             the button that leaves the current frame — minimize inline, close when hosted. */}
-        {(Boolean(memoName) || isFocusMode) && (
+        {(showTimestamp || isFocusMode) && (
           <div className={cn("flex w-full items-center", isFocusMode ? "h-10" : "h-6")}>
-            <TimestampPopover />
+            {!memo && !parentMemoName ? <DiaryDateControl /> : <TimestampPopover />}
             {isFocusMode && (
               <div className="ms-auto -me-2">
                 <FocusModeExitButton action={onFocusModeExit ? "close" : "minimize"} onExit={handleToggleFocusMode} />
@@ -388,7 +390,7 @@ export const EditSession: React.FC<EditSessionProps> = ({
             )}
           </div>
         )}
-        {!memo && !parentMemoName && (
+        {!memo && !parentMemoName && !showTimestamp && !isFocusMode && (
           <div className="w-full -mb-1">
             <DiaryDateControl />
           </div>

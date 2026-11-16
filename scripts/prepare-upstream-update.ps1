@@ -9,7 +9,7 @@
     Does NOT commit, push, or deploy.
 
 .PARAMETER Tag
-    The stable upstream version tag to merge, e.g. "v0.31.0" or "26.11.0".
+    The upstream version tag to merge, e.g. "v0.31.0" or "26.11.0".
 
 .EXAMPLE
     .\scripts\prepare-upstream-update.ps1 -Tag v0.29.2
@@ -18,7 +18,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)]
-    [ValidatePattern('\A(?:v\d+\.\d+\.\d+|\d{2}\.(?:0[1-9]|1[0-2])\.\d+)\z')]
+    [ValidatePattern('\A(?:v[0-9]+\.[0-9]+\.[0-9]+|[0-9]{2}\.(?:0?[1-9]|1[0-2])\.[0-9]+)\z')]
     [string]$Tag
 )
 
