@@ -160,7 +160,6 @@ func (s *APIService) maybeOptimizeImageAttachment(ctx context.Context, attachmen
 			attachment.Type = optimizedImageMimeType(attachment.Type)
 			attachment.Filename = optimizedImageFilename(attachment.Filename, attachment.Type)
 		}
-
 	}
 
 	// Replacements have a temporary UID until committed. Their thumbnails are
@@ -192,12 +191,11 @@ func hasEditablePNGScene(blob []byte) bool {
 			return false
 		}
 		end := 8 + int(size)
-		switch string(chunks[4:8]) {
-		case "zTXt":
-			if bytes.HasPrefix(chunks[8:end], []byte("memos-canvas\x00")) {
-				return true
-			}
-		case "IEND":
+		chunkType := string(chunks[4:8])
+		if chunkType == "zTXt" && bytes.HasPrefix(chunks[8:end], []byte("memos-canvas\x00")) {
+			return true
+		}
+		if chunkType == "IEND" {
 			return false
 		}
 		chunks = chunks[end+4:]
