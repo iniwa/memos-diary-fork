@@ -45,7 +45,7 @@ const finishElement = (element: Element): boolean => {
       if (!isTrustedIframeSrc(element.getAttribute("src") ?? "")) return false;
       // Share snippets without a size (Bilibili's) would otherwise render at the browser's 300×150.
       element.className = cn(
-        "max-w-full rounded-lg border border-border",
+        "max-w-full rounded-mu-lg border border-mu-line",
         !element.hasAttribute("width") && !element.hasAttribute("height") && "w-full aspect-video",
         element.className,
       );
@@ -82,7 +82,9 @@ export function sanitizeMemoHtml(tree: DocumentFragment): DocumentFragment {
   // DOMPurify sanitizes an element in place, not a fragment, so the tree goes into one for the pass.
   const root = (tree.ownerDocument ?? document).createElement("div");
   root.append(tree);
-  purify.sanitize(root, { ALLOWED_TAGS, ALLOWED_ATTR: ALLOWED_ATTRIBUTES, IN_PLACE: true });
+  // Unknown schemes reach `allowedAttributeValue`, which holds memos' URL policy and refuses
+  // the script-capable ones, so a custom URI such as `obsidian://` keeps its `href`.
+  purify.sanitize(root, { ALLOWED_TAGS, ALLOWED_ATTR: ALLOWED_ATTRIBUTES, IN_PLACE: true, ALLOW_UNKNOWN_PROTOCOLS: true });
   for (const element of Array.from(root.querySelectorAll("*"))) {
     if (!finishElement(element)) element.remove();
   }

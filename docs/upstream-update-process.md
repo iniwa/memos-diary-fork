@@ -84,6 +84,9 @@ Checklist:
   [Decision 0007](decisions/0007-upstream-26.11.0-source-integration.md) approves
   the enumerated 26.11.0 source/schema/API integration only; production operations
   and publication remain separately gated.
+  [Decision 0009](decisions/0009-upstream-26.11.2-integration.md) covers the
+  enumerated 26.11.2 DB and API changes and production rollout after verification
+  and restoration checks.
 - Preserve Decision 0003's prohibition on fork-local migration additions,
   modifications, or reordering; accepting the upstream migration does not lift it.
 - `AGENTS.md` and `CLAUDE.md` are not staged (`git status --short`).

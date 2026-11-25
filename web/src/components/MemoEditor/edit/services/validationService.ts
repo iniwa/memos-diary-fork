@@ -9,6 +9,12 @@ export interface ValidationResult {
 }
 
 export const validationService = {
+  fileIngestBlockedReason(state: EditorState): Translations | undefined {
+    const { saving, preparingFiles, uploading } = state.ui.isLoading;
+    if (saving) return "editor.validation.save-in-progress";
+    if (preparingFiles || uploading) return "editor.validation.wait-for-upload";
+  },
+
   canSave(state: EditorState): ValidationResult {
     // Cannot save while loading initial content
     if (state.ui.isLoading.loading) {
@@ -20,8 +26,8 @@ export const validationService = {
       return { valid: false, reason: "editor.validation.content-required" };
     }
 
-    // Cannot save while uploading
-    if (state.ui.isLoading.uploading) {
+    // Wait until all selected files have reached the draft or inline upload.
+    if (state.ui.isLoading.preparingFiles || state.ui.isLoading.uploading) {
       return { valid: false, reason: "editor.validation.wait-for-upload" };
     }
 
@@ -45,9 +51,7 @@ export const validationService = {
       return { valid: false, reason: "editor.validation.finish-audio-recording" };
     }
 
-    // Cannot save while already saving, or while the saved confirmation holds
-    // the editor open for its closing host.
-    if (state.ui.isLoading.saving || state.ui.justSaved) {
+    if (state.ui.isLoading.saving) {
       return { valid: false, reason: "editor.validation.save-in-progress" };
     }
 

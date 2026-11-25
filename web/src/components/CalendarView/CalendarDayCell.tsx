@@ -1,4 +1,6 @@
-import { memo, useState } from "react";
+import { Skeleton } from "@usememos/ui";
+import { memo, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   type CalendarDayCell as CalendarDayCellData,
   DAY_CELL_FILLS,
@@ -6,9 +8,9 @@ import {
   getTooltipText,
 } from "@/components/ActivityCalendar";
 import UserAvatar from "@/components/UserAvatar";
-import { FOCUS_VISIBLE_OUTLINE_CLASSES } from "@/components/ui/focus";
 import { useResolvedUser, useResolvedUsersByNames } from "@/contexts/MentionResolutionContext";
 import type { MemoTimeBasis } from "@/contexts/ViewContext";
+import { formatDayLabel } from "@/lib/calendar-utils";
 import { cn } from "@/lib/utils";
 import { useTranslate } from "@/utils/i18n";
 import { CalendarLink } from "./CalendarLink";
@@ -80,7 +82,7 @@ export interface CalendarDayCellProps {
   corner?: "ss" | "se" | "es" | "ee";
 }
 
-const CORNER_CLASSES = { ss: "rounded-ss-lg", se: "rounded-se-lg", es: "rounded-es-lg", ee: "rounded-ee-lg" } as const;
+const CORNER_CLASSES = { ss: "rounded-ss-mu-lg", se: "rounded-se-mu-lg", es: "rounded-es-mu-lg", ee: "rounded-ee-mu-lg" } as const;
 
 /**
  * Today and the open day share one object, the way Notion Calendar marks dates: a 22px
@@ -88,17 +90,17 @@ const CORNER_CLASSES = { ss: "rounded-ss-lg", se: "rounded-se-lg", es: "rounded-
  * primary fill, the open day a quiet foreground wash, and when today is open the primary
  * badge sits inside a grey halo rather than stacking a second shape.
  */
-const BADGE = "inline-flex h-[22px] min-w-[22px] items-center justify-center rounded-md px-[5px]";
-const TODAY_BADGE = `${BADGE} bg-primary text-primary-foreground`;
-const OPEN_BADGE = `${BADGE} bg-foreground/10 text-foreground`;
+const BADGE = "inline-flex h-[22px] min-w-[22px] items-center justify-center rounded-mu-md px-[5px]";
+const TODAY_BADGE = `${BADGE} bg-mu-primary text-mu-on-primary`;
+const OPEN_BADGE = `${BADGE} bg-mu-text/10 text-mu-text`;
 /** Negative margin keeps the badge where it was; only the halo grows outward. */
-const OPEN_TODAY_HALO = "-m-[3px] inline-flex rounded-[9px] bg-foreground/10 p-[3px]";
+const OPEN_TODAY_HALO = "-m-[3px] inline-flex rounded-[9px] bg-mu-text/10 p-[3px]";
 
 const getNumeralClass = (day: CalendarDayCellData, count: number): string => {
   if (day.isToday) return TODAY_BADGE;
   if (day.isSelected) return OPEN_BADGE;
-  if (!day.isCurrentMonth) return "text-muted-foreground/40";
-  return count > 0 ? "text-foreground" : "text-muted-foreground/70";
+  if (!day.isCurrentMonth) return "text-mu-text-secondary/40";
+  return count > 0 ? "text-mu-text" : "text-mu-text-secondary";
 };
 
 const NO_IMAGES: CalendarDaySummary["images"] = [];
@@ -145,7 +147,7 @@ const DayMark = ({
     );
   }
   return (
-    <span className="flex flex-col gap-[3px] text-muted-foreground/45 transition-colors group-hover/day:text-muted-foreground">
+    <span className="flex flex-col gap-[3px] text-mu-text-secondary/45 transition-colors group-hover/day:text-mu-text-secondary">
       <span className="h-0.5 w-4 rounded-full bg-current" />
       <span className="h-0.5 w-2.5 rounded-full bg-current" />
     </span>
@@ -163,6 +165,9 @@ const DayMark = ({
 export const CalendarDayCell = memo(
   ({ day, summary, maxCount, layout, pending, timeBasis, showAuthor, tabIndex, isLastColumn, isLastRow, corner }: CalendarDayCellProps) => {
     const t = useTranslate();
+    const { i18n } = useTranslation();
+    // Read aloud as a date, not as the ISO key the grid navigates by.
+    const dateLabel = useMemo(() => formatDayLabel(day.date, i18n.language), [day.date, i18n.language]);
     const [failedImages, setFailedImages] = useState<string[]>([]);
     const count = summary ? summary.memos.length : day.count;
     const level = getActivityLevel(count, maxCount);
@@ -178,34 +183,27 @@ export const CalendarDayCell = memo(
     const markPhoto = layout.mark ? summary?.images.find((image) => !failedImages.includes(image.thumbnailUrl)) : undefined;
     const author = useResolvedUser(excerpt?.creator ?? "", { enabled: showAuthor && Boolean(excerpt) });
     const showSkeleton = pending && !summary && day.isCurrentMonth && day.count > 0;
-    const numeral = (
-      <span
-        className={cn(
-          "text-ui leading-none tabular-nums tracking-[-0.01em]",
-          day.isSelected ? "font-medium" : "font-normal",
-          getNumeralClass(day, count),
-        )}
-      >
-        {day.label}
-      </span>
-    );
+    const numeral = <span className={cn("mu-caption tabular-nums", getNumeralClass(day, count))}>{day.label}</span>;
 
     return (
       <CalendarLink
         to={buildCalendarPath(getMonthOfDate(day.date), day.date)}
         data-calendar-date={day.date}
         tabIndex={tabIndex}
-        aria-label={getTooltipText(count, day.date, t, timeBasis)}
+        aria-label={getTooltipText(count, dateLabel, t, timeBasis)}
         aria-current={day.isSelected ? "page" : undefined}
         className={cn(
-          "group/day relative flex min-h-14 min-w-0 flex-col overflow-hidden border-border/70 px-1.5 py-2 text-start no-underline transition-colors sm:px-3 sm:min-h-20 md:min-h-[5.5rem]",
+          "group/day relative flex min-h-14 min-w-0 flex-col overflow-hidden px-1.5 py-2 text-start no-underline transition-colors sm:px-3 sm:min-h-20 md:min-h-[5.5rem]",
           layout.slim && "sm:px-2",
-          !isLastColumn && "border-e",
-          !isLastRow && "border-b",
+          // The mark sits a step below the date so the open day's halo clears it; the row keeps its height.
+          layout.mark && "py-1.5",
           corner && CORNER_CLASSES[corner],
-          FOCUS_VISIBLE_OUTLINE_CLASSES,
+          "border border-mu-line/70 border-s-transparent border-t-transparent mu-focus focus-visible:border-mu-focus",
+          // After the all-sides color: tailwind-merge drops a per-side color that comes before it.
+          isLastColumn && "border-e-transparent",
+          isLastRow && "border-b-transparent",
           // The open day keeps its heat tint; its numeral badge is the selection mark.
-          day.isCurrentMonth ? DAY_CELL_FILLS[level] : "bg-muted/25 hover:bg-muted/45",
+          day.isCurrentMonth ? DAY_CELL_FILLS[level] : "bg-mu-well/25 hover:bg-mu-hover",
         )}
       >
         {/* The date starts on the text axis like every line below it. */}
@@ -215,12 +213,12 @@ export const CalendarDayCell = memo(
 
         {showSkeleton && layout.textLines > 0 && (
           <span aria-hidden="true" className="mt-1 flex h-[18px] items-center">
-            <span className="h-2 w-2/3 animate-pulse rounded-sm bg-muted" />
+            <Skeleton width="66%" height={8} />
           </span>
         )}
 
         {layout.mark && day.isCurrentMonth && !showSkeleton && summary && (
-          <span aria-hidden="true" className="flex h-4 shrink-0 items-center">
+          <span aria-hidden="true" className="mt-1 flex h-4 shrink-0 items-center">
             <DayMark
               photo={markPhoto}
               authorNames={showAuthor && !markPhoto ? summary.creators.slice(0, MARK_AUTHORS) : NO_CREATORS}
@@ -234,10 +232,10 @@ export const CalendarDayCell = memo(
             {excerpt && (
               <span
                 className={cn(
-                  "overflow-hidden whitespace-pre-line break-words text-ui leading-[18px] [display:-webkit-box] [-webkit-box-orient:vertical]",
-                  "text-muted-foreground transition-colors group-hover/day:text-foreground",
-                  day.isSelected && "text-foreground",
-                  excerpt.isCode && "font-mono text-xs",
+                  "overflow-hidden whitespace-pre-line break-words mu-caption [display:-webkit-box] [-webkit-box-orient:vertical]",
+                  "text-mu-text-secondary transition-colors group-hover/day:text-mu-text",
+                  day.isSelected && "text-mu-text",
+                  excerpt.isCode && "font-mono",
                 )}
                 style={{ WebkitLineClamp: textLines }}
               >
@@ -261,7 +259,7 @@ export const CalendarDayCell = memo(
                     alt=""
                     loading="lazy"
                     decoding="async"
-                    className="size-9 shrink-0 rounded-md object-cover"
+                    className="size-9 shrink-0 rounded-mu-md object-cover"
                     onError={() => setFailedImages((failed) => [...failed, image.thumbnailUrl])}
                   />
                 ))}

@@ -206,33 +206,44 @@ type attachmentSource interface {
 // the content, and creates the database row. create.Size must hold the source
 // length on entry; it is updated when stripping re-encodes the image.
 func (s *APIService) processAndSaveAttachment(ctx context.Context, create *store.Attachment, instanceStorageSetting *storepb.InstanceStorageSetting, source attachmentSource) (*apipb.Attachment, error) {
-	if err := requestContextStatusError(ctx, nil); err != nil {
+	if err := s.processAndStoreContent(ctx, create, instanceStorageSetting, source, true); err != nil {
 		return nil, err
+	}
+	return s.persistAttachment(ctx, create, instanceStorageSetting)
+}
+
+// processAndStoreContent strips EXIF metadata and writes the content to the
+// default storage, filling in create's storage fields. With detectMotion, a
+// JPEG that is an Android motion photo becomes a motion container and keeps
+// its embedded video unstripped. It creates no database row.
+func (s *APIService) processAndStoreContent(ctx context.Context, create *store.Attachment, instanceStorageSetting *storepb.InstanceStorageSetting, source attachmentSource, detectMotion bool) error {
+	if err := requestContextStatusError(ctx, nil); err != nil {
+		return err
 	}
 	// RAW conversion and preview optimization share this path for unary and chunked uploads.
 	if rawImageConversionConfigFromEnv().Enabled && isRawImageUpload(create.Filename, create.Type) {
 		if _, err := source.Seek(0, io.SeekStart); err != nil {
-			return nil, status.Errorf(codes.Internal, "failed to rewind RAW content: %v", err)
+			return status.Errorf(codes.Internal, "failed to rewind RAW content: %v", err)
 		}
 		blob, err := io.ReadAll(source)
 		if err != nil {
-			return nil, status.Errorf(codes.Internal, "failed to read RAW content: %v", err)
+			return status.Errorf(codes.Internal, "failed to read RAW content: %v", err)
 		}
 		create.Blob = blob
 		if err := s.maybeConvertRawImageAttachment(ctx, create); err != nil {
 			if contextErr := requestContextStatusError(ctx, err); contextErr != nil {
-				return nil, contextErr
+				return contextErr
 			}
-			return nil, err
+			return err
 		}
 		source = bytes.NewReader(create.Blob)
 		create.Blob = nil
 	}
 
-	if create.Payload.GetMotionMedia() == nil && (create.Type == "image/jpeg" || create.Type == "image/jpg") {
+	if detectMotion && create.Payload.GetMotionMedia() == nil && (create.Type == "image/jpeg" || create.Type == "image/jpg") {
 		detected, err := motionphoto.DetectJPEGReader(source, create.Size)
 		if err != nil {
-			return nil, status.Errorf(codes.Internal, "failed to inspect motion photo: %v", err)
+			return status.Errorf(codes.Internal, "failed to inspect motion photo: %v", err)
 		}
 		if detected != nil {
 			create.Payload = ensureAttachmentPayload(create.Payload)
@@ -253,15 +264,15 @@ func (s *APIService) processAndSaveAttachment(ctx context.Context, create *store
 	// client cannot skip stripping by labeling a JPEG as something else.
 	needsExifStrip, err := shouldStripExifContent(source, create.Type)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to inspect attachment content: %v", err)
+		return status.Errorf(codes.Internal, "failed to inspect attachment content: %v", err)
 	}
 	if needsExifStrip && !IsAndroidMotionContainer(create.Payload.GetMotionMedia()) {
 		release, err := s.acquireImageProcessingSlot(ctx)
 		if err != nil {
 			if contextErr := requestContextStatusError(ctx, err); contextErr != nil {
-				return nil, contextErr
+				return contextErr
 			}
-			return nil, status.Errorf(codes.ResourceExhausted, "too many image processing requests")
+			return status.Errorf(codes.ResourceExhausted, "too many image processing requests")
 		}
 		stripped, stripErr := stripImageExif(source, create.Type)
 		release()
@@ -279,30 +290,30 @@ func (s *APIService) processAndSaveAttachment(ctx context.Context, create *store
 
 	if imageOptimizerConfigFromEnv().Enabled && IsOptimizableStaticImage(create.Type) && !IsAndroidMotionContainer(create.Payload.GetMotionMedia()) {
 		if _, err := content.Seek(0, io.SeekStart); err != nil {
-			return nil, status.Errorf(codes.Internal, "failed to rewind image content: %v", err)
+			return status.Errorf(codes.Internal, "failed to rewind image content: %v", err)
 		}
 		blob, err := io.ReadAll(content)
 		if err != nil {
-			return nil, status.Errorf(codes.Internal, "failed to read image content: %v", err)
+			return status.Errorf(codes.Internal, "failed to read image content: %v", err)
 		}
 		create.Blob = blob
-		if err := s.maybeOptimizeImageAttachment(ctx, create); err != nil {
-			return nil, status.FromContextError(err).Err()
+		if err := s.maybeOptimizeImageAttachment(ctx, create, detectMotion); err != nil {
+			return status.FromContextError(err).Err()
 		}
 		content = bytes.NewReader(create.Blob)
 		create.Blob = nil
 	}
 	if err := requestContextStatusError(ctx, nil); err != nil {
-		return nil, err
+		return err
 	}
 
 	if _, err := content.Seek(0, io.SeekStart); err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to rewind attachment content: %v", err)
+		return status.Errorf(codes.Internal, "failed to rewind attachment content: %v", err)
 	}
 	if err := saveAttachmentContent(ctx, s.Profile, s.Store, create, instanceStorageSetting, content); err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to save attachment blob: %v", err)
+		return status.Errorf(codes.Internal, "failed to save attachment blob: %v", err)
 	}
-	return s.persistAttachment(ctx, create, instanceStorageSetting)
+	return nil
 }
 
 func (s *APIService) persistAttachment(ctx context.Context, create *store.Attachment, instanceStorageSetting *storepb.InstanceStorageSetting) (*apipb.Attachment, error) {

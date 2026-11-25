@@ -6,6 +6,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"testing"
+	"testing/synctest"
 	"time"
 )
 
@@ -460,5 +461,144 @@ func TestCacheCloseWaitsForCleanup(t *testing.T) {
 		}
 	case <-time.After(5 * time.Second):
 		t.Fatal("Close did not return after cleanup finished")
+	}
+}
+
+func TestCloseWaitsForCleanupForEveryCaller(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		entered := make(chan struct{})
+		release := make(chan struct{})
+		config := DefaultConfig()
+		config.CleanupInterval = time.Second
+		config.OnEviction = func(string, any) {
+			close(entered)
+			<-release
+		}
+		cache := New(config)
+		cache.SetWithTTL(t.Context(), "expired", "value", -time.Second)
+		<-entered
+		first := make(chan struct{})
+		go func() { _ = cache.Close(); close(first) }()
+		synctest.Wait()
+		second := make(chan struct{})
+		go func() { _ = cache.Close(); close(second) }()
+		synctest.Wait()
+		select {
+		case <-second:
+			t.Error("Close returned before the cleanup goroutine finished")
+		default:
+		}
+		close(release)
+		<-first
+		<-second
+	})
+}
+
+func TestEvictionCallbackRequestsCloseAsynchronously(t *testing.T) {
+	for _, alreadyClosing := range []bool{false, true} {
+		name := "callback starts close"
+		if alreadyClosing {
+			name = "another caller already closing"
+		}
+		t.Run(name, func(t *testing.T) {
+			synctest.Test(t, func(t *testing.T) {
+				entered := make(chan struct{})
+				requestClose := make(chan struct{})
+				requested := make(chan struct{})
+				returnAllowed := make(chan struct{})
+				callbackCloseDone := make(chan struct{})
+				var cache *Cache
+				config := DefaultConfig()
+				config.CleanupInterval = time.Second
+				config.OnEviction = func(string, any) {
+					close(entered)
+					<-requestClose
+					go func() { _ = cache.Close(); close(callbackCloseDone) }()
+					close(requested)
+					<-returnAllowed
+				}
+				cache = New(config)
+				cache.SetWithTTL(t.Context(), "expired", "value", -time.Second)
+				<-entered
+				otherCloseDone := make(chan struct{})
+				if alreadyClosing {
+					go func() { _ = cache.Close(); close(otherCloseDone) }()
+					<-cache.stopChan
+				}
+				close(requestClose)
+				<-requested
+				synctest.Wait()
+				select {
+				case <-callbackCloseDone:
+					t.Error("Close returned before the eviction callback finished")
+				default:
+				}
+				close(returnAllowed)
+				<-callbackCloseDone
+				if alreadyClosing {
+					<-otherCloseDone
+				}
+			})
+		})
+	}
+}
+
+func TestClearReportsRemovedValue(t *testing.T) {
+	ctx := context.Background()
+	const keys = 300
+
+	for round := range 50 {
+		var mu sync.Mutex
+		reported := make(map[string]map[any]bool)
+
+		config := DefaultConfig()
+		config.CleanupInterval = time.Hour
+		config.MaxItems = 0
+		config.OnEviction = func(key string, value any) {
+			mu.Lock()
+			if reported[key] == nil {
+				reported[key] = make(map[any]bool)
+			}
+			reported[key][value] = true
+			mu.Unlock()
+		}
+
+		cache := New(config)
+		for i := range keys {
+			cache.Set(ctx, fmt.Sprintf("key%d", i), "old")
+		}
+
+		// Overwrite every key while Clear runs.
+		start := make(chan struct{})
+		var wg sync.WaitGroup
+		wg.Go(func() {
+			<-start
+			for i := range keys {
+				cache.Set(ctx, fmt.Sprintf("key%d", i), "fresh")
+			}
+		})
+		wg.Go(func() {
+			<-start
+			cache.Clear(ctx)
+		})
+		close(start)
+		wg.Wait()
+
+		// A key that is gone after its overwrite lost the fresh value to Clear,
+		// so the callback must have been given that value.
+		for i := range keys {
+			key := fmt.Sprintf("key%d", i)
+			if _, ok := cache.Get(ctx, key); ok {
+				continue
+			}
+			mu.Lock()
+			ok := reported[key]["fresh"]
+			mu.Unlock()
+			if !ok {
+				cache.Close()
+				t.Fatalf("round %d: Clear removed the fresh value of %s without reporting it to OnEviction", round, key)
+			}
+		}
+		cache.Close()
 	}
 }

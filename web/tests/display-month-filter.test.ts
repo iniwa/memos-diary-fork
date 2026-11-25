@@ -3,6 +3,8 @@ import { describe, expect, it, vi } from "vitest";
 
 // Mock the hook's context dependencies BEFORE importing it.
 const mockFilters = vi.fn();
+const mockIncludeComments = vi.fn(() => false);
+vi.mock("@/hooks/useDevicePreferences", () => ({ useDevicePreferences: () => ({ includeComments: mockIncludeComments() }) }));
 vi.mock("@/hooks/useCurrentUser", () => ({ default: () => ({ name: "users/test" }) }));
 vi.mock("@/hooks/useUserQueries", () => ({ useMemoViews: () => ({ data: [] }) }));
 vi.mock("@/contexts/ViewContext", () => ({ useView: () => ({ timeBasis: "update_time" }) }));
@@ -82,7 +84,7 @@ describe("useMemoFilters with a displayMonth filter", () => {
     const { result } = renderHook(() => useMemoFilters());
 
     const range = parseMonthFilterRange("2026-05")!;
-    expect(result.current).toBe(`(created_ts >= timestamp(${range.start}) && created_ts < timestamp(${range.end}))`);
+    expect(result.current).toBe(`(parent == null) && (created_ts >= timestamp(${range.start}) && created_ts < timestamp(${range.end}))`);
   });
 
   it("wraps the epoch seconds in timestamp() — bare integers no longer type-check under CEL", () => {
@@ -96,10 +98,17 @@ describe("useMemoFilters with a displayMonth filter", () => {
     mockFilters.mockReturnValue([{ factor: "displayMonth", value: "2026-13" }]);
     const { result } = renderHook(() => useMemoFilters());
 
-    expect(result.current).toBeUndefined();
+    expect(result.current).toBe("(parent == null)");
   });
 
   it("retains image attachment filtering", () => {
+    mockFilters.mockReturnValue([{ factor: "attachment.hasImage", value: "true" }]);
+    const { result } = renderHook(() => useMemoFilters());
+    expect(result.current).toBe("(parent == null) && (has_image_attachment)");
+  });
+
+  it("retains the photo filter when the viewer includes comments", () => {
+    mockIncludeComments.mockReturnValueOnce(true);
     mockFilters.mockReturnValue([{ factor: "attachment.hasImage", value: "true" }]);
     const { result } = renderHook(() => useMemoFilters());
     expect(result.current).toBe("(has_image_attachment)");
@@ -113,6 +122,8 @@ describe("useMemoFilters with a displayMonth filter", () => {
     const { result } = renderHook(() => useMemoFilters());
 
     const range = parseMonthFilterRange("2026-05")!;
-    expect(result.current).toBe(`(tag in ["diary"]) && (created_ts >= timestamp(${range.start}) && created_ts < timestamp(${range.end}))`);
+    expect(result.current).toBe(
+      `(parent == null) && (tag in ["diary"]) && (created_ts >= timestamp(${range.start}) && created_ts < timestamp(${range.end}))`,
+    );
   });
 });

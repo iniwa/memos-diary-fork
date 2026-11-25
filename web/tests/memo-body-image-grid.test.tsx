@@ -5,16 +5,20 @@ import MemoBody from "@/components/MemoView/components/MemoBody";
 import { AttachmentSchema, MotionMediaFamily, MotionMediaRole, MotionMediaSchema } from "@/types/proto/api/attachment_service_pb";
 import { MemoSchema } from "@/types/proto/api/memo_service_pb";
 
-const state = vi.hoisted(() => ({ memo: {} as unknown, openPreview: vi.fn() }));
+const state = vi.hoisted(() => ({ memo: {} as unknown, openPreview: vi.fn(), attachmentGallery: vi.fn() }));
 vi.mock("@/components/MemoView/MemoViewContext", () => ({
   useMemoViewContext: () => ({ memo: state.memo, openPreview: state.openPreview, parentPage: "" }),
 }));
-vi.mock("@/utils/i18n", () => ({ useTranslate: () => (key: string) => key }));
+vi.mock("@/hooks/useCurrentUser", () => ({ default: () => undefined }));
+vi.mock("@/utils/i18n", () => ({
+  findNearestMatchedLanguage: (language: string) => language || "en",
+  useTranslate: () => (key: string) => key,
+}));
 vi.mock("@/components/MemoEditor/MemoEditor", () => ({
   MemoEditor: ({ displayContent }: { displayContent: string }) => <div data-testid="body">{displayContent}</div>,
 }));
 vi.mock("@/components/MemoEditor/view/useTagNavigation", () => ({ useTagNavigation: () => vi.fn() }));
-vi.mock("@/components/MemoMetadata", () => ({ AttachmentGallery: () => null, MemoMetadataRows: () => null }));
+vi.mock("@/components/MemoMetadata", () => ({ AttachmentGallery: state.attachmentGallery, MemoMetadataRows: () => null }));
 vi.mock("@/components/MemoReactionListView", () => ({ MemoReactionListView: () => null }));
 vi.mock("@/components/MemoView/hooks", () => ({ useMemoHandlers: () => ({}) }));
 vi.mock("@/components/MotionPhotoPreview", () => ({
@@ -34,7 +38,10 @@ const show = (content: string, attachments = [image("one")]) => {
   return result;
 };
 
-beforeEach(() => state.openPreview.mockReset());
+beforeEach(() => {
+  state.openPreview.mockReset();
+  state.attachmentGallery.mockReset().mockReturnValue(null);
+});
 
 describe("Diary memo image presentation", () => {
   it.each([0, 1, 4, 5])("collects %i managed images in the existing grid without editing the memo", (count) => {
@@ -97,6 +104,15 @@ describe("Diary memo image presentation", () => {
     expect(screen.getAllByRole("img")).toHaveLength(1);
   });
 
+  it("hands an inline drawing to the editable gallery while keeping the photo grid", () => {
+    const drawing = create(AttachmentSchema, { ...image("drawing"), filename: "drawing.canvas.png", type: "image/png" });
+    show(`${markdown("one")}\n\n${markdown("drawing")}`, [image("one"), drawing]);
+
+    expect(screen.queryByTestId("body")).not.toBeInTheDocument();
+    expect(screen.getAllByRole("img").map((img) => img.getAttribute("alt"))).toEqual(["one.jpg"]);
+    expect(state.attachmentGallery.mock.calls[0][0]).toMatchObject({ visual: [drawing], drawings: { memo: state.memo } });
+  });
+
   it("keeps Live Photo still/video pairs as one item alongside ordinary images", () => {
     const motionMedia = create(MotionMediaSchema, {
       family: MotionMediaFamily.APPLE_LIVE_PHOTO,
@@ -111,7 +127,7 @@ describe("Diary memo image presentation", () => {
       motionMedia: create(MotionMediaSchema, { ...motionMedia, role: MotionMediaRole.VIDEO }),
     });
     show(`${markdown("still")}\n\n${markdown("still")}\n\n${markdown("one")}`, [still, video, image("one")]);
-    expect(screen.getByTestId("body").textContent?.trim()).toBe("");
+    expect(screen.queryByTestId("body")).not.toBeInTheDocument();
     expect(screen.getAllByTestId("motion")).toHaveLength(1);
     expect(screen.getAllByRole("img")).toHaveLength(1);
     fireEvent.click(screen.getByTestId("motion"));

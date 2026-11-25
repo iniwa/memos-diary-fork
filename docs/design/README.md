@@ -14,6 +14,11 @@ behavior; a design document does not have to.
 
 ## Index
 
+Implemented, awaiting release:
+
+- [Markup: image annotation and saving](drawing-annotation-and-recovery.md)
+- [MariaDB compatibility testing](mariadb-compatibility-testing.md)
+
 Implemented and frozen:
 
 - [API abuse controls](api-abuse-controls.md)

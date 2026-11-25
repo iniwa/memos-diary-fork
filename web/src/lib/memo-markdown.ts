@@ -1,7 +1,6 @@
 import {
   type Block,
   type Doc,
-  defaultResolveUrl,
   type Extension,
   footnotes,
   isPlainTextBlock,
@@ -26,6 +25,7 @@ import { colorToHex } from "@/lib/color";
 import { headingClasses, markdownStyles, mentionStyles, tagStyles } from "@/lib/markdownStyles";
 import { MEMO_MARKDOWN, MEMO_SYNTAX } from "@/lib/memo-ast";
 import { findTagMetadata } from "@/lib/tag";
+import { isAllowedLinkUrl } from "@/lib/url-policy";
 import { cn } from "@/lib/utils";
 import type { Attachment } from "@/types/proto/api/attachment_service_pb";
 import type { UserSetting_TagsSetting } from "@/types/proto/api/user_service_pb";
@@ -146,16 +146,24 @@ const CUSTOM_TAG_CLASS = cn(TAG_CLASS, tagStyles.customColor);
 
 /**
  * How a #tag looks wherever a memo is shown, in the composer and the memo view alike:
- * a pill in the theme color, or in the color the user gave the tag, which the element
+ * an inline tint in the theme color, or in the color the user gave the tag, which the element
  * carries as `--tag-color` for tagStyles.customColor to draw from. `getTagsSetting`
  * is read when a block is decorated; call `editor.redecorate()` when it changes.
  */
-export const memoTagOptions = (getTagsSetting: () => UserSetting_TagsSetting | undefined): Pick<TagsOptions, "class" | "attributes"> => ({
-  class: (match) => (tagColor(match.slice(1), getTagsSetting()) ? CUSTOM_TAG_CLASS : DEFAULT_TAG_CLASS),
+export const memoTagOptions = (
+  getTagsSetting: () => UserSetting_TagsSetting | undefined,
+  isInteractive: () => boolean = () => false,
+): Pick<TagsOptions, "class" | "attributes"> => ({
+  class: (match) =>
+    cn(tagColor(match.slice(1), getTagsSetting()) ? CUSTOM_TAG_CLASS : DEFAULT_TAG_CLASS, isInteractive() && tagStyles.interactive),
   attributes: (match): Record<string, string> => {
     const tag = match.slice(1);
     const color = tagColor(tag, getTagsSetting());
-    return color ? { "data-tag": tag, style: `--tag-color: ${color}` } : { "data-tag": tag };
+    return {
+      "data-tag": tag,
+      ...(color ? { style: `--tag-color: ${color}` } : {}),
+      ...(isInteractive() ? { role: "button", tabindex: "0" } : {}),
+    };
   },
 });
 
@@ -177,7 +185,7 @@ export const memoMentionOptions = (isResolved: (username: string) => boolean): P
 });
 
 interface MemoExtensionOptions {
-  /** `tags()` class and attributes, for the memo view's pills and colors. */
+  /** `tags()` class and attributes, for the memo view's inline tags and colors. */
   readonly tags?: Pick<TagsOptions, "class" | "attributes" | "onClick">;
   /** `mentions()` class and attributes, for links to the people who exist. */
   readonly mentions?: Pick<TagsOptions, "class" | "attributes" | "onClick">;
@@ -205,8 +213,8 @@ const isAllowedImageSource = (src: string): boolean => !/^[a-z][a-z0-9+.-]*:/i.t
 /**
  * memos' URL policy: images the memo names load from relative or https URLs only, and
  * managed attachment images then resolve to their served URL, which is the instance's
- * own origin and may be plain http. Links also allow `sms:`, which hands off to another
- * app, beyond the editor's defaults.
+ * own origin and may be plain http. Links follow memos' link policy, which keeps a custom
+ * scheme such as `obsidian://` or `slack://` and drops the ones that run script.
  */
 export const memoResolveUrl =
   (attachments: readonly Attachment[] = []): ResolveUrl =>
@@ -214,48 +222,55 @@ export const memoResolveUrl =
     if (kind === "image") {
       return isAllowedImageSource(url) ? (resolveManagedAttachmentImageSource(url, [...attachments]) ?? url) : null;
     }
-    return /^sms:/i.test(url.trim()) ? url.trim() : defaultResolveUrl(url, kind);
+    return isAllowedLinkUrl(url.trim()) ? url.trim() : null;
   };
 
 /**
- * The editor's look in memos' palette. Every color is one of the app's own CSS
- * variables, set once for both schemes (`colors`), since the variables already
- * follow the active memos theme; `inherit` follows the `color-scheme` memos sets
+ * The editor's look on @usememos/ui's tokens. Every color is one of the package's
+ * CSS variables, set once for both schemes (`colors`), since the variables already
+ * follow the active memos theme; `inherit` follows the `color-scheme` the theme sets
  * on the document. No `highlight` token: memos' HTML sanitizer drops `<mark>`, and
  * should it ever pass, the editor's yellow is what a highlighter means, where a
  * tint of the primary color would read as a tag pill or a selection.
  */
 export const MEMO_EDITOR_THEME: Theme = (() => {
   const colors = {
-    text: "var(--foreground)",
-    muted: "var(--muted-foreground)",
+    text: "var(--mu-text)",
+    muted: "var(--mu-text-secondary)",
     background: "transparent",
-    accent: "var(--primary)",
-    link: "var(--primary)",
-    codeBackground: "var(--muted)",
-    border: "var(--border)",
-    popupBackground: "var(--popover)",
-    popupBorder: "var(--border)",
-    hover: "var(--accent)",
-    danger: "var(--destructive)",
+    accent: "var(--mu-accent)",
+    link: "var(--mu-accent)",
+    codeBackground: "var(--mu-well)",
+    border: "var(--mu-line)",
+    popupBackground: "var(--mu-surface)",
+    popupBorder: "var(--mu-line)",
+    hover: "var(--mu-hover)",
+    danger: "var(--mu-danger)",
+    calloutNote: "var(--mu-accent)",
+    calloutTip: "var(--mu-success)",
+    calloutImportant: "var(--mu-accent)",
+    calloutWarning: "var(--mu-warning)",
+    calloutCaution: "var(--mu-danger)",
   };
   return {
     colorScheme: "inherit",
     tokens: {
       colors,
       font: "inherit",
-      mono: "var(--font-mono, ui-monospace, monospace)",
+      mono: "var(--mu-font-mono)",
       fontSize: 16,
       lineHeight: 24,
-      radius: "calc(var(--radius) - 2px)",
-      blockGap: 8,
+      radius: "var(--mu-radius-md)",
+      blockGap: 12,
     },
     classes: {
       heading: headingClasses,
       code: markdownStyles.inlineCode,
+      codeBlock: markdownStyles.codeBlock,
+      taskList: markdownStyles.taskList,
       link: markdownStyles.link,
       // The editor sizes and spaces its images; raw HTML images keep markdownStyles.image.
-      image: "rounded-lg",
+      image: "rounded-mu-lg",
     },
   };
 })();

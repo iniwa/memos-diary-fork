@@ -73,7 +73,7 @@ func TestMaybeOptimizeImageAttachmentFallsBackOnInvalidBlob(t *testing.T) {
 		Blob:     []byte("not an image"),
 	}
 
-	require.NoError(t, service.maybeOptimizeImageAttachment(context.Background(), attachment))
+	require.NoError(t, service.maybeOptimizeImageAttachment(context.Background(), attachment, true))
 
 	require.Equal(t, []byte("not an image"), attachment.Blob)
 	require.Equal(t, int64(10), attachment.Size)
@@ -101,7 +101,7 @@ func TestMaybeOptimizeImageAttachmentRewritesBlobMetadataAndThumbnail(t *testing
 		Blob:     input,
 	}
 
-	require.NoError(t, service.maybeOptimizeImageAttachment(context.Background(), attachment))
+	require.NoError(t, service.maybeOptimizeImageAttachment(context.Background(), attachment, true))
 
 	require.NotEqual(t, input, attachment.Blob)
 	require.Equal(t, int64(len(attachment.Blob)), attachment.Size)
@@ -135,7 +135,7 @@ func TestMaybeOptimizeImageAttachmentReturnsCanceledContext(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
-	err := service.maybeOptimizeImageAttachment(ctx, attachment)
+	err := service.maybeOptimizeImageAttachment(ctx, attachment, true)
 	require.ErrorIs(t, err, context.Canceled)
 	_, statErr := os.Stat(filepath.Join(service.Profile.Data, ThumbnailCacheFolder, "canceled-image.v2.jpeg"))
 	require.True(t, os.IsNotExist(statErr))

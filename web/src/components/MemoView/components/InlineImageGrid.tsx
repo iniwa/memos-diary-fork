@@ -123,7 +123,7 @@ const SingleTile: FC<{ item: AttachmentVisualItem; onClick?: () => void }> = ({ 
           containerClassName="max-w-full"
           posterClassName={cn(NATURAL_MEDIA_CLASS, "object-contain")}
           videoClassName={SINGLE_MOTION_VIDEO_CLASS}
-          badgeClassName="left-2 top-2 px-2 py-0.5 text-[10px]"
+          badgeClassName="left-2 top-2 px-2 py-0.5 mu-caption"
         />
       </Tile>
     );
@@ -153,7 +153,7 @@ const CollageTile: FC<{
           presentationTimestampUs={presentationTimestampUs}
           containerClassName="h-full w-full"
           mediaClassName={COVER_MEDIA_CLASS}
-          badgeClassName="left-2 top-2 px-2 py-0.5 text-[10px]"
+          badgeClassName="left-2 top-2 px-2 py-0.5 mu-caption"
         />
       </Tile>
     );
@@ -223,7 +223,7 @@ const InlineImageGrid: FC<InlineImageGridProps> = ({ items }) => {
       {isExpanded && (
         <button
           type="button"
-          className="mt-1.5 w-full text-center text-xs text-muted-foreground transition-colors hover:text-foreground"
+          className="mt-1.5 w-full text-center mu-caption text-mu-text-secondary transition-colors hover:text-mu-text"
           onClick={() => setExpanded(false)}
         >
           {t("common.collapse")}

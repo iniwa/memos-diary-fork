@@ -19,6 +19,7 @@ export const uploadService = {
         mediaMetadata,
       }),
       totalSize: BigInt(file.size),
+      replaceAttachment: localFile.replaces ?? "",
     });
     // The spec call carries no data so that retrying it after a lost response
     // can at worst orphan an upload, never create a duplicate attachment.
@@ -67,6 +68,7 @@ export const uploadService = {
         attachments.push(attachment);
         onUploaded?.(localFile, attachment);
       } catch (error) {
+        if (localFile.replaces) throw error;
         throw new Error(`Failed to upload attachment ${index + 1}/${localFiles.length} (${localFile.file.name})`, { cause: error });
       }
     }

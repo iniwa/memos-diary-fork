@@ -3,7 +3,7 @@ import type { Location, MemoRelation } from "@/types/proto/api/memo_service_pb";
 import { Visibility } from "@/types/proto/api/memo_service_pb";
 import type { LocalFile } from "../types/attachment";
 
-export type LoadingKey = "saving" | "uploading" | "loading" | "transcribing";
+export type LoadingKey = "saving" | "preparingFiles" | "uploading" | "loading" | "transcribing";
 
 export interface EditorState {
   content: string;
@@ -20,25 +20,21 @@ export interface EditorState {
   ui: {
     isFocusMode: boolean;
     pendingInlineImageInsertions: number;
-    isLoading: {
-      saving: boolean;
-      uploading: boolean;
-      loading: boolean;
-      transcribing: boolean;
-    };
-    /** Save landed and the editor is about to close; the toolbar shows a brief
-     *  confirmation instead of the commit verb. Only hosts that unmount after
-     *  saving set it; the in-place composer resets immediately. */
-    justSaved: boolean;
+    isLoading: Record<LoadingKey, boolean>;
   };
   timestamps: {
     createTime?: Date;
     updateTime?: Date;
   };
   localFiles: LocalFile[];
+  /** The order of saved attachments and new files together, as keys (see utils/attachmentOrder).
+   *  Empty until the user reorders; the save keeps it. */
+  attachmentOrder: string[];
   /** Whether an audio recording is in flight; gates save. The recorder's full
    *  state lives in useAudioRecorder — only this shared bit reaches the store. */
   recorderBusy: boolean;
+  drawingNeedsMemoUpdate?: boolean;
+  drawingSaveError?: "editor.drawing.saved-needs-update" | "editor.drawing.saved-without-drawing";
   /** Draft-local acceptance history, retained across Undo but cleared on reset. */
   acceptedSuggestionIds: string[];
 }
@@ -53,14 +49,16 @@ export type EditorAction =
   | { type: "ADD_LOCAL_FILE"; payload: LocalFile }
   | { type: "REMOVE_LOCAL_FILE"; payload: string }
   | { type: "SET_LOCAL_FILES"; payload: LocalFile[] }
+  | { type: "SET_ATTACHMENT_ORDER"; payload: string[] }
   | { type: "TOGGLE_FOCUS_MODE" }
   | { type: "SET_LOADING"; payload: { key: LoadingKey; value: boolean } }
   | { type: "SET_PENDING_INLINE_IMAGE_INSERTIONS"; payload: number }
   | { type: "SET_TIMESTAMPS"; payload: Partial<EditorState["timestamps"]> }
   | { type: "SET_RECORDER_BUSY"; payload: boolean }
   | { type: "SET_TAGS"; payload: string[] }
-  | { type: "SET_JUST_SAVED"; payload: boolean }
   | { type: "ACCEPT_SUGGESTION"; payload: string }
+  | { type: "SET_DRAWING_SAVE_ERROR"; payload: EditorState["drawingSaveError"] }
+  | { type: "SET_DRAWING_MEMO_UPDATE"; payload: boolean }
   | { type: "RESET" };
 
 // Module-private template for createInitialState.
@@ -78,17 +76,18 @@ const defaultState: EditorState = {
     pendingInlineImageInsertions: 0,
     isLoading: {
       saving: false,
+      preparingFiles: false,
       uploading: false,
       loading: false,
       transcribing: false,
     },
-    justSaved: false,
   },
   timestamps: {
     createTime: undefined,
     updateTime: undefined,
   },
   localFiles: [],
+  attachmentOrder: [],
   recorderBusy: false,
   acceptedSuggestionIds: [],
 };

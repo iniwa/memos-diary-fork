@@ -1,6 +1,6 @@
+import { Button } from "@usememos/ui";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { memo, useMemo } from "react";
-import { Button } from "@/components/ui/button";
 import type { MemoTimeBasis } from "@/contexts/ViewContext";
 import { cn } from "@/lib/utils";
 import { useTranslate } from "@/utils/i18n";
@@ -24,19 +24,21 @@ const YearNavigation = memo(({ selectedYear, currentYear, onPrev, onNext, onToda
 
   return (
     <div className="flex items-center justify-between px-1">
-      <h2 className="text-2xl font-semibold text-foreground tracking-tight">{selectedYear}</h2>
+      <h2 className="mu-heading text-mu-text tracking-tight">{selectedYear}</h2>
 
-      <nav className="inline-flex items-center gap-0.5 rounded-lg border border-border/30 bg-muted/10 p-0.5" aria-label="Year navigation">
+      <nav
+        className="inline-flex items-center gap-0.5 rounded-lg border border-mu-line/30 bg-mu-hover/10 p-0.5"
+        aria-label="Year navigation"
+      >
         <Button
           variant="ghost"
           size="sm"
           onClick={onPrev}
           disabled={!canGoPrev}
           aria-label="Previous year"
-          className="h-7 w-7 p-0 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/40"
-        >
-          <ChevronLeftIcon className="w-4 h-4" />
-        </Button>
+          className="h-7 w-7 p-0 rounded-md text-mu-text-secondary hover:text-mu-text hover:bg-mu-hover/40"
+          icon={<ChevronLeftIcon />}
+        />
 
         <Button
           variant="ghost"
@@ -45,8 +47,8 @@ const YearNavigation = memo(({ selectedYear, currentYear, onPrev, onNext, onToda
           disabled={isCurrentYear}
           aria-label={t("common.today")}
           className={cn(
-            "h-7 px-2.5 rounded-md text-[10px] font-medium uppercase tracking-wider",
-            isCurrentYear ? "text-muted-foreground/50 cursor-default" : "text-muted-foreground hover:text-foreground hover:bg-muted/40",
+            "h-7 px-2.5 rounded-md mu-caption uppercase tracking-wider",
+            isCurrentYear ? "text-mu-text-secondary/50 cursor-default" : "text-mu-text-secondary hover:text-mu-text hover:bg-mu-hover/40",
           )}
         >
           {t("common.today")}
@@ -58,10 +60,9 @@ const YearNavigation = memo(({ selectedYear, currentYear, onPrev, onNext, onToda
           onClick={onNext}
           disabled={!canGoNext}
           aria-label="Next year"
-          className="h-7 w-7 p-0 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/40"
-        >
-          <ChevronRightIcon className="w-4 h-4" />
-        </Button>
+          className="h-7 w-7 p-0 rounded-md text-mu-text-secondary hover:text-mu-text hover:bg-mu-hover/40"
+          icon={<ChevronRightIcon />}
+        />
       </nav>
     </div>
   );
@@ -77,10 +78,10 @@ interface MonthCardProps {
 }
 
 const MonthCard = memo(({ month, data, onDateClick, onMonthClick, timeBasis }: MonthCardProps) => (
-  <article className="flex flex-col gap-2 rounded-xl border border-border/20 bg-muted/5 p-3 transition-colors hover:bg-muted/10">
-    <header className="text-[10px] font-medium text-muted-foreground/80 uppercase tracking-widest">
+  <article className="flex flex-col gap-2 rounded-xl border border-mu-line/20 bg-mu-hover/5 p-3 transition-colors hover:bg-mu-hover/10">
+    <header className="mu-caption font-medium text-mu-text-secondary/80 uppercase tracking-widest">
       {onMonthClick ? (
-        <button type="button" onClick={() => onMonthClick(month)} className="cursor-pointer transition-colors hover:text-foreground">
+        <button type="button" onClick={() => onMonthClick(month)} className="cursor-pointer transition-colors hover:text-mu-text">
           {getMonthLabel(month)}
         </button>
       ) : (

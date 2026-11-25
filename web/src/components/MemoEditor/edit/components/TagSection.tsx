@@ -87,13 +87,10 @@ export const TagSection: FC = () => {
   return (
     <div ref={containerRef} className="relative w-full">
       <div className="flex flex-wrap items-center gap-1 min-h-[28px] px-1 py-0.5">
-        <span className="text-xs text-muted-foreground select-none shrink-0">{t("editor.tags")}</span>
+        <span className="mu-caption text-mu-text-secondary select-none shrink-0">{t("editor.tags")}</span>
 
         {visibleTags.map((tag) => (
-          <span
-            key={tag}
-            className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground text-xs"
-          >
+          <span key={tag} className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-mu-hover text-mu-text mu-caption">
             <span>#{tag}</span>
             <button
               type="button"
@@ -117,26 +114,26 @@ export const TagSection: FC = () => {
           onFocus={() => setShowSuggestions(true)}
           onKeyDown={handleKeyDown}
           placeholder={visibleTags.length === 0 ? t("editor.add-tag") : ""}
-          className="flex-1 min-w-[100px] bg-transparent text-xs outline-none placeholder:text-muted-foreground"
+          className="flex-1 min-w-[100px] bg-transparent mu-caption outline-none placeholder:text-mu-text-secondary"
         />
       </div>
 
       {showSuggestions && suggestions.length > 0 && (
-        <div className="absolute left-0 top-full mt-1 z-50 w-56 rounded-md border bg-popover shadow-md overflow-hidden">
+        <div className="absolute left-0 top-full mt-1 z-50 w-56 rounded-md border bg-mu-surface shadow-md overflow-hidden">
           {suggestions.map((tag, index) => (
             <button
               key={tag}
               type="button"
               className={cn(
-                "w-full text-left px-3 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground",
-                index === selectedIdx && "bg-accent text-accent-foreground",
+                "w-full text-left px-3 py-1.5 mu-caption hover:bg-mu-hover hover:text-mu-text",
+                index === selectedIdx && "bg-mu-hover text-mu-text",
               )}
               onMouseDown={(e) => {
                 e.preventDefault();
                 addTag(tag);
               }}
             >
-              <span className="text-muted-foreground mr-1">#</span>
+              <span className="text-mu-text-secondary mr-1">#</span>
               {tag}
             </button>
           ))}

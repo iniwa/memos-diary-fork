@@ -15,7 +15,7 @@ export const DiaryDateControl: FC = () => {
   return (
     <button
       type="button"
-      className="text-sm text-muted-foreground/60 hover:text-muted-foreground transition-colors cursor-pointer"
+      className="mu-caption text-mu-text-secondary/60 hover:text-mu-text-secondary transition-colors cursor-pointer"
       onClick={() => {
         const now = new Date();
         dispatch(actions.setTimestamps({ createTime: now, updateTime: now }));

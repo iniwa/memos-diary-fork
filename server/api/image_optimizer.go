@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"context"
+	"encoding/binary"
 	"image"
 	"log/slog"
 	"os"
@@ -89,7 +90,7 @@ func imageOptimizerConcurrencyFromEnv() int64 {
 
 // maybeOptimizeImageAttachment preserves the non-fatal optimization fallback, but
 // returns a canceled request context so callers do not persist an abandoned upload.
-func (s *APIService) maybeOptimizeImageAttachment(ctx context.Context, attachment *store.Attachment) error {
+func (s *APIService) maybeOptimizeImageAttachment(ctx context.Context, attachment *store.Attachment, generateThumbnail bool) error {
 	config := imageOptimizerConfigFromEnv()
 	if !config.Enabled || attachment == nil || len(attachment.Blob) == 0 || !IsOptimizableStaticImage(attachment.Type) {
 		return nil
@@ -125,38 +126,48 @@ func (s *APIService) maybeOptimizeImageAttachment(ctx context.Context, attachmen
 			slog.String("filename", attachment.Filename),
 			slog.String("type", attachment.Type),
 			slog.String("error", err.Error()))
-		if err := WriteUploadThumbnailCache(ctx, s.Profile, attachment.UID, attachment.Blob, config.ThumbnailMaxEdge, config.ThumbnailQuality); err != nil {
-			if contextErr := ctx.Err(); contextErr != nil {
-				return contextErr
+		if generateThumbnail {
+			if err := WriteUploadThumbnailCache(ctx, s.Profile, attachment.UID, attachment.Blob, config.ThumbnailMaxEdge, config.ThumbnailQuality); err != nil {
+				if contextErr := ctx.Err(); contextErr != nil {
+					return contextErr
+				}
+				slog.Warn("failed to generate image thumbnail cache",
+					slog.String("filename", attachment.Filename),
+					slog.String("type", attachment.Type),
+					slog.String("error", err.Error()))
 			}
-			slog.Warn("failed to generate image thumbnail cache",
-				slog.String("filename", attachment.Filename),
-				slog.String("type", attachment.Type),
-				slog.String("error", err.Error()))
 		}
 		return nil
 	}
 
-	optimized, err := optimizeDecodedImage(img, attachment.Type, config.PreviewMaxEdge, config.PreviewQuality)
-	if err != nil {
-		if contextErr := ctx.Err(); contextErr != nil {
-			return contextErr
+	if !hasEditablePNGScene(attachment.Blob) {
+		optimized, err := optimizeDecodedImage(img, attachment.Type, config.PreviewMaxEdge, config.PreviewQuality)
+		if err != nil {
+			if contextErr := ctx.Err(); contextErr != nil {
+				return contextErr
+			}
+			slog.Warn("failed to optimize image attachment",
+				slog.String("filename", attachment.Filename),
+				slog.String("type", attachment.Type),
+				slog.String("error", err.Error()))
+		} else if !config.KeepOriginal {
+			if contextErr := ctx.Err(); contextErr != nil {
+				return contextErr
+			}
+			attachment.Blob = optimized
+			updateConvertedImageDimensions(attachment)
+			attachment.Size = int64(len(optimized))
+			attachment.Type = optimizedImageMimeType(attachment.Type)
+			attachment.Filename = optimizedImageFilename(attachment.Filename, attachment.Type)
 		}
-		slog.Warn("failed to optimize image attachment",
-			slog.String("filename", attachment.Filename),
-			slog.String("type", attachment.Type),
-			slog.String("error", err.Error()))
-	} else if !config.KeepOriginal {
-		if contextErr := ctx.Err(); contextErr != nil {
-			return contextErr
-		}
-		attachment.Blob = optimized
-		updateConvertedImageDimensions(attachment)
-		attachment.Size = int64(len(optimized))
-		attachment.Type = optimizedImageMimeType(attachment.Type)
-		attachment.Filename = optimizedImageFilename(attachment.Filename, attachment.Type)
+
 	}
 
+	// Replacements have a temporary UID until committed. Their thumbnails are
+	// regenerated on demand after invalidating the replaced attachment’s cache.
+	if !generateThumbnail {
+		return nil
+	}
 	if err := writeUploadThumbnailCacheFromImage(ctx, s.Profile, attachment.UID, img, config.ThumbnailMaxEdge, config.ThumbnailQuality); err != nil {
 		if contextErr := ctx.Err(); contextErr != nil {
 			return contextErr
@@ -167,6 +178,31 @@ func (s *APIService) maybeOptimizeImageAttachment(ctx context.Context, attachmen
 			slog.String("error", err.Error()))
 	}
 	return nil
+}
+
+// hasEditablePNGScene detects the canvas scene without inflating the PNG chunk.
+func hasEditablePNGScene(blob []byte) bool {
+	const signature = "\x89PNG\r\n\x1a\n"
+	if !bytes.HasPrefix(blob, []byte(signature)) {
+		return false
+	}
+	for chunks := blob[len(signature):]; len(chunks) >= 12; {
+		size := binary.BigEndian.Uint32(chunks[:4])
+		if uint64(size) > uint64(len(chunks)-12) {
+			return false
+		}
+		end := 8 + int(size)
+		switch string(chunks[4:8]) {
+		case "zTXt":
+			if bytes.HasPrefix(chunks[8:end], []byte("memos-canvas\x00")) {
+				return true
+			}
+		case "IEND":
+			return false
+		}
+		chunks = chunks[end+4:]
+	}
+	return false
 }
 
 // IsOptimizableStaticImage reports whether mimeType can be processed by the image optimizer.

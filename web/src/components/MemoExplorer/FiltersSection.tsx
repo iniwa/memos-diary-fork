@@ -19,13 +19,13 @@ const FiltersSection = () => {
 
   return (
     <div className="w-full flex flex-col justify-start items-start mt-3 px-1 shrink-0">
-      <div className="mb-1 text-sm leading-6 text-muted-foreground select-none">{t("common.filter")}</div>
+      <div className="mb-1 mu-body leading-6 text-mu-text-secondary select-none">{t("common.filter")}</div>
       <div className="w-full flex flex-row flex-wrap gap-x-2 gap-y-1.5">
         <button
           type="button"
           className={cn(
-            "inline-flex items-center gap-1 text-sm leading-6 rounded-md select-none cursor-pointer transition-colors hover:opacity-80",
-            isImageFilterActive ? "font-medium text-primary" : "text-muted-foreground",
+            "inline-flex items-center gap-1 mu-body leading-6 rounded-md select-none cursor-pointer transition-colors hover:opacity-80",
+            isImageFilterActive ? "font-medium text-primary" : "text-mu-text-secondary",
           )}
           onClick={handleImageFilterToggle}
         >

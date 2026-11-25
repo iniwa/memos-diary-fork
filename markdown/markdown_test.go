@@ -98,6 +98,24 @@ func TestGenerateSnippet(t *testing.T) {
 			expected:  "Item 1 Item 2 Item 3",
 		},
 		{
+			name:      "hard line break with trailing spaces",
+			content:   "first line  \nsecond line",
+			maxLength: 100,
+			expected:  "first line second line",
+		},
+		{
+			name:      "hard line break with backslash",
+			content:   "first line\\\nsecond line",
+			maxLength: 100,
+			expected:  "first line second line",
+		},
+		{
+			name:      "truncate multi-byte text across paragraphs",
+			content:   strings.Repeat("日", 50) + "\n\n" + strings.Repeat("本", 20),
+			maxLength: 64,
+			expected:  strings.Repeat("日", 50) + " ...",
+		},
+		{
 			name:      "inline code preserved",
 			content:   "`console.log('hello')`",
 			maxLength: 100,
@@ -1113,6 +1131,20 @@ More content here with ` + "`inline code`" + ` and other elements.
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_, err := svc.GenerateSnippet(content, 200)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+// BenchmarkGenerateSnippetLongParagraph parses one long line with the
+// extensions the server enables. Its cost should grow linearly with the line.
+func BenchmarkGenerateSnippetLongParagraph(b *testing.B) {
+	svc := NewService(WithTagExtension(), WithMentionExtension())
+	content := []byte("#journal " + strings.Repeat("Some text that a person might write in a daily note, with a few more words about the day. ", 50))
+
+	for b.Loop() {
+		_, err := svc.GenerateSnippet(content, 64)
 		if err != nil {
 			b.Fatal(err)
 		}

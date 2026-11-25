@@ -1,9 +1,14 @@
 import { create } from "@bufbuild/protobuf";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useAuth } from "@/contexts/AuthContext";
+import { showErrorToast } from "@/lib/toast";
 import { type MotionMedia, MotionMediaFamily, MotionMediaRole, MotionMediaSchema } from "@/types/proto/api/attachment_service_pb";
+import { useTranslate } from "@/utils/i18n";
+import { errorService } from "../services/errorService";
 import { mediaMetadataService } from "../services/mediaMetadataService";
+import { validationService } from "../services/validationService";
+import { useEditorContext } from "../state";
 import type { LocalFile } from "../types/attachment";
 import { createLocalFiles } from "../utils/localFile";
 import { useBlobUrls } from "./useBlobUrls";
@@ -25,8 +30,8 @@ export const toLocalFiles = (files: File[], options: { createBlobUrl: (file: Fil
 
 export const useFileUpload = (onFilesSelected: (localFiles: LocalFile[]) => void) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const selectingFlagRef = useRef(false);
-  const [selectingFlag, setSelectingFlag] = useState(false);
+  const { actions, dispatch, getState } = useEditorContext();
+  const t = useTranslate();
   // Track preview blob URLs so they're revoked on unmount instead of leaking
   // (matches the paste/drop/audio paths, which all go through useBlobUrls).
   const { createBlobUrl } = useBlobUrls();
@@ -35,11 +40,12 @@ export const useFileUpload = (onFilesSelected: (localFiles: LocalFile[]) => void
 
   const handleFileInputChange = async (event?: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(fileInputRef.current?.files || event?.target.files || []);
-    if (files.length === 0 || selectingFlagRef.current) {
-      return;
-    }
-    selectingFlagRef.current = true;
-    setSelectingFlag(true);
+    const input = fileInputRef.current;
+    if (input) input.value = "";
+    if (files.length === 0) return;
+    const blocked = validationService.fileIngestBlockedReason(getState());
+    if (blocked) return showErrorToast(t(blocked));
+    dispatch(actions.setLoading("preparingFiles", true));
     try {
       const snapshots = await createLocalFiles(files, createBlobUrl);
       const localFiles = pairAppleLivePhotoFiles(
@@ -50,11 +56,9 @@ export const useFileUpload = (onFilesSelected: (localFiles: LocalFile[]) => void
       );
       onFilesSelected(localFiles);
     } catch (error) {
-      console.error("Failed to read selected files:", error);
+      showErrorToast(errorService.getErrorMessage(error));
     } finally {
-      selectingFlagRef.current = false;
-      setSelectingFlag(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
+      dispatch(actions.setLoading("preparingFiles", false));
     }
   };
 
@@ -69,7 +73,6 @@ export const useFileUpload = (onFilesSelected: (localFiles: LocalFile[]) => void
 
   return {
     fileInputRef,
-    selectingFlag,
     handleFileInputChange,
     handleUploadClick,
   };

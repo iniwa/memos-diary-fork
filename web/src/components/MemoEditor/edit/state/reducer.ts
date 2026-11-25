@@ -12,6 +12,12 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
         timestamps: action.payload.timestamps,
       };
 
+    case "SET_DRAWING_SAVE_ERROR":
+      return { ...state, drawingSaveError: action.payload };
+
+    case "SET_DRAWING_MEMO_UPDATE":
+      return { ...state, drawingNeedsMemoUpdate: action.payload };
+
     case "UPDATE_CONTENT": {
       if (state.content === action.payload.content) {
         return state;
@@ -47,6 +53,12 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       return {
         ...state,
         localFiles: action.payload,
+      };
+
+    case "SET_ATTACHMENT_ORDER":
+      return {
+        ...state,
+        attachmentOrder: action.payload,
       };
 
     case "TOGGLE_FOCUS_MODE":
@@ -98,15 +110,6 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       return {
         ...state,
         tags: action.payload,
-      };
-
-    case "SET_JUST_SAVED":
-      return {
-        ...state,
-        ui: {
-          ...state.ui,
-          justSaved: action.payload,
-        },
       };
 
     case "RESET":
